@@ -51,14 +51,15 @@ export async function updatePractitioner(input: {
     .upsert(
       {
         id: user.id,
+        email: user.email ?? "",          // required for insert (NOT NULL)
         first_name: input.firstName,
         last_name: input.lastName,
-        phone: input.phone,
-        practice_name: input.practiceName,
-        practice_address: input.practiceAddress,
-        practice_city: input.practiceCity,
-        practice_postal_code: input.practicePostalCode,
-        practice_website: input.practiceWebsite,
+        phone: input.phone || null,
+        practice_name: input.practiceName || null,
+        practice_address: input.practiceAddress || null,
+        practice_city: input.practiceCity || null,
+        practice_postal_code: input.practicePostalCode || null,
+        practice_website: input.practiceWebsite || null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" }
