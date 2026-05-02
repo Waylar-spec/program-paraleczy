@@ -24,7 +24,7 @@ export function OrdoWidget() {
         window.scrollTo(0, sy)
       }
       if (e.data.type === "ordo-scroll-top") {
-        container.scrollIntoView({ behavior: "smooth", block: "start" })
+        container?.scrollIntoView({ behavior: "smooth", block: "start" })
       }
     }
 
