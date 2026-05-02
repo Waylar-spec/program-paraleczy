@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { BookOpen, Users, MessageCircle, LogOut, Settings, ChevronDown } from "lucide-react"
+import { BookOpen, Users, MessageCircle, LogOut, Settings, ChevronDown, SlidersHorizontal } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/biblioteka", label: "Biblioteka", icon: BookOpen },
   { href: "/pacjenci", label: "Pacjenci", icon: Users },
   { href: "/komunikacja", label: "Komunikacja", icon: MessageCircle },
+  { href: "/ustawienia", label: "Ustawienia", icon: SlidersHorizontal },
 ]
 
 interface TopbarProps {

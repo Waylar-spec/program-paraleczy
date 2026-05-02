@@ -15,3 +15,54 @@ export async function getPractitionerProfile() {
 
   return data ?? null
 }
+
+export async function getPractitioner() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data } = await supabase
+    .from("practitioners")
+    .select(
+      "first_name, last_name, email, phone, practice_name, practice_address, practice_city, practice_postal_code, practice_website"
+    )
+    .eq("id", user.id)
+    .single()
+
+  return data ?? null
+}
+
+export async function updatePractitioner(input: {
+  firstName: string
+  lastName: string
+  phone: string
+  practiceName: string
+  practiceAddress: string
+  practiceCity: string
+  practicePostalCode: string
+  practiceWebsite: string
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const { error } = await supabase
+    .from("practitioners")
+    .upsert(
+      {
+        id: user.id,
+        first_name: input.firstName,
+        last_name: input.lastName,
+        phone: input.phone,
+        practice_name: input.practiceName,
+        practice_address: input.practiceAddress,
+        practice_city: input.practiceCity,
+        practice_postal_code: input.practicePostalCode,
+        practice_website: input.practiceWebsite,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    )
+
+  if (error) throw new Error(error.message)
+}

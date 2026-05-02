@@ -4,12 +4,13 @@ import { ArrowLeft } from "lucide-react"
 import { getPatient } from "@/lib/actions/patients"
 import { getTemplates } from "@/lib/actions/templates"
 import { getProtocols, getPatientProtocols } from "@/lib/actions/protocols"
-import { getPatientAdherence } from "@/lib/actions/adherence"
+import { getPatientAdherence, getPatientVasData } from "@/lib/actions/adherence"
 import { getSurveys, getPatientSurveys, getPatientSurveyResponses } from "@/lib/actions/surveys"
 import { AssignProgramModal } from "@/components/patients/AssignProgramModal"
 import { AssignProtocolModal } from "@/components/protocols/AssignProtocolModal"
 import { PatientProtocolCard } from "@/components/protocols/PatientProtocolCard"
-import { AdherenceSection } from "@/components/patients/AdherenceSection"
+import { AdherenceChart } from "@/components/patients/AdherenceChart"
+import { VasChart } from "@/components/patients/VasChart"
 import { PatientProgramsSection } from "@/components/patients/PatientProgramsSection"
 import { PatientArchiveButton } from "@/components/patients/PatientArchiveButton"
 import { EditPatientModal } from "@/components/patients/EditPatientModal"
@@ -19,7 +20,7 @@ import { PatientSurveysSection } from "@/components/surveys/PatientSurveysSectio
 
 export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [patient, templates, protocols, patientProtocols, adherence, surveys, patientSurveys, surveyResponses] = await Promise.all([
+  const [patient, templates, protocols, patientProtocols, adherence, surveys, patientSurveys, surveyResponses, vasData] = await Promise.all([
     getPatient(id),
     getTemplates(),
     getProtocols(),
@@ -28,6 +29,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
     getSurveys(),
     getPatientSurveys(id),
     getPatientSurveyResponses(id),
+    getPatientVasData(id),
   ])
 
   if (!patient) notFound()
@@ -106,10 +108,16 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
             />
           </div>
 
-          {/* Adherence */}
+          {/* Adherence chart */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h2 className="font-semibold text-gray-900 mb-4">Zaangażowanie pacjenta</h2>
-            <AdherenceSection data={adherence} />
+            <AdherenceChart data={adherence} />
+          </div>
+
+          {/* VAS chart */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 className="font-semibold text-gray-900 mb-4">Ból w czasie (VAS)</h2>
+            <VasChart data={vasData} />
           </div>
 
           {/* Kwestionariusze */}

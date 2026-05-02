@@ -64,6 +64,16 @@ export async function getPatientAdherence(patientId: string) {
       last7.push({ date: dateStr, done })
     }
 
+    // Daily activity last 30 days
+    const last30: { date: string; done: number; expected: number }[] = []
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const dateStr = d.toISOString().split("T")[0]
+      const done = progLogs.filter((l) => l.logged_at.startsWith(dateStr)).length
+      last30.push({ date: dateStr, done, expected: totalItems })
+    }
+
     return {
       programId: prog.id,
       programName: prog.name,
@@ -73,8 +83,64 @@ export async function getPatientAdherence(patientId: string) {
       lastActivityAt: lastLog?.logged_at ?? null,
       avgPain,
       last7days: last7,
+      last30days: last30,
     }
   })
+}
+
+export async function getPatientVasData(patientId: string): Promise<{ date: string; value: number }[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  // Find VAS survey id
+  const { data: vasSurveys } = await supabase
+    .from("surveys")
+    .select("id")
+    .eq("name", "VAS")
+    .limit(1)
+
+  if (!vasSurveys?.length) return []
+  const vasId = vasSurveys[0].id
+
+  // Get first question id
+  const { data: questions } = await supabase
+    .from("survey_questions")
+    .select("id")
+    .eq("survey_id", vasId)
+    .order("order", { ascending: true })
+    .limit(1)
+
+  if (!questions?.length) return []
+  const firstQuestionId = questions[0].id
+
+  // Get responses for last 90 days
+  const since = new Date()
+  since.setDate(since.getDate() - 90)
+
+  const { data: responses } = await supabase
+    .from("patient_survey_responses")
+    .select("answers, completed_at")
+    .eq("patient_id", patientId)
+    .eq("survey_id", vasId)
+    .gte("completed_at", since.toISOString())
+    .order("completed_at", { ascending: true })
+
+  if (!responses?.length) return []
+
+  return responses
+    .map((r) => {
+      const answers = r.answers as Record<string, unknown>
+      const val = answers[firstQuestionId]
+      if (val === null || val === undefined) return null
+      const num = Number(val)
+      if (isNaN(num)) return null
+      return {
+        date: r.completed_at.split("T")[0],
+        value: num,
+      }
+    })
+    .filter((x): x is { date: string; value: number } => x !== null)
 }
 
 export async function getMessages(patientId: string) {
