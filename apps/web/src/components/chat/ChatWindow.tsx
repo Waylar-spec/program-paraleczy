@@ -1,0 +1,162 @@
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
+import { ArrowLeft, Send } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { sendMessage } from "@/lib/actions/adherence"
+import { toast } from "sonner"
+
+type Message = {
+  id: string
+  sender_type: string
+  content: string
+  read_at: string | null
+  created_at: string
+}
+
+interface Props {
+  patientId: string
+  practitionerId: string
+  patientName: string
+  initialMessages: Message[]
+}
+
+export function ChatWindow({ patientId, practitionerId, patientName, initialMessages }: Props) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
+  const [text, setText] = useState("")
+  const [sending, setSending] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  // Supabase Realtime subscription
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`chat:${patientId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `patient_id=eq.${patientId}`,
+        },
+        (payload) => {
+          const msg = payload.new as Message
+          setMessages((prev) =>
+            prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]
+          )
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [patientId])
+
+  async function handleSend(e?: React.FormEvent) {
+    e?.preventDefault()
+    const trimmed = text.trim()
+    if (!trimmed || sending) return
+    setSending(true)
+    setText("")
+    try {
+      const msg = await sendMessage(patientId, trimmed)
+      setMessages((prev) => [...prev, msg])
+    } catch {
+      toast.error("Błąd wysyłania wiadomości")
+      setText(trimmed)
+    } finally {
+      setSending(false)
+      inputRef.current?.focus()
+    }
+  }
+
+  function formatTime(iso: string) {
+    const d = new Date(iso)
+    const today = new Date().toDateString()
+    if (d.toDateString() === today) {
+      return d.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })
+    }
+    return d.toLocaleDateString("pl-PL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+  }
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-6 py-4 bg-white border-b border-gray-200 shrink-0">
+        <Link href="/komunikacja" className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">
+          <ArrowLeft size={16} />
+        </Link>
+        <div className="w-9 h-9 rounded-full bg-navy-100 flex items-center justify-center shrink-0">
+          <span className="text-navy-700 font-semibold text-sm">
+            {patientName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+          </span>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-gray-900">{patientName}</p>
+          <p className="text-xs text-gray-400">Pacjent</p>
+        </div>
+        <Link
+          href={`/pacjenci/${patientId}`}
+          className="ml-auto text-xs text-navy-600 hover:underline"
+        >
+          Profil pacjenta →
+        </Link>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 bg-gray-50">
+        {messages.length === 0 && (
+          <div className="text-center py-12 text-gray-400 text-sm">
+            Brak wiadomości. Napisz pierwszą wiadomość.
+          </div>
+        )}
+        {messages.map((msg) => {
+          const isMe = msg.sender_type === "practitioner"
+          return (
+            <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${isMe ? "items-end" : "items-start"} flex flex-col gap-1`}>
+                <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  isMe
+                    ? "bg-navy-500 text-white rounded-br-md"
+                    : "bg-white text-gray-900 border border-gray-200 rounded-bl-md"
+                }`}>
+                  {msg.content}
+                </div>
+                <span className="text-xs text-gray-400 px-1">{formatTime(msg.created_at)}</span>
+              </div>
+            </div>
+          )
+        })}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <form onSubmit={handleSend} className="flex items-center gap-3 px-6 py-4 bg-white border-t border-gray-200 shrink-0">
+        <input
+          ref={inputRef}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={`Wiadomość do ${patientName.split(" ")[0]}...`}
+          className="flex-1 h-10 px-4 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-navy-400 bg-gray-50"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() }
+          }}
+        />
+        <button
+          type="submit"
+          disabled={!text.trim() || sending}
+          className="w-10 h-10 rounded-xl bg-navy-500 hover:bg-navy-600 disabled:opacity-40 text-white flex items-center justify-center transition-colors shrink-0"
+        >
+          <Send size={16} />
+        </button>
+      </form>
+    </div>
+  )
+}
