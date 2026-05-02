@@ -1,0 +1,15 @@
+{
+  "name": "program-paraleczy",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "db:generate": "pnpm --filter @paraleczy/db generate",
+    "db:migrate": "pnpm --filter @paraleczy/db migrate",
+    "db:push": "pnpm --filter @paraleczy/db push",
+    "db:studio": "pnpm --filter @paraleczy/db studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
