@@ -4,11 +4,12 @@ import { ArrowLeft, Printer } from "lucide-react"
 import { getTemplate } from "@/lib/actions/templates"
 import { getExercises } from "@/lib/actions/exercises"
 import { getEducationalContent } from "@/lib/actions/education"
+import { getSurveys } from "@/lib/actions/surveys"
 import { TemplateEditor } from "@/components/templates/TemplateEditor"
 
 export default async function SzablonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [template, exercises, allContent] = await Promise.all([getTemplate(id), getExercises(), getEducationalContent()])
+  const [template, exercises, allContent, allSurveys] = await Promise.all([getTemplate(id), getExercises(), getEducationalContent(), getSurveys()])
 
   if (!template) notFound()
 
@@ -17,6 +18,10 @@ export default async function SzablonPage({ params }: { params: Promise<{ id: st
   )
 
   const templateContent = [...(template.program_template_content ?? [])].sort(
+    (a: { order: number }, b: { order: number }) => a.order - b.order
+  )
+
+  const templateSurveys = [...((template as any).program_template_surveys ?? [])].sort(
     (a: { order: number }, b: { order: number }) => a.order - b.order
   )
 
@@ -52,7 +57,7 @@ export default async function SzablonPage({ params }: { params: Promise<{ id: st
         )}
       </div>
 
-      <TemplateEditor templateId={id} items={items} exercises={exercises} allContent={allContent} templateContent={templateContent} />
+      <TemplateEditor templateId={id} items={items} exercises={exercises} allContent={allContent} templateContent={templateContent} allSurveys={allSurveys} templateSurveys={templateSurveys} />
     </div>
   )
 }

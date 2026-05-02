@@ -86,6 +86,13 @@ export async function getTemplate(id: string) {
         order,
         content_id,
         educational_content ( id, name, type, file_url, external_url )
+      ),
+      program_template_surveys (
+        id,
+        survey_id,
+        schedule,
+        order,
+        surveys ( id, name, description, is_public, practitioner_id )
       )
     `)
     .or(`practitioner_id.eq.${user.id},is_public.eq.true`)
@@ -228,6 +235,45 @@ export async function updateTemplate(templateId: string, params: {
   if (error) throw new Error(error.message)
   revalidateTag("templates", "max")
   revalidatePath("/biblioteka/szablony")
+  revalidatePath(`/biblioteka/szablony/${templateId}`)
+}
+
+export async function addSurveyToTemplate(templateId: string, surveyId: string, schedule: string = "on_start") {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const { data: existing } = await (supabase as any)
+    .from("program_template_surveys")
+    .select("order")
+    .eq("template_id", templateId)
+    .order("order", { ascending: false })
+    .limit(1)
+
+  const nextOrder = ((existing?.[0]?.order as number | undefined) ?? 0) + 1
+
+  const { error } = await (supabase as any)
+    .from("program_template_surveys")
+    .insert({ template_id: templateId, survey_id: surveyId, schedule, order: nextOrder })
+
+  if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
+  revalidatePath(`/biblioteka/szablony/${templateId}`)
+}
+
+export async function removeSurveyFromTemplate(templateId: string, surveyId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const { error } = await (supabase as any)
+    .from("program_template_surveys")
+    .delete()
+    .eq("template_id", templateId)
+    .eq("survey_id", surveyId)
+
+  if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
 

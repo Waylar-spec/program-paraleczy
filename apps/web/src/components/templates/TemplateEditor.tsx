@@ -2,10 +2,11 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { X, GripVertical, Dumbbell, Plus, Search, ChevronDown, ChevronUp, FileText, ExternalLink, BookOpen, Trash2 } from "lucide-react"
-import { addExerciseToTemplate, removeExerciseFromTemplate, updateTemplateItem, addContentToTemplate, removeContentFromTemplate } from "@/lib/actions/templates"
+import { X, GripVertical, Dumbbell, Plus, Search, ChevronDown, ChevronUp, FileText, ExternalLink, BookOpen, Trash2, ClipboardList } from "lucide-react"
+import { addExerciseToTemplate, removeExerciseFromTemplate, updateTemplateItem, addContentToTemplate, removeContentFromTemplate, addSurveyToTemplate, removeSurveyFromTemplate } from "@/lib/actions/templates"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import type { Survey } from "@/lib/actions/surveys"
 
 type Exercise = {
   id: string
@@ -46,15 +47,25 @@ type TemplateContent = {
   educational_content: ContentItem | ContentItem[] | null
 }
 
+type TemplateSurvey = {
+  id: string
+  survey_id: string
+  schedule: string
+  order: number
+  surveys: { id: string; name: string; description: string | null; is_public: boolean } | null
+}
+
 interface Props {
   templateId: string
   items: TemplateItem[]
   exercises: Exercise[]
   allContent: ContentItem[]
   templateContent: TemplateContent[]
+  allSurveys?: Survey[]
+  templateSurveys?: TemplateSurvey[]
 }
 
-export function TemplateEditor({ templateId, items, exercises, allContent, templateContent }: Props) {
+export function TemplateEditor({ templateId, items, exercises, allContent, templateContent, allSurveys = [], templateSurveys = [] }: Props) {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const [contentSearch, setContentSearch] = useState("")
@@ -63,6 +74,10 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
   const [removing, setRemoving] = useState<string | null>(null)
   const [addingContent, setAddingContent] = useState<string | null>(null)
   const [contentPickerOpen, setContentPickerOpen] = useState(false)
+  const [surveyPickerOpen, setSurveyPickerOpen] = useState(false)
+  const [surveySearch, setSurveySearch] = useState("")
+  const [addingSurvey, setAddingSurvey] = useState<string | null>(null)
+  const [surveySchedules, setSurveySchedules] = useState<Record<string, string>>({})
 
   const filteredExercises = exercises.filter((ex) =>
     ex.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,7 +90,14 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
     return allContent.filter((c) => c.name.toLowerCase().includes(q))
   }, [allContent, contentSearch])
 
+  const filteredSurveys = useMemo(() => {
+    if (!surveySearch.trim()) return allSurveys
+    const q = surveySearch.toLowerCase()
+    return allSurveys.filter((s) => s.name.toLowerCase().includes(q))
+  }, [allSurveys, surveySearch])
+
   const addedContentIds = new Set(templateContent.map((tc) => tc.content_id))
+  const addedSurveyIds = new Set(templateSurveys.map((ts) => ts.survey_id))
 
   async function handleAdd(exercise: Exercise) {
     if (adding) return
@@ -129,6 +151,28 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
       router.refresh()
     } catch {
       toast.error("Nie udało się usunąć")
+    }
+  }
+
+  async function handleAddSurvey(surveyId: string) {
+    setAddingSurvey(surveyId)
+    const schedule = surveySchedules[surveyId] ?? "on_start"
+    try {
+      await addSurveyToTemplate(templateId, surveyId, schedule)
+      router.refresh()
+    } catch {
+      toast.error("Nie udało się dodać kwestionariusza")
+    } finally {
+      setAddingSurvey(null)
+    }
+  }
+
+  async function handleRemoveSurvey(surveyId: string) {
+    try {
+      await removeSurveyFromTemplate(templateId, surveyId)
+      router.refresh()
+    } catch {
+      toast.error("Nie udało się usunąć kwestionariusza")
     }
   }
 
@@ -273,6 +317,104 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
                       <span className="text-xs text-gray-800 flex-1 truncate">{c.name}</span>
                       {isAdded ? <span className="text-xs text-navy-500">✓</span> : <Plus size={11} className="text-gray-400 shrink-0" />}
                     </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Surveys / Questionnaires */}
+        <div className="pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+              <ClipboardList size={14} className="text-gray-400" />
+              Kwestionariusze
+            </h3>
+            <button
+              onClick={() => setSurveyPickerOpen(!surveyPickerOpen)}
+              className="text-xs text-navy-500 hover:text-navy-700 flex items-center gap-1"
+            >
+              <Plus size={12} /> Dodaj
+            </button>
+          </div>
+
+          {/* Already added surveys */}
+          {templateSurveys.length > 0 && (
+            <div className="space-y-1 mb-2">
+              {templateSurveys.map((ts) => {
+                if (!ts.surveys) return null
+                const scheduleLabel =
+                  ts.schedule === "on_start" ? "Na start" :
+                  ts.schedule === "on_end" ? "Na koniec" :
+                  ts.schedule === "weekly" ? "Co tydzień" : ts.schedule
+                return (
+                  <div key={ts.id} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-100">
+                    <div className="w-6 h-6 rounded flex items-center justify-center shrink-0 bg-purple-50">
+                      <ClipboardList size={11} className="text-purple-500" />
+                    </div>
+                    <span className="text-xs text-gray-700 flex-1 truncate">{ts.surveys.name}</span>
+                    <span className="text-xs text-gray-400 shrink-0">{scheduleLabel}</span>
+                    <button onClick={() => handleRemoveSurvey(ts.survey_id)} className="p-0.5 hover:text-red-500 text-gray-300 transition-colors shrink-0">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Survey picker */}
+          {surveyPickerOpen && (
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <div className="p-2 border-b border-gray-100">
+                <div className="relative">
+                  <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input value={surveySearch} onChange={(e) => setSurveySearch(e.target.value)}
+                    placeholder="Szukaj kwestionariusza..." autoFocus
+                    className="w-full h-7 pl-6 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400" />
+                </div>
+              </div>
+              <div className="max-h-52 overflow-y-auto">
+                {filteredSurveys.length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-3">Brak wyników</p>
+                ) : filteredSurveys.map((s) => {
+                  const isAdded = addedSurveyIds.has(s.id)
+                  return (
+                    <div key={s.id} className={`flex items-center gap-2 px-2.5 py-2 border-b border-gray-50 last:border-0 ${isAdded ? "bg-navy-50" : ""}`}>
+                      <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 bg-purple-50">
+                        <ClipboardList size={10} className="text-purple-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-800 truncate">{s.name}</p>
+                        {s.question_count !== undefined && (
+                          <p className="text-xs text-gray-400">{s.question_count} {s.question_count === 1 ? "pytanie" : s.question_count < 5 ? "pytania" : "pytań"}</p>
+                        )}
+                      </div>
+                      {isAdded ? (
+                        <span className="text-xs text-navy-500 shrink-0">✓</span>
+                      ) : (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <select
+                            value={surveySchedules[s.id] ?? "on_start"}
+                            onChange={(e) => setSurveySchedules((prev) => ({ ...prev, [s.id]: e.target.value }))}
+                            className="h-6 text-xs border border-gray-200 rounded px-1 bg-white focus:outline-none"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <option value="on_start">Na start programu</option>
+                            <option value="on_end">Na koniec programu</option>
+                            <option value="weekly">Co tydzień</option>
+                          </select>
+                          <button
+                            onClick={() => handleAddSurvey(s.id)}
+                            disabled={addingSurvey === s.id}
+                            className="h-6 px-2 text-xs bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white rounded transition-colors"
+                          >
+                            Dodaj
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )
                 })}
               </div>

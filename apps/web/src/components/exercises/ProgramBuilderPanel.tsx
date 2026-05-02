@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { X, Trash2, Dumbbell, ChevronDown, ChevronUp, Send, FileText, ExternalLink, BookOpen, Search, Plus } from "lucide-react"
+import { X, Trash2, Dumbbell, ChevronDown, ChevronUp, Send, FileText, ExternalLink, BookOpen, Search, Plus, ClipboardList } from "lucide-react"
 import { useProgramBuilder, type BuilderExercise } from "@/store/programBuilder"
-import { createTemplate, addExerciseToTemplate } from "@/lib/actions/templates"
+import { createTemplate, addExerciseToTemplate, addSurveyToTemplate } from "@/lib/actions/templates"
 import { createQuickProgram } from "@/lib/actions/patient-programs"
+import { assignSurveyToProgram, getSurveys, type Survey, type SurveySchedule } from "@/lib/actions/surveys"
 import { getPatientsList } from "@/lib/actions/patients"
 import { getEducationalContent } from "@/lib/actions/education"
 import { toast } from "sonner"
@@ -96,7 +97,7 @@ function ExerciseItem({ item }: { item: BuilderExercise }) {
 
 export function ProgramBuilderPanel() {
   const router = useRouter()
-  const { isOpen, close, exercises, contentItems, addContent, removeContent, hasContent, programName, setProgramName, clearAll } = useProgramBuilder()
+  const { isOpen, close, exercises, contentItems, addContent, removeContent, hasContent, surveyItems, addSurvey, removeSurvey, hasSurvey, programName, setProgramName, clearAll } = useProgramBuilder()
   const [saving, setSaving] = useState(false)
   const [saveAsTemplate, setSaveAsTemplate] = useState(false)
   const [patients, setPatients] = useState<Patient[]>([])
@@ -110,12 +111,22 @@ export function ProgramBuilderPanel() {
   const [allContent, setAllContent] = useState<ContentItem[]>([])
   const [contentPickerOpen, setContentPickerOpen] = useState(false)
   const [contentSearch, setContentSearch] = useState("")
+  const [allSurveys, setAllSurveys] = useState<Survey[]>([])
+  const [surveyPickerOpen, setSurveyPickerOpen] = useState(false)
+  const [surveySearch, setSurveySearch] = useState("")
+  const [surveySchedules, setSurveySchedules] = useState<Record<string, string>>({})
 
   const filteredContent = useMemo(() => {
     if (!contentSearch.trim()) return allContent
     const q = contentSearch.toLowerCase()
     return allContent.filter((c) => c.name.toLowerCase().includes(q) || c.body_part?.toLowerCase().includes(q))
   }, [allContent, contentSearch])
+
+  const filteredSurveys = useMemo(() => {
+    if (!surveySearch.trim()) return allSurveys
+    const q = surveySearch.toLowerCase()
+    return allSurveys.filter((s) => s.name.toLowerCase().includes(q))
+  }, [allSurveys, surveySearch])
 
   function calcEndDate(start: string, weeks: string): string | undefined {
     if (!weeks || weeks === "0") return undefined
@@ -134,6 +145,7 @@ export function ProgramBuilderPanel() {
     if (isOpen) {
       if (patients.length === 0) getPatientsList().then(setPatients)
       if (allContent.length === 0) getEducationalContent().then((data) => setAllContent(data as ContentItem[]))
+      if (allSurveys.length === 0) getSurveys().then(setAllSurveys)
     }
   }, [isOpen])
 
@@ -143,7 +155,7 @@ export function ProgramBuilderPanel() {
     if (!exercises.length || !selectedPatient) return
     setSaving(true)
     try {
-      await createQuickProgram({
+      const program = await createQuickProgram({
         patientId: selectedPatient,
         name: programName,
         startDate,
@@ -159,6 +171,9 @@ export function ProgramBuilderPanel() {
           notes: ex.notes,
         })),
       })
+      for (const s of surveyItems) {
+        await assignSurveyToProgram(program.id, s.surveyId, s.schedule as SurveySchedule)
+      }
       const pat = patients.find((p) => p.id === selectedPatient)
       toast.success(`Program wysłany do ${pat?.first_name} ${pat?.last_name}`)
       clearAll()
@@ -185,6 +200,9 @@ export function ProgramBuilderPanel() {
           duration: ex.durationSeconds ?? undefined,
           notes: ex.notes || undefined,
         })
+      }
+      for (const s of surveyItems) {
+        await addSurveyToTemplate(template.id, s.surveyId, s.schedule)
       }
       toast.success(`Szablon "${programName}" zapisany`)
       clearAll()
@@ -243,7 +261,7 @@ export function ProgramBuilderPanel() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {exercises.length === 0 && contentItems.length === 0 ? (
+          {exercises.length === 0 && contentItems.length === 0 && surveyItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Dumbbell size={32} className="text-gray-300 mb-3" />
               <p className="text-sm text-gray-400">Zaznacz ćwiczenia z biblioteki</p>
@@ -331,12 +349,120 @@ export function ProgramBuilderPanel() {
                   </div>
                 )}
               </div>
+
+              {/* Surveys section */}
+              <div className="mt-1">
+                <div className="flex items-center justify-between px-1 mb-1">
+                  <div className="flex items-center gap-2">
+                    <ClipboardList size={12} className="text-gray-400" />
+                    <span className="text-xs font-medium text-gray-500">
+                      Kwestionariusze {surveyItems.length > 0 && `(${surveyItems.length})`}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setSurveyPickerOpen(!surveyPickerOpen)}
+                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${
+                      surveyPickerOpen ? "bg-navy-100 text-navy-700" : "text-navy-500 hover:bg-navy-50"
+                    }`}
+                  >
+                    <Plus size={11} />
+                    Dodaj kwestionariusz
+                  </button>
+                </div>
+
+                {/* Selected surveys */}
+                {surveyItems.length > 0 && (
+                  <div className="space-y-1 mb-2">
+                    {surveyItems.map((s) => {
+                      const scheduleLabel =
+                        s.schedule === "on_start" ? "Na start" :
+                        s.schedule === "on_end" ? "Na koniec" :
+                        s.schedule === "weekly" ? "Co tydzień" : s.schedule
+                      return (
+                        <div key={s.surveyId} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-3 py-2">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-purple-50">
+                            <ClipboardList size={13} className="text-purple-500" />
+                          </div>
+                          <span className="text-xs text-gray-800 flex-1 truncate">{s.name}</span>
+                          <span className="text-xs text-gray-400 shrink-0">{scheduleLabel}</span>
+                          <button onClick={() => removeSurvey(s.surveyId)} className="p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors shrink-0">
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Survey inline picker */}
+                {surveyPickerOpen && (
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="p-2 border-b border-gray-100">
+                      <div className="relative">
+                        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          value={surveySearch}
+                          onChange={(e) => setSurveySearch(e.target.value)}
+                          placeholder="Szukaj kwestionariuszy..."
+                          className="w-full h-7 pl-7 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      {filteredSurveys.length === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-4">Brak wyników</p>
+                      ) : filteredSurveys.map((s) => {
+                        const selected = hasSurvey(s.id)
+                        return (
+                          <div
+                            key={s.id}
+                            className={`flex items-center gap-2.5 px-3 py-2 border-b border-gray-50 last:border-0 ${selected ? "bg-navy-50" : ""}`}
+                          >
+                            <div className="w-6 h-6 rounded flex items-center justify-center shrink-0 bg-purple-50">
+                              <ClipboardList size={11} className="text-purple-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-xs text-gray-800 truncate block">{s.name}</span>
+                              {s.question_count !== undefined && (
+                                <span className="text-xs text-gray-400">{s.question_count} {s.question_count === 1 ? "pytanie" : s.question_count < 5 ? "pytania" : "pytań"}</span>
+                              )}
+                            </div>
+                            {selected ? (
+                              <span className="text-xs text-navy-500 shrink-0">✓</span>
+                            ) : (
+                              <div className="flex items-center gap-1 shrink-0">
+                                <select
+                                  value={surveySchedules[s.id] ?? "on_start"}
+                                  onChange={(e) => setSurveySchedules((prev) => ({ ...prev, [s.id]: e.target.value }))}
+                                  className="h-6 text-xs border border-gray-200 rounded px-1 bg-white focus:outline-none"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <option value="on_start">Na start programu</option>
+                                  <option value="on_end">Na koniec programu</option>
+                                  <option value="weekly">Co tydzień</option>
+                                </select>
+                                <button
+                                  onClick={() => addSurvey({ surveyId: s.id, name: s.name, schedule: surveySchedules[s.id] ?? "on_start" })}
+                                  className="h-6 px-2 text-xs bg-navy-500 hover:bg-navy-600 text-white rounded transition-colors"
+                                >
+                                  Dodaj
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
 
         {/* Footer */}
-        {(exercises.length > 0 || contentItems.length > 0) && (
+        {(exercises.length > 0 || contentItems.length > 0 || surveyItems.length > 0) && (
           <div className="px-5 py-4 bg-white sm:rounded-b-2xl border-t border-gray-200">
             {mode === "assign" ? (
               <div className="space-y-3">
@@ -445,6 +571,7 @@ export function ProgramBuilderPanel() {
                 <p className="text-xs text-gray-500">
                   {exercises.length} {exercises.length === 1 ? "ćwiczenie" : exercises.length < 5 ? "ćwiczenia" : "ćwiczeń"}
                   {contentItems.length > 0 && ` · ${contentItems.length} materiałów`}
+                  {surveyItems.length > 0 && ` · ${surveyItems.length} kwestionariuszy`}
                 </p>
                 <button
                   onClick={handleSaveTemplate}

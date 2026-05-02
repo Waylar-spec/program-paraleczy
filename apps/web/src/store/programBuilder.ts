@@ -19,11 +19,18 @@ export type BuilderContent = {
   externalUrl: string | null
 }
 
+export type BuilderSurvey = {
+  surveyId: string
+  name: string
+  schedule: string  // "on_start" | "on_end" | "weekly"
+}
+
 type ProgramBuilderState = {
   isOpen: boolean
   programName: string
   exercises: BuilderExercise[]
   contentItems: BuilderContent[]
+  surveyItems: BuilderSurvey[]
   open: () => void
   close: () => void
   setOpen: (v: boolean) => void
@@ -35,6 +42,9 @@ type ProgramBuilderState = {
   removeContent: (contentId: string) => void
   hasExercise: (exerciseId: string) => boolean
   hasContent: (contentId: string) => boolean
+  addSurvey: (s: BuilderSurvey) => void
+  removeSurvey: (surveyId: string) => void
+  hasSurvey: (surveyId: string) => boolean
   clearAll: () => void
 }
 
@@ -43,6 +53,7 @@ export const useProgramBuilder = create<ProgramBuilderState>((set, get) => ({
   programName: "Program",
   exercises: [],
   contentItems: [],
+  surveyItems: [],
   open: () => set({ isOpen: true }),
   close: () => set({ isOpen: false }),
   setOpen: (v) => set({ isOpen: v }),
@@ -67,5 +78,14 @@ export const useProgramBuilder = create<ProgramBuilderState>((set, get) => ({
     set((s) => ({ contentItems: s.contentItems.filter((c) => c.contentId !== contentId) })),
   hasExercise: (exerciseId) => get().exercises.some((e) => e.exerciseId === exerciseId),
   hasContent: (contentId) => get().contentItems.some((c) => c.contentId === contentId),
-  clearAll: () => set({ exercises: [], contentItems: [], programName: "Program" }),
+  addSurvey: (s) =>
+    set((state) => ({
+      surveyItems: state.surveyItems.some((x) => x.surveyId === s.surveyId)
+        ? state.surveyItems
+        : [...state.surveyItems, s],
+    })),
+  removeSurvey: (surveyId) =>
+    set((s) => ({ surveyItems: s.surveyItems.filter((x) => x.surveyId !== surveyId) })),
+  hasSurvey: (surveyId) => get().surveyItems.some((s) => s.surveyId === surveyId),
+  clearAll: () => set({ exercises: [], contentItems: [], surveyItems: [], programName: "Program" }),
 }))

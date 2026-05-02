@@ -15,9 +15,9 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
   if (!user) throw new Error("Brak autoryzacji")
 
   const [{ data: template }, { data: patient }, { data: practitioner }] = await Promise.all([
-    supabase
+    (supabase as any)
       .from("program_templates")
-      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes)")
+      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes), program_template_surveys(survey_id, schedule)")
       .eq("id", templateId)
       .single(),
     supabase
@@ -87,6 +87,17 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
       order: i + 1,
     }))
     await supabase.from("patient_program_content").insert(contentRows)
+  }
+
+  // Copy template surveys to patient_program_surveys
+  const templateSurveys = (template as any).program_template_surveys ?? []
+  if (templateSurveys.length > 0) {
+    const surveyRows = templateSurveys.map((ts: { survey_id: string; schedule: string }) => ({
+      program_id: program.id,
+      survey_id: ts.survey_id,
+      schedule: ts.schedule,
+    }))
+    await supabase.from("patient_program_surveys").insert(surveyRows)
   }
 
   if (patient?.email && patient.access_code) {
