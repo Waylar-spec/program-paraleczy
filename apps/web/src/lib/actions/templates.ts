@@ -54,6 +54,7 @@ export async function getTemplate(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // First fetch the template with all joins including surveys
   const { data, error } = await supabase
     .from("program_templates")
     .select(`
@@ -86,13 +87,6 @@ export async function getTemplate(id: string) {
         order,
         content_id,
         educational_content ( id, name, type, file_url, external_url )
-      ),
-      program_template_surveys (
-        id,
-        survey_id,
-        schedule,
-        order,
-        surveys ( id, name, description, is_public, practitioner_id )
       )
     `)
     .or(`practitioner_id.eq.${user.id},is_public.eq.true`)
@@ -100,7 +94,21 @@ export async function getTemplate(id: string) {
     .single()
 
   if (error) return null
-  return data
+
+  // Fetch surveys separately so a missing table doesn't break the whole page
+  let templateSurveys: any[] = []
+  try {
+    const { data: surveysData } = await (supabase as any)
+      .from("program_template_surveys")
+      .select("id, survey_id, schedule, order, surveys ( id, name, description, is_public, practitioner_id )")
+      .eq("template_id", id)
+      .order("order", { ascending: true })
+    templateSurveys = surveysData ?? []
+  } catch {
+    // table may not exist yet — silently ignore
+  }
+
+  return { ...data, program_template_surveys: templateSurveys }
 }
 
 export async function createTemplate(formData: {

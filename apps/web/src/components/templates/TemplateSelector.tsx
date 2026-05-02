@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LayoutTemplate, X, Dumbbell, Search, ArrowRight, Pencil } from "lucide-react"
+import { LayoutTemplate, X, Dumbbell, Search, ArrowRight, Pencil, ExternalLink } from "lucide-react"
 import { useProgramBuilder } from "@/store/programBuilder"
 import { updateTemplate } from "@/lib/actions/templates"
 import { toast } from "sonner"
@@ -195,8 +195,12 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
 
           return (
             <div key={template.id} className="group bg-white rounded-xl border border-gray-200 hover:border-navy-300 hover:shadow-md overflow-hidden transition-all flex flex-col">
-              {/* Thumbnail strip — klikalny do podglądu */}
-              <Link href={`/biblioteka/szablony/${template.id}`} className="block">
+              {/* Thumbnail strip — kliknięcie ładuje do buildera */}
+              <button
+                type="button"
+                onClick={() => loadTemplate(template)}
+                className="block w-full text-left cursor-pointer"
+              >
                 {thumbs.some(Boolean) ? (
                   <div className="flex h-20 bg-gray-100">
                     {thumbs.map((url, i) => (
@@ -214,15 +218,25 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
                     )}
                   </div>
                 ) : (
-                  <div className="h-20 bg-navy-50 flex items-center justify-center">
+                  <div className="h-20 bg-navy-50 flex items-center justify-center group-hover:bg-navy-100 transition-colors">
                     <LayoutTemplate size={24} className="text-navy-300" />
                   </div>
                 )}
-              </Link>
+              </button>
 
               {/* Info */}
               <div className="p-4 flex flex-col flex-1">
-                <p className="font-semibold text-gray-900 leading-tight">{template.name}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold text-gray-900 leading-tight">{template.name}</p>
+                  <Link
+                    href={`/biblioteka/szablony/${template.id}`}
+                    className="shrink-0 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Otwórz pełny edytor"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <ExternalLink size={12} />
+                  </Link>
+                </div>
                 {template.description && (
                   <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">{template.description}</p>
                 )}
