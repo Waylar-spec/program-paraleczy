@@ -1,8 +1,9 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,21 +32,31 @@ export type Phase = {
   program_templates?: { id: string; name: string } | null
 }
 
+// ─── Cached query ─────────────────────────────────────────────────────────────
+
+async function _fetchProtocols(userId: string) {
+  const sb = createServiceClient()
+  const { data } = await sb
+    .from("rehabilitation_protocols")
+    .select("id, name, description, indication, total_weeks, body_part, is_public, practitioner_id, created_at, protocol_phases(id, order, name, duration_weeks)")
+    .or(`practitioner_id.eq.${userId},is_public.eq.true`)
+    .order("created_at", { ascending: false })
+  return data ?? []
+}
+
+const _cachedFetchProtocols = unstable_cache(
+  _fetchProtocols,
+  ["protocols"],
+  { tags: ["protocols"], revalidate: 120 },
+)
+
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
 export async function getProtocols() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
-
-  const { data, error } = await supabase
-    .from("rehabilitation_protocols")
-    .select("id, name, description, indication, total_weeks, body_part, is_public, practitioner_id, created_at, protocol_phases(id, order, name, duration_weeks)")
-    .or(`practitioner_id.eq.${user.id},is_public.eq.true`)
-    .order("created_at", { ascending: false })
-
-  if (error) return []
-  return data
+  return _cachedFetchProtocols(user.id)
 }
 
 export async function getProtocol(id: string) {
@@ -124,6 +135,7 @@ export async function updateProtocol(id: string, formData: {
     .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
+  revalidateTag("protocols", "max")
   revalidatePath(`/biblioteka/protokoly/${id}`)
 }
 
@@ -139,6 +151,7 @@ export async function deleteProtocol(id: string) {
     .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
+  revalidateTag("protocols", "max")
   revalidatePath("/biblioteka/protokoly")
 }
 
@@ -172,6 +185,7 @@ export async function addPhase(protocolId: string, formData: {
     })
 
   if (error) throw new Error(error.message)
+  revalidateTag("protocols", "max")
   revalidatePath(`/biblioteka/protokoly/${protocolId}`)
 }
 
@@ -198,6 +212,7 @@ export async function updatePhase(phaseId: string, protocolId: string, formData:
     .eq("id", phaseId)
 
   if (error) throw new Error(error.message)
+  revalidateTag("protocols", "max")
   revalidatePath(`/biblioteka/protokoly/${protocolId}`)
 }
 
@@ -212,6 +227,7 @@ export async function deletePhase(phaseId: string, protocolId: string) {
     .eq("id", phaseId)
 
   if (error) throw new Error(error.message)
+  revalidateTag("protocols", "max")
   revalidatePath(`/biblioteka/protokoly/${protocolId}`)
 }
 

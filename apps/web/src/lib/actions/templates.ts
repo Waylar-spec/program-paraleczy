@@ -1,14 +1,14 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
-export async function getTemplates() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+// ─── Cached query ─────────────────────────────────────────────────────────────
 
-  const { data, error } = await supabase
+async function _fetchTemplates(userId: string) {
+  const sb = createServiceClient()
+  const { data } = await sb
     .from("program_templates")
     .select(`
       id,
@@ -31,11 +31,22 @@ export async function getTemplates() {
         )
       )
     `)
-    .or(`practitioner_id.eq.${user.id},is_public.eq.true`)
+    .or(`practitioner_id.eq.${userId},is_public.eq.true`)
     .order("created_at", { ascending: false })
+  return data ?? []
+}
 
-  if (error) return []
-  return data
+const _cachedFetchTemplates = unstable_cache(
+  _fetchTemplates,
+  ["templates"],
+  { tags: ["templates"], revalidate: 120 },
+)
+
+export async function getTemplates() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+  return _cachedFetchTemplates(user.id)
 }
 
 export async function getTemplate(id: string) {
@@ -106,6 +117,7 @@ export async function createTemplate(formData: {
     .single()
 
   if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath("/biblioteka/szablony")
   return data
 }
@@ -136,6 +148,7 @@ export async function addExerciseToTemplate(templateId: string, exerciseId: stri
     })
 
   if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
 
@@ -150,6 +163,7 @@ export async function removeExerciseFromTemplate(itemId: string, templateId: str
     .eq("id", itemId)
 
   if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
 
@@ -172,6 +186,7 @@ export async function addContentToTemplate(templateId: string, contentId: string
     .insert({ template_id: templateId, content_id: contentId, order: nextOrder })
 
   if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
 
@@ -187,6 +202,7 @@ export async function removeContentFromTemplate(templateId: string, contentId: s
     .eq("content_id", contentId)
 
   if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
 
@@ -210,6 +226,7 @@ export async function updateTemplate(templateId: string, params: {
     .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath("/biblioteka/szablony")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
@@ -237,5 +254,6 @@ export async function updateTemplateItem(itemId: string, templateId: string, par
     .eq("id", itemId)
 
   if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }

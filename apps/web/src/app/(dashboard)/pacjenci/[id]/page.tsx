@@ -5,6 +5,7 @@ import { getPatient } from "@/lib/actions/patients"
 import { getTemplates } from "@/lib/actions/templates"
 import { getProtocols, getPatientProtocols } from "@/lib/actions/protocols"
 import { getPatientAdherence } from "@/lib/actions/adherence"
+import { getSurveys, getPatientSurveys, getPatientSurveyResponses } from "@/lib/actions/surveys"
 import { AssignProgramModal } from "@/components/patients/AssignProgramModal"
 import { AssignProtocolModal } from "@/components/protocols/AssignProtocolModal"
 import { PatientProtocolCard } from "@/components/protocols/PatientProtocolCard"
@@ -13,15 +14,20 @@ import { PatientProgramsSection } from "@/components/patients/PatientProgramsSec
 import { PatientArchiveButton } from "@/components/patients/PatientArchiveButton"
 import { EditPatientModal } from "@/components/patients/EditPatientModal"
 import { CopyPatientLink } from "@/components/patients/CopyPatientLink"
+import { AssignSurveyModal } from "@/components/surveys/AssignSurveyModal"
+import { PatientSurveysSection } from "@/components/surveys/PatientSurveysSection"
 
 export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [patient, templates, protocols, patientProtocols, adherence] = await Promise.all([
+  const [patient, templates, protocols, patientProtocols, adherence, surveys, patientSurveys, surveyResponses] = await Promise.all([
     getPatient(id),
     getTemplates(),
     getProtocols(),
     getPatientProtocols(id),
     getPatientAdherence(id),
+    getSurveys(),
+    getPatientSurveys(id),
+    getPatientSurveyResponses(id),
   ])
 
   if (!patient) notFound()
@@ -104,6 +110,22 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h2 className="font-semibold text-gray-900 mb-4">Zaangażowanie pacjenta</h2>
             <AdherenceSection data={adherence} />
+          </div>
+
+          {/* Kwestionariusze */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-gray-900">Kwestionariusze</h2>
+              <AssignSurveyModal
+                patientId={id}
+                surveys={surveys}
+                programs={(patient.patient_programs ?? []).map((p: { id: string; name: string }) => ({ id: p.id, name: p.name }))}
+              />
+            </div>
+            <PatientSurveysSection
+              assignments={patientSurveys}
+              responses={surveyResponses}
+            />
           </div>
         </div>
 

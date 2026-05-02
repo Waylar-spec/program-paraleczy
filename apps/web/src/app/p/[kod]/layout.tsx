@@ -1,4 +1,4 @@
-import { MessageCircle, Dumbbell, Phone } from "lucide-react"
+import { MessageCircle, Dumbbell, Phone, ClipboardList } from "lucide-react"
 import Link from "next/link"
 import { BookingNavItem } from "@/components/patient/BookingNavItem"
 
@@ -25,6 +25,13 @@ export default async function KodLayout({
         >
           <Dumbbell size={20} />
           <span className="text-xs font-medium">Programy</span>
+        </Link>
+        <Link
+          href={`/p/${kod}/kwestionariusze`}
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:bg-gray-50 transition-colors"
+        >
+          <ClipboardList size={20} />
+          <span className="text-xs font-medium">Ankiety</span>
         </Link>
         <Link
           href={`/p/${kod}/czat`}

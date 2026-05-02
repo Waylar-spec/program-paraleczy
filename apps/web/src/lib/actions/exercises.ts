@@ -1,26 +1,38 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
+
+// ─── Cached query (uses service client — no request-scoped cookies needed) ────
+
+async function _fetchExercises(userId: string, bodyPart?: string, search?: string) {
+  const sb = createServiceClient()
+  let query = sb
+    .from("exercises")
+    .select("id, name, description, body_part, category, difficulty, default_sets, default_reps, default_duration_seconds, thumbnail_url, video_url, is_favorite, is_public, practitioner_id, step_images")
+    .or(`practitioner_id.eq.${userId},is_public.eq.true`)
+    .order("is_favorite", { ascending: false })
+    .order("created_at", { ascending: false })
+
+  if (bodyPart) query = query.eq("body_part", bodyPart)
+  if (search) query = query.ilike("name", `%${search}%`)
+
+  const { data } = await query
+  return data ?? []
+}
+
+const _cachedFetchExercises = unstable_cache(
+  _fetchExercises,
+  ["exercises"],
+  { tags: ["exercises"], revalidate: 120 },
+)
 
 export async function getExercises(filter?: { bodyPart?: string; search?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
-
-  let query = supabase
-    .from("exercises")
-    .select("id, name, description, body_part, category, difficulty, default_sets, default_reps, default_duration_seconds, thumbnail_url, video_url, is_favorite, is_public, practitioner_id, step_images")
-    .or(`practitioner_id.eq.${user.id},is_public.eq.true`)
-    .order("is_favorite", { ascending: false })
-    .order("created_at", { ascending: false })
-
-  if (filter?.bodyPart) query = query.eq("body_part", filter.bodyPart)
-  if (filter?.search) query = query.ilike("name", `%${filter.search}%`)
-
-  const { data, error } = await query
-  if (error) return []
-  return data
+  return _cachedFetchExercises(user.id, filter?.bodyPart, filter?.search)
 }
 
 export async function uploadExerciseImage(formData: FormData): Promise<string> {
@@ -85,6 +97,7 @@ export async function createExercise(formData: {
     .single()
 
   if (error) throw new Error(error.message)
+  revalidateTag("exercises", "max")
   revalidatePath("/biblioteka")
   return data
 }
@@ -127,6 +140,7 @@ export async function updateExercise(id: string, formData: {
     .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
+  revalidateTag("exercises", "max")
   revalidatePath("/biblioteka")
 }
 
@@ -142,6 +156,7 @@ export async function deleteExercise(id: string) {
     .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
+  revalidateTag("exercises", "max")
   revalidatePath("/biblioteka")
 }
 
@@ -157,5 +172,6 @@ export async function toggleFavorite(id: string, isFavorite: boolean) {
     .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
+  revalidateTag("exercises", "max")
   revalidatePath("/biblioteka")
 }
