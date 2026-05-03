@@ -23,8 +23,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session — must be called to keep cookies up to date
-  await supabase.auth.getUser()
+  // Refresh session cookies — getSession() reads from cookie, no network call
+  // Auth guard (redirect) stays in (dashboard)/layout.tsx
+  await supabase.auth.getSession()
 
   return supabaseResponse
 }
