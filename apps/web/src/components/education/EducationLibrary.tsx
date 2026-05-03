@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function EducationLibrary({ content }: Props) {
-  const { hasContent, addContent, removeContent, open, exercises, contentItems, surveyItems } = useProgramBuilder()
+  const { hasContent, addContent, removeContent, exercises, contentItems, surveyItems } = useProgramBuilder()
   const [search, setSearch] = useState("")
   const totalSelected = exercises.length + contentItems.length + surveyItems.length
 
@@ -44,7 +44,6 @@ export function EducationLibrary({ content }: Props) {
         fileUrl: item.file_url,
         externalUrl: item.external_url,
       })
-      open()
     }
   }
 

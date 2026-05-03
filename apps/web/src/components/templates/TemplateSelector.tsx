@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LayoutTemplate, X, Dumbbell, Search, ArrowRight, Pencil, ExternalLink } from "lucide-react"
+import { LayoutTemplate, X, Dumbbell, Search, Check, Pencil, ExternalLink } from "lucide-react"
 import { useProgramBuilder } from "@/store/programBuilder"
 import { updateTemplate } from "@/lib/actions/templates"
 import { toast } from "sonner"
@@ -29,29 +29,28 @@ type Template = {
   program_template_items: TemplateItem[]
 }
 
-interface QuickEditProps {
+interface EditModalProps {
   template: Template
   onClose: () => void
-  onLoad: (t: Template) => void
+  onSaved: (updated: Template) => void
 }
 
-function QuickEditModal({ template, onClose, onLoad }: QuickEditProps) {
+function EditModal({ template, onClose, onSaved }: EditModalProps) {
   const [name, setName] = useState(template.name)
   const [bodyPart, setBodyPart] = useState(template.body_part ?? "")
   const [description, setDescription] = useState(template.description ?? "")
   const [saving, setSaving] = useState(false)
 
-  async function handleLoad() {
+  async function handleSave() {
     setSaving(true)
     try {
-      if (name !== template.name || bodyPart !== template.body_part || description !== template.description) {
-        await updateTemplate(template.id, {
-          name: name || template.name,
-          bodyPart: bodyPart || undefined,
-          description: description || undefined,
-        })
-      }
-      onLoad({ ...template, name: name || template.name, body_part: bodyPart || null, description: description || null })
+      await updateTemplate(template.id, {
+        name: name || template.name,
+        bodyPart: bodyPart || undefined,
+        description: description || undefined,
+      })
+      onSaved({ ...template, name: name || template.name, body_part: bodyPart || null, description: description || null })
+      toast.success("Zapisano zmiany")
     } catch {
       toast.error("Nie udało się zapisać zmian")
     } finally {
@@ -63,7 +62,7 @@ function QuickEditModal({ template, onClose, onLoad }: QuickEditProps) {
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h3 className="font-semibold text-sm text-gray-900">Edytuj przed załadowaniem</h3>
+          <h3 className="font-semibold text-sm text-gray-900">Edytuj szablon</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
             <X size={15} className="text-gray-500" />
           </button>
@@ -109,11 +108,11 @@ function QuickEditModal({ template, onClose, onLoad }: QuickEditProps) {
             Anuluj
           </button>
           <button
-            onClick={handleLoad}
+            onClick={handleSave}
             disabled={saving || !name}
-            className="flex-1 h-10 rounded-xl bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            className="flex-1 h-10 rounded-xl bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
           >
-            {saving ? "Zapisuję..." : <><ArrowRight size={14} /> Załaduj do buildera</>}
+            {saving ? "Zapisuję..." : "Zapisz"}
           </button>
         </div>
       </div>
@@ -121,11 +120,12 @@ function QuickEditModal({ template, onClose, onLoad }: QuickEditProps) {
   )
 }
 
-export function TemplateSelector({ templates }: { templates: Template[] }) {
-  const router = useRouter()
+export function TemplateSelector({ templates: initialTemplates }: { templates: Template[] }) {
+  const [templates, setTemplates] = useState(initialTemplates)
   const [search, setSearch] = useState("")
   const [editing, setEditing] = useState<Template | null>(null)
-  const { clearAll, addExercise, setProgramName, open } = useProgramBuilder()
+  const [loadedId, setLoadedId] = useState<string | null>(null)
+  const { clearAll, addExercise, setProgramName } = useProgramBuilder()
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -137,7 +137,12 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
     )
   }, [templates, search])
 
-  function loadTemplate(template: Template) {
+  function toggleTemplate(template: Template) {
+    if (loadedId === template.id) {
+      clearAll()
+      setLoadedId(null)
+      return
+    }
     clearAll()
     setProgramName(template.name)
     const items = [...(template.program_template_items ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
@@ -154,15 +159,18 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
         notes: item.notes ?? "",
       })
     }
-    open()
+    setLoadedId(template.id)
+    toast.success(`Załadowano „${template.name}"`)
+  }
+
+  function handleSaved(updated: Template) {
+    setTemplates(prev => prev.map(t => t.id === updated.id ? updated : t))
+    if (loadedId === updated.id) setProgramName(updated.name)
     setEditing(null)
-    toast.success(`Załadowano „${template.name}"`, { description: "Edytor programów jest gotowy — możesz teraz wysłać program pacjentowi." })
-    router.push("/biblioteka")
   }
 
   return (
     <div>
-      {/* Search bar */}
       <div className="relative mb-5">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
         <input
@@ -179,7 +187,6 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
         )}
       </div>
 
-      {/* Template grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.length === 0 && (
           <div className="col-span-3 py-16 text-center text-sm text-gray-400">
@@ -187,6 +194,7 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
           </div>
         )}
         {filtered.map((template) => {
+          const selected = loadedId === template.id
           const itemCount = template.program_template_items?.length ?? 0
           const thumbs = (template.program_template_items ?? []).slice(0, 4).map((item) => {
             const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
@@ -194,53 +202,71 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
           })
 
           return (
-            <div key={template.id} className="group bg-white rounded-xl border border-gray-200 hover:border-navy-300 hover:shadow-md overflow-hidden transition-all flex flex-col">
-              {/* Thumbnail strip — kliknięcie ładuje do buildera */}
-              <button
-                type="button"
-                onClick={() => loadTemplate(template)}
-                className="block w-full text-left cursor-pointer"
+            <div
+              key={template.id}
+              onClick={() => toggleTemplate(template)}
+              className={`relative bg-white rounded-xl border cursor-pointer hover:shadow-sm transition-all flex flex-col overflow-hidden ${
+                selected ? "border-navy-400 ring-1 ring-navy-300" : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              {/* Checkbox */}
+              <div
+                className={`absolute top-3 left-3 z-10 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                  selected ? "bg-navy-500 border-navy-500" : "bg-white border-gray-300 hover:border-navy-400"
+                }`}
               >
-                {thumbs.some(Boolean) ? (
-                  <div className="flex h-20 bg-gray-100">
-                    {thumbs.map((url, i) => (
-                      <div key={i} className="flex-1 overflow-hidden">
-                        {url
-                          ? <img src={url} alt="" className="w-full h-full object-cover" />
-                          : <div className="w-full h-full bg-gray-100 flex items-center justify-center"><Dumbbell size={14} className="text-gray-300" /></div>
-                        }
-                      </div>
-                    ))}
-                    {itemCount > 4 && (
-                      <div className="w-10 bg-gray-800/60 flex items-center justify-center shrink-0">
-                        <span className="text-white text-xs font-medium">+{itemCount - 4}</span>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="h-20 bg-navy-50 flex items-center justify-center group-hover:bg-navy-100 transition-colors">
-                    <LayoutTemplate size={24} className="text-navy-300" />
-                  </div>
-                )}
-              </button>
+                {selected && <Check size={12} className="text-white" strokeWidth={3} />}
+              </div>
+
+              {/* Edit + external link icons */}
+              <div className="absolute top-2 right-2 z-10 flex gap-1">
+                <button
+                  onClick={e => { e.stopPropagation(); setEditing(template) }}
+                  className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Edytuj szablon"
+                >
+                  <Pencil size={11} />
+                </button>
+                <Link
+                  href={`/biblioteka/szablony/${template.id}`}
+                  onClick={e => e.stopPropagation()}
+                  className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Otwórz pełny edytor"
+                >
+                  <ExternalLink size={11} />
+                </Link>
+              </div>
+
+              {/* Thumbnail strip */}
+              {thumbs.some(Boolean) ? (
+                <div className="flex h-20 bg-gray-100 shrink-0">
+                  {thumbs.map((url, i) => (
+                    <div key={i} className="flex-1 overflow-hidden">
+                      {url
+                        ? <img src={url} alt="" className="w-full h-full object-cover" />
+                        : <div className="w-full h-full bg-gray-100 flex items-center justify-center"><Dumbbell size={14} className="text-gray-300" /></div>
+                      }
+                    </div>
+                  ))}
+                  {itemCount > 4 && (
+                    <div className="w-10 bg-gray-800/60 flex items-center justify-center shrink-0">
+                      <span className="text-white text-xs font-medium">+{itemCount - 4}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={`h-20 flex items-center justify-center shrink-0 transition-colors ${selected ? "bg-navy-50" : "bg-gray-50"}`}>
+                  <LayoutTemplate size={24} className={selected ? "text-navy-400" : "text-gray-300"} />
+                </div>
+              )}
 
               {/* Info */}
               <div className="p-4 flex flex-col flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-gray-900 leading-tight">{template.name}</p>
-                  <Link
-                    href={`/biblioteka/szablony/${template.id}`}
-                    className="shrink-0 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                    title="Otwórz pełny edytor"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <ExternalLink size={12} />
-                  </Link>
-                </div>
+                <p className="font-semibold text-gray-900 leading-tight pr-2">{template.name}</p>
                 {template.description && (
                   <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">{template.description}</p>
                 )}
-                <div className="flex items-center gap-2 mt-2 mb-3">
+                <div className="flex items-center gap-2 mt-2">
                   {template.body_part
                     ? <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{template.body_part}</span>
                     : <span className="text-xs text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">Brak okolicy</span>
@@ -249,21 +275,6 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
                     {itemCount === 0 ? "Brak ćwiczeń" : `${itemCount} ćwiczenie${itemCount === 1 ? "" : itemCount < 5 ? "a" : "ń"}`}
                   </span>
                 </div>
-
-                <div className="flex gap-2 mt-auto">
-                  <button
-                    onClick={() => setEditing(template)}
-                    className="flex-1 h-8 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors flex items-center justify-center gap-1"
-                  >
-                    <Pencil size={11} /> Edytuj i użyj
-                  </button>
-                  <button
-                    onClick={() => loadTemplate(template)}
-                    className="flex-1 h-8 rounded-lg bg-navy-500 hover:bg-navy-600 text-xs font-medium text-white transition-colors flex items-center justify-center gap-1"
-                  >
-                    Użyj <ArrowRight size={11} />
-                  </button>
-                </div>
               </div>
             </div>
           )
@@ -271,10 +282,10 @@ export function TemplateSelector({ templates }: { templates: Template[] }) {
       </div>
 
       {editing && (
-        <QuickEditModal
+        <EditModal
           template={editing}
           onClose={() => setEditing(null)}
-          onLoad={loadTemplate}
+          onSaved={handleSaved}
         />
       )}
     </div>
