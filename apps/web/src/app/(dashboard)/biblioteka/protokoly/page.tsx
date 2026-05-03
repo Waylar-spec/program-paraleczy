@@ -1,51 +1,28 @@
 import Link from "next/link"
-import { Activity, Clock, ChevronRight, Layers } from "lucide-react"
+import { Activity, Clock, Layers, ChevronRight } from "lucide-react"
 import { getProtocols } from "@/lib/actions/protocols"
 import { NewProtocolModal } from "@/components/protocols/NewProtocolModal"
-
-const TABS = [
-  { label: "Ćwiczenia", href: "/biblioteka" },
-  { label: "Szablony", href: "/biblioteka/szablony" },
-  { label: "Protokoły", href: "/biblioteka/protokoly" },
-  { label: "Edukacja", href: "/biblioteka/edukacja" },
-  { label: "Kwestionariusze", href: "/biblioteka/kwestionariusze" },
-]
+import { LibraryTabs } from "@/components/library/LibraryTabs"
+import { AssignProtocolFromLibraryButton } from "@/components/protocols/AssignProtocolFromLibraryButton"
 
 export default async function ProtocolyPage() {
   const protocols = await getProtocols()
 
   return (
-    <div className="space-y-6">
-      {/* Tabs */}
-      <div className="border-b border-gray-200 -mb-0">
-        <nav className="flex gap-6">
-          {TABS.map((tab) => (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                tab.href === "/biblioteka/protokoly"
-                  ? "border-navy-600 text-navy-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
-
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Protokoły rehabilitacyjne</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Biblioteka</h1>
           <p className="text-sm text-gray-500 mt-1">
             {protocols.length > 0
-              ? `${protocols.length} ${protocols.length === 1 ? "protokół" : protocols.length < 5 ? "protokoły" : "protokołów"}`
+              ? `${protocols.length} ${protocols.length === 1 ? "protokół" : protocols.length < 5 ? "protokoły" : "protokołów"} rehabilitacyjnych`
               : "Twórz wielofazowe programy powrotu do zdrowia"}
           </p>
         </div>
         <NewProtocolModal />
       </div>
+
+      <LibraryTabs />
 
       {protocols.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -64,47 +41,60 @@ export default async function ProtocolyPage() {
             const phaseCount = protocol.protocol_phases?.length ?? 0
             const isOwn = !!protocol.practitioner_id
             return (
-              <Link
+              <div
                 key={protocol.id}
-                href={`/biblioteka/protokoly/${protocol.id}`}
-                className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-navy-100 hover:shadow-sm transition-all"
+                className="group bg-white rounded-xl border border-gray-200 hover:border-navy-200 hover:shadow-sm transition-all flex flex-col"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-navy-50 flex items-center justify-center flex-shrink-0">
-                    <Activity size={18} className="text-navy-500" />
+                {/* Card body */}
+                <div className="p-5 flex-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-navy-50 flex items-center justify-center shrink-0">
+                      <Activity size={18} className="text-navy-500" />
+                    </div>
+                    {!isOwn && (
+                      <span className="text-xs bg-navy-50 text-navy-600 px-2 py-0.5 rounded-full font-medium">
+                        Systemowy
+                      </span>
+                    )}
                   </div>
-                  <ChevronRight size={16} className="text-gray-300 group-hover:text-navy-500 transition-colors mt-1" />
-                </div>
 
-                <h3 className="text-sm font-semibold text-gray-900 leading-tight mb-1">{protocol.name}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 leading-snug mb-1">
+                    {protocol.name}
+                  </h3>
+                  {protocol.indication && (
+                    <p className="text-xs text-gray-500 line-clamp-2 mb-3">{protocol.indication}</p>
+                  )}
 
-                {protocol.indication && (
-                  <p className="text-xs text-gray-500 mb-3 line-clamp-2">{protocol.indication}</p>
-                )}
-
-                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1 text-xs text-gray-500">
-                    <Layers size={12} />
-                    {phaseCount} {phaseCount === 1 ? "faza" : phaseCount < 5 ? "fazy" : "faz"}
-                  </span>
-                  {protocol.total_weeks && (
+                  <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100">
                     <span className="flex items-center gap-1 text-xs text-gray-500">
-                      <Clock size={12} />
-                      {protocol.total_weeks} tyg.
+                      <Layers size={12} />
+                      {phaseCount} {phaseCount === 1 ? "faza" : phaseCount < 5 ? "fazy" : "faz"}
                     </span>
-                  )}
-                  {protocol.body_part && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      {protocol.body_part}
-                    </span>
-                  )}
-                  {!isOwn && (
-                    <span className="ml-auto text-xs bg-navy-50 text-navy-600 px-2 py-0.5 rounded-full font-medium">
-                      Systemowy
-                    </span>
-                  )}
+                    {protocol.total_weeks && (
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                        <Clock size={12} />
+                        {protocol.total_weeks} tyg.
+                      </span>
+                    )}
+                    {protocol.body_part && (
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        {protocol.body_part}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </Link>
+
+                {/* Card footer actions */}
+                <div className="px-4 pb-4 flex gap-2">
+                  <AssignProtocolFromLibraryButton protocol={protocol} />
+                  <Link
+                    href={`/biblioteka/protokoly/${protocol.id}`}
+                    className="flex-1 h-8 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors flex items-center justify-center gap-1"
+                  >
+                    Edytuj fazy <ChevronRight size={11} />
+                  </Link>
+                </div>
+              </div>
             )
           })}
         </div>

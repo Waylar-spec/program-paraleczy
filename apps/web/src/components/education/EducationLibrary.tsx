@@ -1,18 +1,9 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import Link from "next/link"
-import { FileText, ExternalLink, Search, X } from "lucide-react"
+import { FileText, ExternalLink, Search, X, Check } from "lucide-react"
 import { useProgramBuilder } from "@/store/programBuilder"
 import { ContentActions } from "./ContentActions"
-
-const TABS = [
-  { label: "Ćwiczenia", href: "/biblioteka" },
-  { label: "Szablony", href: "/biblioteka/szablony" },
-  { label: "Protokoły", href: "/biblioteka/protokoly" },
-  { label: "Edukacja", href: "/biblioteka/edukacja" },
-  { label: "Kwestionariusze", href: "/biblioteka/kwestionariusze" },
-]
 
 type ContentItem = {
   id: string
@@ -30,9 +21,9 @@ interface Props {
 }
 
 export function EducationLibrary({ content }: Props) {
-  const { hasContent, addContent, removeContent, open, exercises, contentItems } = useProgramBuilder()
+  const { hasContent, addContent, removeContent, open, exercises, contentItems, surveyItems } = useProgramBuilder()
   const [search, setSearch] = useState("")
-  const totalSelected = exercises.length + contentItems.length
+  const totalSelected = exercises.length + contentItems.length + surveyItems.length
 
   const filtered = useMemo(() => {
     if (!search.trim()) return content
@@ -59,25 +50,6 @@ export function EducationLibrary({ content }: Props) {
 
   return (
     <>
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex gap-6">
-          {TABS.map((tab) => (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                tab.href === "/biblioteka/edukacja"
-                  ? "border-navy-600 text-navy-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
-
       {/* Search */}
       {content.length > 0 && (
         <div className="relative max-w-sm">
@@ -130,11 +102,7 @@ export function EducationLibrary({ content }: Props) {
                       : "bg-white border-gray-300 hover:border-navy-400"
                   }`}
                 >
-                  {selected && (
-                    <svg viewBox="0 0 10 8" className="w-3 h-3 fill-white">
-                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
+                  {selected && <Check size={12} className="text-white" strokeWidth={3} />}
                 </button>
 
                 <div className="flex items-start gap-3 pl-6">

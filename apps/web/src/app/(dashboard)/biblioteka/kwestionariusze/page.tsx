@@ -1,5 +1,7 @@
+import { ClipboardList } from "lucide-react"
 import { getSurveys } from "@/lib/actions/surveys"
 import { SurveysLibrary } from "@/components/surveys/SurveysLibrary"
+import { LibraryTabs } from "@/components/library/LibraryTabs"
 
 export default async function KwestionariuszePage() {
   const surveys = await getSurveys()
@@ -10,10 +12,14 @@ export default async function KwestionariuszePage() {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Biblioteka</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {surveys.length} {surveys.length === 1 ? "kwestionariusz" : surveys.length < 5 ? "kwestionariusze" : "kwestionariuszy"}
+            {surveys.length > 0
+              ? `${surveys.length} ${surveys.length === 1 ? "kwestionariusz" : surveys.length < 5 ? "kwestionariusze" : "kwestionariuszy"}`
+              : "Kwestionariusze do oceny stanu pacjenta"}
           </p>
         </div>
       </div>
+
+      <LibraryTabs />
 
       <SurveysLibrary surveys={surveys} />
     </div>
