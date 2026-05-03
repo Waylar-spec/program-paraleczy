@@ -10,7 +10,7 @@ async function _fetchExercises(userId: string, bodyPart?: string, search?: strin
   const sb = createServiceClient()
   let query = sb
     .from("exercises")
-    .select("id, name, description, body_part, category, difficulty, default_sets, default_reps, default_duration_seconds, thumbnail_url, video_url, is_favorite, is_public, practitioner_id, step_images")
+    .select("id, name, description, body_part, category, difficulty, default_sets, default_reps, default_duration_seconds, thumbnail_url, video_url, is_favorite, is_public, practitioner_id")
     .or(`practitioner_id.eq.${userId},is_public.eq.true`)
     .order("is_favorite", { ascending: false })
     .order("created_at", { ascending: false })
