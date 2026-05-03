@@ -11,7 +11,7 @@ interface Props {
 
 export function SurveysLibrary({ surveys }: Props) {
   const [search, setSearch] = useState("")
-  const { hasSurvey, addSurvey, removeSurvey, exercises, contentItems, surveyItems } = useProgramBuilder()
+  const { hasSurvey, addSurvey, removeSurvey, open, exercises, contentItems, surveyItems } = useProgramBuilder()
   const totalSelected = exercises.length + contentItems.length + surveyItems.length
 
   const filtered = useMemo(() => {
