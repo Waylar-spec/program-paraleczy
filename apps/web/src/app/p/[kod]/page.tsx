@@ -17,8 +17,17 @@ export default async function PatientDashboard({ params }: { params: Promise<{ k
     getPatientSurveysForPortal(patient.id),
     getPatientProtocolsForPortal(patient.id),
   ])
-  const active = programs.filter((p) => p.status === "active")
-  const completed = programs.filter((p) => p.status !== "active")
+  // Collect all template_ids used by protocol phases so we can hide those programs from the standalone list
+  const protocolTemplateIds = new Set(
+    patientProtocols.flatMap((pp) => pp.phases.map((ph: any) => ph.template_id).filter(Boolean))
+  )
+
+  const active = programs.filter(
+    (p) => p.status === "active" && !protocolTemplateIds.has((p as any).template_id)
+  )
+  const completed = programs.filter(
+    (p) => p.status !== "active" && !protocolTemplateIds.has((p as any).template_id)
+  )
 
   // Surveys that are pending: on_start never filled, or weekly not filled this week
   const today = new Date()

@@ -29,7 +29,7 @@ export async function getPatientPrograms(patientId: string) {
   const { data, error } = await supabase
     .from("patient_programs")
     .select(`
-      id, name, status, start_date, end_date, created_at,
+      id, name, status, start_date, end_date, created_at, template_id,
       patient_program_items(
         id, order, sets, reps, duration_seconds, notes,
         exercises(id, name, description, thumbnail_url, animated_gif_url, video_url, body_part)
