@@ -54,8 +54,10 @@ export async function getTemplate(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  const sb = createServiceClient()
+
   // First fetch the template with all joins including surveys
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("program_templates")
     .select(`
       *,
@@ -98,7 +100,7 @@ export async function getTemplate(id: string) {
   // Fetch surveys separately so a missing table doesn't break the whole page
   let templateSurveys: any[] = []
   try {
-    const { data: surveysData } = await (supabase as any)
+    const { data: surveysData } = await (sb as any)
       .from("program_template_surveys")
       .select("id, survey_id, schedule, order, surveys ( id, name, description, is_public, practitioner_id )")
       .eq("template_id", id)
