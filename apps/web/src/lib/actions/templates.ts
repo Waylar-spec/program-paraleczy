@@ -56,7 +56,7 @@ export async function getTemplate(id: string) {
 
   const sb = createServiceClient()
 
-  // First fetch the template with all joins including surveys
+  // Main query — without tables that may lack permissions
   const { data, error } = await sb
     .from("program_templates")
     .select(`
@@ -77,18 +77,13 @@ export async function getTemplate(id: string) {
           category,
           difficulty,
           thumbnail_url,
+          animated_gif_url,
           step_images,
           default_sets,
           default_reps,
           default_duration_seconds,
           default_rest_seconds
         )
-      ),
-      program_template_content (
-        id,
-        order,
-        content_id,
-        educational_content ( id, name, type, file_url, external_url )
       )
     `)
     .or(`practitioner_id.eq.${user.id},is_public.eq.true`)
@@ -97,7 +92,18 @@ export async function getTemplate(id: string) {
 
   if (error) return null
 
-  // Fetch surveys separately so a missing table doesn't break the whole page
+  // Fetch content separately — table may lack service_role grant
+  let templateContent: any[] = []
+  try {
+    const { data: contentData } = await sb
+      .from("program_template_content")
+      .select("id, order, content_id, educational_content ( id, name, type, file_url, external_url )")
+      .eq("template_id", id)
+      .order("order", { ascending: true })
+    templateContent = contentData ?? []
+  } catch { /* table may not be accessible */ }
+
+  // Fetch surveys separately
   let templateSurveys: any[] = []
   try {
     const { data: surveysData } = await (sb as any)
@@ -106,11 +112,9 @@ export async function getTemplate(id: string) {
       .eq("template_id", id)
       .order("order", { ascending: true })
     templateSurveys = surveysData ?? []
-  } catch {
-    // table may not exist yet — silently ignore
-  }
+  } catch { /* table may not exist yet */ }
 
-  return { ...data, program_template_surveys: templateSurveys }
+  return { ...data, program_template_content: templateContent, program_template_surveys: templateSurveys }
 }
 
 export async function createTemplate(formData: {
