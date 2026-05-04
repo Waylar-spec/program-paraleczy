@@ -53,10 +53,10 @@ export function SurveyForm({ patientId, surveyId, assignmentId, questions, kod }
           </p>
         </div>
         <button
-          onClick={() => router.push(`/p/${kod}/kwestionariusze`)}
+          onClick={() => router.push(`/p/${kod}`)}
           className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-navy-500 hover:bg-navy-600 text-white text-sm font-medium transition-colors"
         >
-          Wróć do listy
+          Wróć do programów
         </button>
       </div>
     )
