@@ -17,7 +17,7 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
   const [{ data: template }, { data: patient }, { data: practitioner }] = await Promise.all([
     (supabase as any)
       .from("program_templates")
-      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes), program_template_surveys(survey_id, schedule)")
+      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes)")
       .eq("id", templateId)
       .single(),
     supabase
@@ -33,6 +33,18 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
   ])
 
   if (!template) throw new Error("Szablon nie istnieje")
+
+  // Fetch template surveys separately — table may not exist yet
+  let templateSurveys: { survey_id: string; schedule: string }[] = []
+  try {
+    const { data: surveyData } = await (supabase as any)
+      .from("program_template_surveys")
+      .select("survey_id, schedule")
+      .eq("template_id", templateId)
+    templateSurveys = surveyData ?? []
+  } catch {
+    // table doesn't exist yet — skip
+  }
 
   // Create patient_program
   const { data: program, error: programError } = await supabase
@@ -90,7 +102,6 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
   }
 
   // Copy template surveys to patient_program_surveys
-  const templateSurveys = (template as any).program_template_surveys ?? []
   if (templateSurveys.length > 0) {
     const surveyRows = templateSurveys.map((ts: { survey_id: string; schedule: string }) => ({
       program_id: program.id,

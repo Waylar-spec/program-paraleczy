@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { X, Trash2, Dumbbell, ChevronDown, ChevronUp, Send, FileText, ExternalLink, BookOpen, Search, Plus, ClipboardList } from "lucide-react"
+import { X, Trash2, Dumbbell, ChevronDown, ChevronUp, Send, FileText, ExternalLink, BookOpen, Search, Plus, ClipboardList, ArrowLeft, Save } from "lucide-react"
 import { useProgramBuilder, type BuilderExercise } from "@/store/programBuilder"
 import { createTemplate, addExerciseToTemplate, addSurveyToTemplate } from "@/lib/actions/templates"
 import { createQuickProgram } from "@/lib/actions/patient-programs"
@@ -14,79 +14,83 @@ import { toast } from "sonner"
 type Patient = { id: string; first_name: string; last_name: string }
 type ContentItem = { id: string; name: string; type: string; file_url: string | null; external_url: string | null; body_part: string | null }
 
-function ExerciseItem({ item }: { item: BuilderExercise }) {
+function ExerciseCard({ item }: { item: BuilderExercise }) {
   const { removeExercise, updateExercise } = useProgramBuilder()
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-      <div className="flex items-center gap-3 p-3">
-        <div className="w-16 h-12 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center">
-          {item.thumbnailUrl ? (
-            <img src={item.thumbnailUrl} alt={item.name} className="w-full h-full object-cover" />
-          ) : (
-            <Dumbbell size={18} className="text-gray-300" />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-          <p className="text-xs text-gray-400 mt-0.5">
+    <div className="relative bg-white rounded-xl border border-gray-200 overflow-hidden group/card">
+      {/* Remove button — visible on hover */}
+      <button
+        onClick={(e) => { e.stopPropagation(); removeExercise(item.itemId) }}
+        className="absolute top-2 left-2 z-10 w-6 h-6 bg-white/90 shadow-sm rounded-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover/card:opacity-100"
+      >
+        <X size={12} />
+      </button>
+
+      {/* Thumbnail */}
+      <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden">
+        {item.thumbnailUrl ? (
+          <img src={item.thumbnailUrl} alt={item.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Dumbbell size={20} className="text-gray-300" />
+          </div>
+        )}
+      </div>
+
+      {/* Info row */}
+      <div className="p-2 cursor-pointer select-none" onClick={() => setExpanded(!expanded)}>
+        <p className="text-xs font-medium text-gray-900 leading-tight line-clamp-2">{item.name}</p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-[11px] text-gray-400 truncate">
             {item.sets} {item.sets === 1 ? "seria" : item.sets < 5 ? "serie" : "serii"}
-            {item.reps && ` · ${item.reps} powt.`}
-            {item.durationSeconds && ` · ${item.durationSeconds}s`}
+            {item.reps ? ` · ${item.reps} powt.` : ""}
+            {item.durationSeconds ? ` · ${item.durationSeconds}s` : ""}
           </p>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
-          >
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
-          <button
-            onClick={() => removeExercise(item.itemId)}
-            className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-          >
-            <Trash2 size={14} />
-          </button>
+          {expanded
+            ? <ChevronUp size={11} className="text-gray-400 shrink-0 ml-1" />
+            : <ChevronDown size={11} className="text-gray-400 shrink-0 ml-1" />
+          }
         </div>
       </div>
 
+      {/* Expanded params */}
       {expanded && (
-        <div className="px-3 pb-3 pt-1 border-t border-gray-50 grid grid-cols-3 gap-2">
-          <div className="space-y-1">
-            <label className="text-xs text-gray-500">Serie</label>
+        <div className="px-2 pb-2 border-t border-gray-100 pt-2 grid grid-cols-3 gap-1.5">
+          <div>
+            <p className="text-[10px] text-gray-500 mb-0.5">Serie</p>
             <input
               type="number" min="1" value={item.sets}
               onChange={(e) => updateExercise(item.itemId, { sets: Number(e.target.value) || 1 })}
-              className="w-full h-7 px-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-navy-400"
+              className="w-full h-6 px-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-navy-400"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-gray-500">Powtórzenia</label>
+          <div>
+            <p className="text-[10px] text-gray-500 mb-0.5">Powt.</p>
             <input
               type="number" min="1" value={item.reps ?? ""}
               onChange={(e) => updateExercise(item.itemId, { reps: e.target.value ? Number(e.target.value) : null })}
-              className="w-full h-7 px-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-navy-400"
+              className="w-full h-6 px-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-navy-400"
               placeholder="—"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-gray-500">Czas (s)</label>
+          <div>
+            <p className="text-[10px] text-gray-500 mb-0.5">Czas (s)</p>
             <input
               type="number" min="1" value={item.durationSeconds ?? ""}
               onChange={(e) => updateExercise(item.itemId, { durationSeconds: e.target.value ? Number(e.target.value) : null })}
-              className="w-full h-7 px-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-navy-400"
+              className="w-full h-6 px-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-navy-400"
               placeholder="—"
             />
           </div>
-          <div className="col-span-3 space-y-1">
-            <label className="text-xs text-gray-500">Notatka dla pacjenta</label>
+          <div className="col-span-3">
+            <p className="text-[10px] text-gray-500 mb-0.5">Notatka dla pacjenta</p>
             <input
               type="text" value={item.notes}
               onChange={(e) => updateExercise(item.itemId, { notes: e.target.value })}
-              className="w-full h-7 px-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-navy-400"
-              placeholder="np. Wykonuj powoli, trzymaj 3 sekundy"
+              className="w-full h-6 px-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-navy-400"
+              placeholder="np. Wykonuj powoli, trzymaj 3s"
             />
           </div>
         </div>
@@ -97,36 +101,52 @@ function ExerciseItem({ item }: { item: BuilderExercise }) {
 
 export function ProgramBuilderPanel() {
   const router = useRouter()
-  const { isOpen, close, exercises, contentItems, addContent, removeContent, hasContent, surveyItems, addSurvey, removeSurvey, hasSurvey, programName, setProgramName, clearAll } = useProgramBuilder()
+  const {
+    isOpen, close,
+    exercises, contentItems, addContent, removeContent, hasContent,
+    surveyItems, addSurvey, removeSurvey, hasSurvey,
+    programName, setProgramName, clearAll,
+  } = useProgramBuilder()
+
   const [saving, setSaving] = useState(false)
-  const [saveAsTemplate, setSaveAsTemplate] = useState(false)
+  const [view, setView] = useState<"editor" | "assign" | "template">("editor")
+
+  // Patients
   const [patients, setPatients] = useState<Patient[]>([])
   const [selectedPatient, setSelectedPatient] = useState("")
   const [patientSearch, setPatientSearch] = useState("")
   const [patientDropOpen, setPatientDropOpen] = useState(false)
-  const patientRef = useRef<HTMLDivElement>(null)
+
+  // Date / duration
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0])
-  const [durationWeeks, setDurationWeeks] = useState<string>("4")
-  const [mode, setMode] = useState<"assign" | "template">("assign")
+  const [durationWeeks, setDurationWeeks] = useState("4")
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false)
+
+  // Content picker
   const [allContent, setAllContent] = useState<ContentItem[]>([])
   const [contentPickerOpen, setContentPickerOpen] = useState(false)
   const [contentSearch, setContentSearch] = useState("")
+
+  // Survey picker
   const [allSurveys, setAllSurveys] = useState<Survey[]>([])
   const [surveyPickerOpen, setSurveyPickerOpen] = useState(false)
   const [surveySearch, setSurveySearch] = useState("")
   const [surveySchedules, setSurveySchedules] = useState<Record<string, string>>({})
 
   const filteredContent = useMemo(() => {
-    if (!contentSearch.trim()) return allContent
     const q = contentSearch.toLowerCase()
-    return allContent.filter((c) => c.name.toLowerCase().includes(q) || c.body_part?.toLowerCase().includes(q))
+    return q ? allContent.filter((c) => c.name.toLowerCase().includes(q) || c.body_part?.toLowerCase().includes(q)) : allContent
   }, [allContent, contentSearch])
 
   const filteredSurveys = useMemo(() => {
-    if (!surveySearch.trim()) return allSurveys
     const q = surveySearch.toLowerCase()
-    return allSurveys.filter((s) => s.name.toLowerCase().includes(q))
+    return q ? allSurveys.filter((s) => s.name.toLowerCase().includes(q)) : allSurveys
   }, [allSurveys, surveySearch])
+
+  const filteredPatients = useMemo(() => {
+    const q = patientSearch.toLowerCase()
+    return q ? patients.filter((p) => `${p.first_name} ${p.last_name}`.toLowerCase().includes(q)) : patients
+  }, [patients, patientSearch])
 
   function calcEndDate(start: string, weeks: string): string | undefined {
     if (!weeks || weeks === "0") return undefined
@@ -151,6 +171,9 @@ export function ProgramBuilderPanel() {
 
   if (!isOpen) return null
 
+  const hasItems = exercises.length > 0 || contentItems.length > 0 || surveyItems.length > 0
+  const selectedPatientObj = patients.find((p) => p.id === selectedPatient)
+
   async function handleAssign() {
     if (!exercises.length || !selectedPatient) return
     setSaving(true)
@@ -174,8 +197,7 @@ export function ProgramBuilderPanel() {
       for (const s of surveyItems) {
         await assignSurveyToProgram(program.id, s.surveyId, s.schedule as SurveySchedule)
       }
-      const pat = patients.find((p) => p.id === selectedPatient)
-      toast.success(`Program wysłany do ${pat?.first_name} ${pat?.last_name}`)
+      toast.success(`Program wysłany do ${selectedPatientObj?.first_name} ${selectedPatientObj?.last_name}`)
       clearAll()
       close()
       router.push(`/pacjenci/${selectedPatient}`)
@@ -218,372 +240,397 @@ export function ProgramBuilderPanel() {
   return (
     <div className="fixed inset-0 z-40 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-gray-50 w-full sm:max-w-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-screen sm:max-h-[90vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-white sm:rounded-t-2xl border-b border-gray-200">
-          <div className="flex items-center gap-3 min-w-0">
-            <button onClick={close} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors shrink-0">
-              <X size={16} />
-            </button>
-            <input
-              value={programName}
-              onChange={(e) => setProgramName(e.target.value)}
-              className="font-semibold text-gray-900 bg-transparent focus:outline-none min-w-0 text-sm w-48"
-              placeholder="Nazwa programu"
-            />
-          </div>
-          <button
-            onClick={clearAll}
-            className="h-8 px-3 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors shrink-0"
-          >
-            Wyczyść
-          </button>
-        </div>
 
-        {/* Mode tabs */}
-        <div className="flex bg-white border-b border-gray-200 px-5">
-          <button
-            onClick={() => setMode("assign")}
-            className={`py-2.5 px-1 mr-6 text-xs font-medium border-b-2 transition-colors ${
-              mode === "assign" ? "border-navy-500 text-navy-600" : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Wyślij do pacjenta
-          </button>
-          <button
-            onClick={() => setMode("template")}
-            className={`py-2.5 px-1 text-xs font-medium border-b-2 transition-colors ${
-              mode === "template" ? "border-navy-500 text-navy-600" : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Zapisz jako szablon
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {exercises.length === 0 && contentItems.length === 0 && surveyItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Dumbbell size={32} className="text-gray-300 mb-3" />
-              <p className="text-sm text-gray-400">Zaznacz ćwiczenia z biblioteki</p>
-              <p className="text-xs text-gray-300 mt-1">lub kliknij ćwiczenie → "Dodaj do programu"</p>
+        {/* ── EDITOR VIEW ──────────────────────────────────────── */}
+        {view === "editor" && (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 bg-white sm:rounded-t-2xl border-b border-gray-200">
+              <div className="flex items-center gap-3 min-w-0">
+                <button onClick={close} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors shrink-0">
+                  <X size={16} />
+                </button>
+                <input
+                  value={programName}
+                  onChange={(e) => setProgramName(e.target.value)}
+                  className="font-semibold text-gray-900 bg-transparent focus:outline-none text-sm min-w-0 w-44"
+                  placeholder="Nazwa programu"
+                />
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={clearAll}
+                  className="h-8 px-3 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  Wyczyść
+                </button>
+                <button
+                  onClick={handleSaveTemplate}
+                  disabled={saving || !exercises.length}
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                >
+                  <Save size={13} />
+                  Szablon
+                </button>
+                <button
+                  onClick={() => setView("assign")}
+                  disabled={!hasItems}
+                  className="inline-flex items-center gap-1.5 h-8 px-4 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-40 text-white text-xs font-medium transition-colors"
+                >
+                  <Send size={13} />
+                  Przypisz
+                </button>
+              </div>
             </div>
-          ) : (
-            <>
-              {exercises.map((item) => <ExerciseItem key={item.itemId} item={item} />)}
 
-              {/* Educational materials section */}
-              <div className="mt-1">
-                <div className="flex items-center justify-between px-1 mb-1">
-                  <div className="flex items-center gap-2">
-                    <BookOpen size={12} className="text-gray-400" />
-                    <span className="text-xs font-medium text-gray-500">
-                      Materiały edukacyjne {contentItems.length > 0 && `(${contentItems.length})`}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setContentPickerOpen(!contentPickerOpen)}
-                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${
-                      contentPickerOpen ? "bg-navy-100 text-navy-700" : "text-navy-500 hover:bg-navy-50"
-                    }`}
-                  >
-                    <Plus size={11} />
-                    Dodaj materiał
-                  </button>
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {!hasItems ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <Dumbbell size={32} className="text-gray-300 mb-3" />
+                  <p className="text-sm text-gray-400">Zaznacz ćwiczenia z biblioteki</p>
+                  <p className="text-xs text-gray-300 mt-1">lub kliknij ćwiczenie → "Dodaj do programu"</p>
                 </div>
-
-                {/* Selected items */}
-                {contentItems.length > 0 && (
-                  <div className="space-y-1 mb-2">
-                    {contentItems.map((c) => (
-                      <div key={c.contentId} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-3 py-2">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${c.type === "pdf" ? "bg-red-50" : "bg-blue-50"}`}>
-                          {c.type === "pdf" ? <FileText size={13} className="text-red-500" /> : <ExternalLink size={13} className="text-blue-500" />}
-                        </div>
-                        <span className="text-xs text-gray-800 flex-1 truncate">{c.name}</span>
-                        <button onClick={() => removeContent(c.contentId)} className="p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors shrink-0">
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Inline picker */}
-                {contentPickerOpen && (
-                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="p-2 border-b border-gray-100">
-                      <div className="relative">
-                        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                          value={contentSearch}
-                          onChange={(e) => setContentSearch(e.target.value)}
-                          placeholder="Szukaj materiałów..."
-                          className="w-full h-7 pl-7 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
-                          autoFocus
-                        />
-                      </div>
+              ) : (
+                <>
+                  {/* Exercise grid */}
+                  {exercises.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3">
+                      {exercises.map((item) => <ExerciseCard key={item.itemId} item={item} />)}
                     </div>
-                    <div className="max-h-48 overflow-y-auto">
-                      {filteredContent.length === 0 ? (
-                        <p className="text-xs text-gray-400 text-center py-4">Brak wyników</p>
-                      ) : filteredContent.map((c) => {
-                        const selected = hasContent(c.id)
-                        return (
-                          <button
-                            key={c.id}
-                            onClick={() => selected ? removeContent(c.id) : addContent({ contentId: c.id, name: c.name, type: c.type, fileUrl: c.file_url, externalUrl: c.external_url })}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 text-left border-b border-gray-50 last:border-0 transition-colors ${selected ? "bg-navy-50" : "hover:bg-gray-50"}`}
-                          >
-                            <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${c.type === "pdf" ? "bg-red-50" : "bg-blue-50"}`}>
-                              {c.type === "pdf" ? <FileText size={11} className="text-red-500" /> : <ExternalLink size={11} className="text-blue-500" />}
+                  )}
+
+                  {/* Educational materials */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <BookOpen size={12} className="text-gray-400" />
+                        <span className="text-xs font-medium text-gray-500">
+                          Materiały edukacyjne {contentItems.length > 0 && `(${contentItems.length})`}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setContentPickerOpen(!contentPickerOpen)}
+                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${contentPickerOpen ? "bg-navy-100 text-navy-700" : "text-navy-500 hover:bg-navy-50"}`}
+                      >
+                        <Plus size={11} /> Dodaj materiał
+                      </button>
+                    </div>
+
+                    {contentItems.length > 0 && (
+                      <div className="space-y-1 mb-2">
+                        {contentItems.map((c) => (
+                          <div key={c.contentId} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-3 py-2">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${c.type === "pdf" ? "bg-red-50" : "bg-blue-50"}`}>
+                              {c.type === "pdf" ? <FileText size={13} className="text-red-500" /> : <ExternalLink size={13} className="text-blue-500" />}
                             </div>
                             <span className="text-xs text-gray-800 flex-1 truncate">{c.name}</span>
-                            {selected
-                              ? <span className="text-xs text-navy-500 shrink-0">✓</span>
-                              : <Plus size={11} className="text-gray-400 shrink-0" />
-                            }
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Surveys section */}
-              <div className="mt-1">
-                <div className="flex items-center justify-between px-1 mb-1">
-                  <div className="flex items-center gap-2">
-                    <ClipboardList size={12} className="text-gray-400" />
-                    <span className="text-xs font-medium text-gray-500">
-                      Kwestionariusze {surveyItems.length > 0 && `(${surveyItems.length})`}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setSurveyPickerOpen(!surveyPickerOpen)}
-                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${
-                      surveyPickerOpen ? "bg-navy-100 text-navy-700" : "text-navy-500 hover:bg-navy-50"
-                    }`}
-                  >
-                    <Plus size={11} />
-                    Dodaj kwestionariusz
-                  </button>
-                </div>
-
-                {/* Selected surveys */}
-                {surveyItems.length > 0 && (
-                  <div className="space-y-1 mb-2">
-                    {surveyItems.map((s) => {
-                      const scheduleLabel =
-                        s.schedule === "on_start" ? "Na start" :
-                        s.schedule === "on_end" ? "Na koniec" :
-                        s.schedule === "weekly" ? "Co tydzień" : s.schedule
-                      return (
-                        <div key={s.surveyId} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-3 py-2">
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-purple-50">
-                            <ClipboardList size={13} className="text-purple-500" />
+                            <button onClick={() => removeContent(c.contentId)} className="p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors">
+                              <Trash2 size={13} />
+                            </button>
                           </div>
-                          <span className="text-xs text-gray-800 flex-1 truncate">{s.name}</span>
-                          <span className="text-xs text-gray-400 shrink-0">{scheduleLabel}</span>
-                          <button onClick={() => removeSurvey(s.surveyId)} className="p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors shrink-0">
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* Survey inline picker */}
-                {surveyPickerOpen && (
-                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="p-2 border-b border-gray-100">
-                      <div className="relative">
-                        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                          value={surveySearch}
-                          onChange={(e) => setSurveySearch(e.target.value)}
-                          placeholder="Szukaj kwestionariuszy..."
-                          className="w-full h-7 pl-7 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
-                          autoFocus
-                        />
+                        ))}
                       </div>
-                    </div>
-                    <div className="max-h-48 overflow-y-auto">
-                      {filteredSurveys.length === 0 ? (
-                        <p className="text-xs text-gray-400 text-center py-4">Brak wyników</p>
-                      ) : filteredSurveys.map((s) => {
-                        const selected = hasSurvey(s.id)
-                        return (
-                          <div
-                            key={s.id}
-                            className={`flex items-center gap-2.5 px-3 py-2 border-b border-gray-50 last:border-0 ${selected ? "bg-navy-50" : ""}`}
-                          >
-                            <div className="w-6 h-6 rounded flex items-center justify-center shrink-0 bg-purple-50">
-                              <ClipboardList size={11} className="text-purple-500" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <span className="text-xs text-gray-800 truncate block">{s.name}</span>
-                              {s.question_count !== undefined && (
-                                <span className="text-xs text-gray-400">{s.question_count} {s.question_count === 1 ? "pytanie" : s.question_count < 5 ? "pytania" : "pytań"}</span>
-                              )}
-                            </div>
-                            {selected ? (
-                              <span className="text-xs text-navy-500 shrink-0">✓</span>
-                            ) : (
-                              <div className="flex items-center gap-1 shrink-0">
-                                <select
-                                  value={surveySchedules[s.id] ?? "on_start"}
-                                  onChange={(e) => setSurveySchedules((prev) => ({ ...prev, [s.id]: e.target.value }))}
-                                  className="h-6 text-xs border border-gray-200 rounded px-1 bg-white focus:outline-none"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <option value="on_start">Na start programu</option>
-                                  <option value="on_end">Na koniec programu</option>
-                                  <option value="weekly">Co tydzień</option>
-                                </select>
-                                <button
-                                  onClick={() => addSurvey({ surveyId: s.id, name: s.name, schedule: surveySchedules[s.id] ?? "on_start" })}
-                                  className="h-6 px-2 text-xs bg-navy-500 hover:bg-navy-600 text-white rounded transition-colors"
-                                >
-                                  Dodaj
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+                    )}
 
-        {/* Footer */}
-        {(exercises.length > 0 || contentItems.length > 0 || surveyItems.length > 0) && (
-          <div className="px-5 py-4 bg-white sm:rounded-b-2xl border-t border-gray-200">
-            {mode === "assign" ? (
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  {/* Patient combobox */}
-                  <div className="relative flex-1" ref={patientRef}>
-                    <div
-                      className="flex items-center h-9 px-3 text-sm border border-gray-200 rounded-lg bg-white cursor-text focus-within:ring-1 focus-within:ring-navy-400"
-                      onClick={() => { setPatientDropOpen(true) }}
-                    >
-                      {selectedPatient && !patientDropOpen ? (
-                        <span className="flex-1 truncate text-gray-900">
-                          {patients.find(p => p.id === selectedPatient)
-                            ? `${patients.find(p => p.id === selectedPatient)!.first_name} ${patients.find(p => p.id === selectedPatient)!.last_name}`
-                            : ""}
-                        </span>
-                      ) : (
-                        <input
-                          autoFocus={patientDropOpen}
-                          value={patientSearch}
-                          onChange={e => { setPatientSearch(e.target.value); setPatientDropOpen(true) }}
-                          onFocus={() => setPatientDropOpen(true)}
-                          placeholder={selectedPatient ? patients.find(p => p.id === selectedPatient) ? `${patients.find(p => p.id === selectedPatient)!.first_name} ${patients.find(p => p.id === selectedPatient)!.last_name}` : "Szukaj pacjenta..." : "Szukaj pacjenta..."}
-                          className="flex-1 bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
-                        />
-                      )}
-                    </div>
-                    {patientDropOpen && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => { setPatientDropOpen(false); setPatientSearch("") }} />
-                        <div className="absolute z-20 top-10 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-52 overflow-y-auto">
-                          {patients
-                            .filter(p => {
-                              const q = patientSearch.toLowerCase()
-                              return !q || `${p.first_name} ${p.last_name}`.toLowerCase().includes(q)
-                            })
-                            .map(p => (
-                              <button
-                                key={p.id}
-                                type="button"
-                                onMouseDown={() => {
-                                  setSelectedPatient(p.id)
-                                  setPatientDropOpen(false)
-                                  setPatientSearch("")
-                                }}
-                                className={`w-full text-left px-3 py-2 text-sm hover:bg-navy-50 transition-colors ${selectedPatient === p.id ? "bg-navy-50 text-navy-700 font-medium" : "text-gray-700"}`}
-                              >
-                                {p.first_name} {p.last_name}
-                              </button>
-                            ))}
-                          {patients.filter(p => {
-                            const q = patientSearch.toLowerCase()
-                            return !q || `${p.first_name} ${p.last_name}`.toLowerCase().includes(q)
-                          }).length === 0 && (
-                            <p className="px-3 py-2 text-sm text-gray-400">Brak wyników</p>
-                          )}
+                    {contentPickerOpen && (
+                      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="p-2 border-b border-gray-100">
+                          <div className="relative">
+                            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                              value={contentSearch}
+                              onChange={(e) => setContentSearch(e.target.value)}
+                              placeholder="Szukaj materiałów..."
+                              className="w-full h-7 pl-7 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
+                              autoFocus
+                            />
+                          </div>
                         </div>
-                      </>
+                        <div className="max-h-48 overflow-y-auto">
+                          {filteredContent.length === 0 ? (
+                            <p className="text-xs text-gray-400 text-center py-4">Brak wyników</p>
+                          ) : filteredContent.map((c) => {
+                            const selected = hasContent(c.id)
+                            return (
+                              <button
+                                key={c.id}
+                                onClick={() => selected ? removeContent(c.id) : addContent({ contentId: c.id, name: c.name, type: c.type, fileUrl: c.file_url, externalUrl: c.external_url })}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left border-b border-gray-50 last:border-0 transition-colors ${selected ? "bg-navy-50" : "hover:bg-gray-50"}`}
+                              >
+                                <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${c.type === "pdf" ? "bg-red-50" : "bg-blue-50"}`}>
+                                  {c.type === "pdf" ? <FileText size={11} className="text-red-500" /> : <ExternalLink size={11} className="text-blue-500" />}
+                                </div>
+                                <span className="text-xs text-gray-800 flex-1 truncate">{c.name}</span>
+                                {selected ? <span className="text-xs text-navy-500 shrink-0">✓</span> : <Plus size={11} className="text-gray-400 shrink-0" />}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={durationWeeks}
-                    onChange={(e) => setDurationWeeks(e.target.value)}
-                    className="flex-1 h-9 px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-400"
-                  >
-                    <option value="0">Bez ograniczenia czasu</option>
-                    <option value="1">1 tydzień{durationWeeks === "1" ? ` (koniec ${endDateLabel(startDate, "1")})` : ""}</option>
-                    <option value="2">2 tygodnie{durationWeeks === "2" ? ` (koniec ${endDateLabel(startDate, "2")})` : ""}</option>
-                    <option value="3">3 tygodnie{durationWeeks === "3" ? ` (koniec ${endDateLabel(startDate, "3")})` : ""}</option>
-                    <option value="4">4 tygodnie{durationWeeks === "4" ? ` (koniec ${endDateLabel(startDate, "4")})` : ""}</option>
-                    <option value="6">6 tygodni{durationWeeks === "6" ? ` (koniec ${endDateLabel(startDate, "6")})` : ""}</option>
-                    <option value="8">8 tygodni{durationWeeks === "8" ? ` (koniec ${endDateLabel(startDate, "8")})` : ""}</option>
-                    <option value="12">12 tygodni{durationWeeks === "12" ? ` (koniec ${endDateLabel(startDate, "12")})` : ""}</option>
-                    <option value="16">16 tygodni{durationWeeks === "16" ? ` (koniec ${endDateLabel(startDate, "16")})` : ""}</option>
-                    <option value="24">24 tygodnie{durationWeeks === "24" ? ` (koniec ${endDateLabel(startDate, "24")})` : ""}</option>
-                  </select>
-                  <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer whitespace-nowrap shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={saveAsTemplate}
-                      onChange={(e) => setSaveAsTemplate(e.target.checked)}
-                      className="accent-navy-500"
-                    />
-                    Zapisz szablon
-                  </label>
-                  <button
-                    onClick={handleAssign}
-                    disabled={saving || !selectedPatient || exercises.length === 0}
-                    className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white text-xs font-medium transition-colors shrink-0"
-                  >
-                    <Send size={13} />
-                    {saving ? "Wysyłam..." : "Wyślij"}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500">
+
+                  {/* Surveys */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <ClipboardList size={12} className="text-gray-400" />
+                        <span className="text-xs font-medium text-gray-500">
+                          Kwestionariusze {surveyItems.length > 0 && `(${surveyItems.length})`}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setSurveyPickerOpen(!surveyPickerOpen)}
+                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${surveyPickerOpen ? "bg-navy-100 text-navy-700" : "text-navy-500 hover:bg-navy-50"}`}
+                      >
+                        <Plus size={11} /> Dodaj kwestionariusz
+                      </button>
+                    </div>
+
+                    {surveyItems.length > 0 && (
+                      <div className="space-y-1 mb-2">
+                        {surveyItems.map((s) => {
+                          const scheduleLabel = s.schedule === "on_start" ? "Na start" : s.schedule === "on_end" ? "Na koniec" : s.schedule === "weekly" ? "Co tydzień" : s.schedule
+                          return (
+                            <div key={s.surveyId} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-3 py-2">
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-purple-50">
+                                <ClipboardList size={13} className="text-purple-500" />
+                              </div>
+                              <span className="text-xs text-gray-800 flex-1 truncate">{s.name}</span>
+                              <span className="text-xs text-gray-400 shrink-0">{scheduleLabel}</span>
+                              <button onClick={() => removeSurvey(s.surveyId)} className="p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors">
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {surveyPickerOpen && (
+                      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="p-2 border-b border-gray-100">
+                          <div className="relative">
+                            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                              value={surveySearch}
+                              onChange={(e) => setSurveySearch(e.target.value)}
+                              placeholder="Szukaj kwestionariuszy..."
+                              className="w-full h-7 pl-7 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto">
+                          {filteredSurveys.length === 0 ? (
+                            <p className="text-xs text-gray-400 text-center py-4">Brak wyników</p>
+                          ) : filteredSurveys.map((s) => {
+                            const selected = hasSurvey(s.id)
+                            return (
+                              <div key={s.id} className={`flex items-center gap-2.5 px-3 py-2 border-b border-gray-50 last:border-0 ${selected ? "bg-navy-50" : ""}`}>
+                                <div className="w-6 h-6 rounded flex items-center justify-center shrink-0 bg-purple-50">
+                                  <ClipboardList size={11} className="text-purple-500" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-xs text-gray-800 truncate block">{s.name}</span>
+                                  {s.question_count !== undefined && (
+                                    <span className="text-xs text-gray-400">{s.question_count} {s.question_count === 1 ? "pytanie" : s.question_count < 5 ? "pytania" : "pytań"}</span>
+                                  )}
+                                </div>
+                                {selected ? (
+                                  <span className="text-xs text-navy-500 shrink-0">✓</span>
+                                ) : (
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <select
+                                      value={surveySchedules[s.id] ?? "on_start"}
+                                      onChange={(e) => setSurveySchedules((prev) => ({ ...prev, [s.id]: e.target.value }))}
+                                      className="h-6 text-xs border border-gray-200 rounded px-1 bg-white focus:outline-none"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <option value="on_start">Na start programu</option>
+                                      <option value="on_end">Na koniec programu</option>
+                                      <option value="weekly">Co tydzień</option>
+                                    </select>
+                                    <button
+                                      onClick={() => addSurvey({ surveyId: s.id, name: s.name, schedule: surveySchedules[s.id] ?? "on_start" })}
+                                      className="h-6 px-2 text-xs bg-navy-500 hover:bg-navy-600 text-white rounded transition-colors"
+                                    >
+                                      Dodaj
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            {hasItems && (
+              <div className="px-5 py-3 bg-white sm:rounded-b-2xl border-t border-gray-200 flex items-center justify-between">
+                <p className="text-xs text-gray-400">
                   {exercises.length} {exercises.length === 1 ? "ćwiczenie" : exercises.length < 5 ? "ćwiczenia" : "ćwiczeń"}
                   {contentItems.length > 0 && ` · ${contentItems.length} materiałów`}
                   {surveyItems.length > 0 && ` · ${surveyItems.length} kwestionariuszy`}
                 </p>
                 <button
-                  onClick={handleSaveTemplate}
-                  disabled={saving || exercises.length === 0}
-                  className="h-9 px-4 rounded-lg bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white text-xs font-medium transition-colors"
+                  onClick={() => setView("assign")}
+                  className="inline-flex items-center gap-1.5 h-8 px-4 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium transition-colors sm:hidden"
                 >
-                  {saving ? "Zapisuję..." : "Zapisz szablon"}
+                  <Send size={13} />
+                  Przypisz
                 </button>
               </div>
             )}
-          </div>
+          </>
         )}
+
+        {/* ── ASSIGN VIEW ──────────────────────────────────────── */}
+        {view === "assign" && (
+          <>
+            {/* Header */}
+            <div className="flex items-center gap-3 px-5 py-3.5 bg-white sm:rounded-t-2xl border-b border-gray-200">
+              <button
+                onClick={() => setView("editor")}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors shrink-0"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <h2 className="text-sm font-semibold text-gray-900">Przypisz program pacjentowi</h2>
+            </div>
+
+            {/* Form */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* Patient search — at top for maximum dropdown space */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700">Wybierz pacjenta</label>
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    value={patientSearch}
+                    onChange={(e) => { setPatientSearch(e.target.value); setPatientDropOpen(true) }}
+                    onFocus={() => setPatientDropOpen(true)}
+                    placeholder={selectedPatientObj ? `${selectedPatientObj.first_name} ${selectedPatientObj.last_name}` : "Szukaj pacjenta..."}
+                    className="w-full h-10 pl-9 pr-3 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-400/40 focus:border-teal-400"
+                  />
+                  {selectedPatientObj && !patientDropOpen && (
+                    <button
+                      onClick={() => { setSelectedPatient(""); setPatientSearch(""); setPatientDropOpen(true) }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Patient dropdown — open, shows all/filtered patients */}
+                {patientDropOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => { setPatientDropOpen(false); if (!selectedPatient) setPatientSearch("") }} />
+                    <div className="relative z-20">
+                      <div className="bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto -mt-1">
+                        {filteredPatients.length === 0 ? (
+                          <p className="px-4 py-3 text-sm text-gray-400">Brak wyników</p>
+                        ) : filteredPatients.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onMouseDown={() => {
+                              setSelectedPatient(p.id)
+                              setPatientSearch("")
+                              setPatientDropOpen(false)
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-teal-50 transition-colors ${selectedPatient === p.id ? "bg-teal-50 text-teal-700 font-medium" : "text-gray-700"}`}
+                          >
+                            {p.first_name} {p.last_name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Date + duration */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-700">Data rozpoczęcia</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full h-10 px-3 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-400/40 focus:border-teal-400"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-700">Czas trwania</label>
+                  <select
+                    value={durationWeeks}
+                    onChange={(e) => setDurationWeeks(e.target.value)}
+                    className="w-full h-10 px-3 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-400/40 focus:border-teal-400"
+                  >
+                    <option value="0">Bez ograniczenia</option>
+                    {[1, 2, 3, 4, 6, 8, 12, 16, 24].map((w) => (
+                      <option key={w} value={String(w)}>
+                        {w} {w === 1 ? "tydzień" : w < 5 ? "tygodnie" : "tygodni"}
+                        {durationWeeks === String(w) && endDateLabel(startDate, String(w)) ? ` (koniec ${endDateLabel(startDate, String(w))})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  {durationWeeks !== "0" && (
+                    <p className="text-xs text-gray-400">Koniec: {endDateLabel(startDate, durationWeeks)}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="bg-white rounded-xl border border-gray-200 p-4">
+                <p className="text-xs font-medium text-gray-500 mb-2">Program zawiera</p>
+                <p className="text-sm text-gray-700">
+                  {exercises.length} {exercises.length === 1 ? "ćwiczenie" : exercises.length < 5 ? "ćwiczenia" : "ćwiczeń"}
+                  {contentItems.length > 0 && ` · ${contentItems.length} materiałów`}
+                  {surveyItems.length > 0 && ` · ${surveyItems.length} kwestionariuszy`}
+                </p>
+              </div>
+
+              {/* Save as template option */}
+              <label className="flex items-center gap-2.5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={saveAsTemplate}
+                  onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                  className="w-4 h-4 accent-teal-600"
+                />
+                <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">Zapisz jako szablon</span>
+              </label>
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-4 bg-white sm:rounded-b-2xl border-t border-gray-200 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setView("editor")}
+                className="h-9 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Anuluj
+              </button>
+              <button
+                onClick={handleAssign}
+                disabled={saving || !selectedPatient || exercises.length === 0}
+                className="inline-flex items-center gap-1.5 h-9 px-5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+              >
+                <Send size={14} />
+                {saving ? "Wysyłam..." : "Wyślij"}
+              </button>
+            </div>
+          </>
+        )}
+
       </div>
     </div>
   )
