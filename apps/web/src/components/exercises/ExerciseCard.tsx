@@ -19,6 +19,7 @@ type Exercise = {
   default_reps: number | null
   default_duration_seconds: number | null
   thumbnail_url: string | null
+  animated_gif_url?: string | null
   video_url: string | null
   is_favorite: boolean
   is_public: boolean
@@ -105,8 +106,10 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
         }`}
       >
         {/* Thumbnail */}
-        <div className="relative aspect-video bg-gray-100 flex items-center justify-center">
-          {exercise.thumbnail_url ? (
+        <div className="relative aspect-video bg-white flex items-center justify-center overflow-hidden">
+          {exercise.animated_gif_url ? (
+            <img src={exercise.animated_gif_url} alt={exercise.name} className="w-full h-full object-contain" />
+          ) : exercise.thumbnail_url ? (
             <img src={exercise.thumbnail_url} alt={exercise.name} className="w-full h-full object-cover" />
           ) : (
             <Dumbbell size={32} className="text-gray-300" />

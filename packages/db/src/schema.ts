@@ -78,6 +78,7 @@ export const exercises = pgTable("exercises", {
   description: text("description"),
   videoUrl: text("video_url"),
   thumbnailUrl: text("thumbnail_url"),
+  animatedGifUrl: text("animated_gif_url"),
   bodyPart: text("body_part"), // kolano, bark, biodro, kręgosłup, itd.
   category: text("category"), // MSK, neurologia, sport, itd.
   difficulty: smallint("difficulty"), // 1-3

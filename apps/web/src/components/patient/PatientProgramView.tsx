@@ -11,6 +11,7 @@ type ExerciseData = {
   name: string
   description: string | null
   thumbnail_url: string | null
+  animated_gif_url?: string | null
   video_url: string | null
   body_part: string | null
 }
@@ -276,14 +277,16 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: Ses
       </button>
 
       {/* Video or image */}
-      <div className="w-full aspect-video bg-black">
+      <div className="w-full aspect-video bg-white">
         {embedUrl ? (
           <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
+        ) : ex?.animated_gif_url ? (
+          <img src={ex.animated_gif_url} alt={ex.name} className="w-full h-full object-contain" />
         ) : ex?.thumbnail_url ? (
           <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Dumbbell size={48} className="text-gray-600" />
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <Dumbbell size={48} className="text-gray-400" />
           </div>
         )}
       </div>

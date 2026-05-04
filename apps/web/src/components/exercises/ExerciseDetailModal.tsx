@@ -20,6 +20,7 @@ type Exercise = {
   default_duration_seconds: number | null
   default_rest_seconds?: number | null
   thumbnail_url: string | null
+  animated_gif_url?: string | null
   video_url: string | null
   is_favorite: boolean
   is_public: boolean
@@ -105,6 +106,8 @@ function ViewMode({ exercise, favorite, onFavorite, onEdit, onClose, onAddRemove
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
+        ) : exercise.animated_gif_url ? (
+          <img src={exercise.animated_gif_url} alt={exercise.name} className="w-full h-full object-contain bg-white" />
         ) : exercise.thumbnail_url ? (
           <img src={exercise.thumbnail_url} alt={exercise.name} className="w-full h-full object-cover" />
         ) : (

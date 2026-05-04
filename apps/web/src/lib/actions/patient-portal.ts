@@ -32,7 +32,7 @@ export async function getPatientPrograms(patientId: string) {
       id, name, status, start_date, end_date, created_at,
       patient_program_items(
         id, order, sets, reps, duration_seconds, notes,
-        exercises(id, name, description, thumbnail_url, video_url, body_part)
+        exercises(id, name, description, thumbnail_url, animated_gif_url, video_url, body_part)
       ),
       patient_program_content(
         id, order,
