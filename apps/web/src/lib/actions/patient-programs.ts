@@ -424,9 +424,22 @@ export async function deletePatientProgram(programId: string, patientId: string)
     .single()
   if (!prog) throw new Error("Program nie istnieje lub brak uprawnień")
 
-  // Delete exercise logs first — no CASCADE on program_id FK
   const sb = createServiceClient()
+
+  // Delete exercise logs — no CASCADE on program_id FK
   await sb.from("patient_exercise_logs").delete().eq("program_id", programId)
+
+  // Delete survey responses linked to this program's surveys — no CASCADE
+  const { data: programSurveys } = await sb
+    .from("patient_program_surveys")
+    .select("id")
+    .eq("program_id", programId)
+  if (programSurveys?.length) {
+    await sb
+      .from("patient_survey_responses")
+      .delete()
+      .in("program_survey_id", programSurveys.map((s) => s.id))
+  }
 
   const { error } = await supabase
     .from("patient_programs")
