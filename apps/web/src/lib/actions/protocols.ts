@@ -242,7 +242,7 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
   const [{ data: allPhases }, { data: patient }, { data: practitioner }, { data: protocol }] = await Promise.all([
     supabase
       .from("protocol_phases")
-      .select("id, order, duration_weeks")
+      .select("id, order, duration_weeks, template_id, name")
       .eq("protocol_id", protocolId)
       .order("order", { ascending: true }),
     supabase
@@ -278,7 +278,7 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
     if (!startingPhase) startingPhase = phases[phases.length - 1]
   }
 
-  const firstPhase = startingPhase
+  const firstPhase = startingPhase as (typeof phases[0] & { template_id?: string | null; name?: string }) | null
 
   const { error } = await supabase
     .from("patient_protocols")
@@ -292,6 +292,50 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
     })
 
   if (error) throw new Error(error.message)
+
+  // Auto-create a patient_program for the starting phase so the patient can access exercises immediately
+  if (firstPhase?.template_id) {
+    const sb = createServiceClient()
+    const { data: template } = await sb
+      .from("program_templates")
+      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes)")
+      .eq("id", firstPhase.template_id)
+      .single()
+
+    if (template) {
+      const endDate = new Date(
+        new Date(startDate).getTime() + (firstPhase.duration_weeks ?? 4) * 7 * 24 * 60 * 60 * 1000
+      ).toISOString().split("T")[0]
+
+      const { data: program } = await supabase
+        .from("patient_programs")
+        .insert({
+          patient_id: patientId,
+          practitioner_id: user.id,
+          template_id: firstPhase.template_id,
+          name: template.name,
+          status: "active",
+          start_date: startDate,
+          end_date: endDate,
+        })
+        .select("id")
+        .single()
+
+      if (program && (template.program_template_items ?? []).length > 0) {
+        const items = (template.program_template_items as any[]).map((item) => ({
+          program_id: program.id,
+          exercise_id: item.exercise_id,
+          order: item.order,
+          sets: item.sets,
+          reps: item.reps,
+          duration_seconds: item.duration_seconds,
+          rest_seconds: item.rest_seconds,
+          notes: item.notes,
+        }))
+        await supabase.from("patient_program_items").insert(items)
+      }
+    }
+  }
 
   if (patient?.email && patient.access_code && protocol?.name) {
     const practitionerName = practitioner
