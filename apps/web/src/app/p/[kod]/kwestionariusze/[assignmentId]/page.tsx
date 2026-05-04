@@ -13,16 +13,16 @@ export default async function SurveyFillPage({
   const patient = await getPatientByCode(kod)
   if (!patient) notFound()
 
-  // Get the specific assignment
+  // Get the specific assignment — verify ownership via patient_programs join
   const supabase = createServiceClient()
   const { data: assignment } = await supabase
     .from("patient_program_surveys")
-    .select("id, survey_id, program_id, schedule")
+    .select("id, survey_id, program_id, schedule, patient_programs!inner(patient_id)")
     .eq("id", assignmentId)
-    .eq("patient_id", patient.id)
     .single()
 
-  if (!assignment) notFound()
+  const programRow = assignment?.patient_programs as unknown as { patient_id: string } | null
+  if (!assignment || programRow?.patient_id !== patient.id) notFound()
 
   const survey = await getSurveyForPortal(assignment.survey_id)
   if (!survey) notFound()
