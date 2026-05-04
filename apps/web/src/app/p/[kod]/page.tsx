@@ -3,18 +3,46 @@ import Link from "next/link"
 import Image from "next/image"
 import { CheckCircle2, Clock, Dumbbell } from "lucide-react"
 import { getPatientByCode, getPatientPrograms, getTodayLogs } from "@/lib/actions/patient-portal"
+import { getPatientSurveysForPortal } from "@/lib/actions/surveys"
+import { SurveyPopup } from "@/components/patient/SurveyPopup"
 
 export default async function PatientDashboard({ params }: { params: Promise<{ kod: string }> }) {
   const { kod } = await params
   const patient = await getPatientByCode(kod)
   if (!patient) notFound()
 
-  const programs = await getPatientPrograms(patient.id)
+  const [programs, allSurveys] = await Promise.all([
+    getPatientPrograms(patient.id),
+    getPatientSurveysForPortal(patient.id),
+  ])
   const active = programs.filter((p) => p.status === "active")
   const completed = programs.filter((p) => p.status !== "active")
 
+  // Surveys that are pending: on_start never filled, or weekly not filled this week
+  const today = new Date()
+  const weekAgo = new Date(today)
+  weekAgo.setDate(weekAgo.getDate() - 7)
+
+  const pendingSurveys = allSurveys
+    .filter((s) => {
+      if (s.schedule === "on_start" && !s.last_response_at) return true
+      if (s.schedule === "weekly") {
+        if (!s.last_response_at) return true
+        return new Date(s.last_response_at) < weekAgo
+      }
+      return false
+    })
+    .map((s) => ({
+      id: s.id,
+      surveyName: s.surveys.name,
+      programName: s.program_name,
+      schedule: s.schedule,
+    }))
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <SurveyPopup pending={pendingSurveys} kod={kod} />
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <Image src="/logo.png" alt="Para Leczy" width={40} height={40} className="rounded-xl shrink-0" />

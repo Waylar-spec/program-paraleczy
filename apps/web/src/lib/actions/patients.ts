@@ -113,6 +113,7 @@ export async function getPatientsList() {
     .from("patients")
     .select("id, first_name, last_name")
     .eq("practitioner_id", user.id)
+    .is("archived_at", null)
     .order("last_name", { ascending: true })
 
   if (error) return []

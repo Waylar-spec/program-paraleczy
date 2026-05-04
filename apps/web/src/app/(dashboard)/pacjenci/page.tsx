@@ -54,7 +54,7 @@ export default async function PacjenciPage({
 
       {/* List or empty state */}
       {patients.length > 0 ? (
-        <PatientsList patients={patients} />
+        <PatientsList patients={patients} isArchived={archived} />
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-full bg-navy-50 flex items-center justify-center mb-4">

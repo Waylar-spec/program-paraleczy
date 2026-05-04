@@ -65,7 +65,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
   const items = program.patient_program_items
   const allDone = items.length > 0 && items.every((item) => done.has(item.id))
 
-  async function handleMark(item: ExerciseItem) {
+  async function handleMark(item: ExerciseItem, pain: number | null = null) {
     if (done.has(item.id)) return
     const next = new Set(done)
     next.add(item.id)
@@ -77,7 +77,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
         programItemId: item.id,
         completedSets: item.sets ?? 1,
         completedReps: item.reps,
-        painAfter: null,
+        painAfter: pain,
       })
       toast.success("Ćwiczenie zaliczone!")
     } catch {
@@ -92,7 +92,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
       <ExerciseSession
         item={active}
         isDone={done.has(active.id)}
-        onMark={() => handleMark(active)}
+        onMark={(pain) => handleMark(active, pain)}
         onClose={() => setActive(null)}
         onNext={() => {
           const idx = items.findIndex((i) => i.id === active.id)
@@ -232,7 +232,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
 interface SessionProps {
   item: ExerciseItem
   isDone: boolean
-  onMark: () => void
+  onMark: (pain: number | null) => void
   onClose: () => void
   onNext: () => void
   hasNext: boolean
@@ -241,6 +241,7 @@ interface SessionProps {
 function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: SessionProps) {
   const [timerActive, setTimerActive] = useState(false)
   const [timeLeft, setTimeLeft] = useState(item.duration_seconds ?? 0)
+  const [showVas, setShowVas] = useState(false)
   const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
 
   function startTimer() {
@@ -266,6 +267,9 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: Ses
 
   return (
     <div className="max-w-2xl mx-auto pb-4">
+      {showVas && (
+        <VasPainModal onSubmit={(pain) => { setShowVas(false); onMark(pain) }} />
+      )}
       <button onClick={onClose} className="inline-flex items-center gap-1.5 text-sm text-gray-500 px-4 pt-5 pb-3">
         <ArrowLeft size={14} />
         Wróć do listy
@@ -347,7 +351,7 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: Ses
         <div className="flex gap-3">
           {!isDone && (
             <button
-              onClick={onMark}
+              onClick={() => setShowVas(true)}
               className="flex-1 h-12 rounded-xl bg-navy-500 hover:bg-navy-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
             >
               <CheckCircle2 size={18} />
@@ -372,6 +376,62 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: Ses
               Koniec programu!
             </button>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── VAS pain modal ───────────────────────────────────────────────────────────
+
+interface VasModalProps {
+  onSubmit: (pain: number | null) => void
+}
+
+function VasPainModal({ onSubmit }: VasModalProps) {
+  const [pain, setPain] = useState<number>(0)
+  const COLORS = ["#22c55e","#4ade80","#86efac","#bef264","#fde047","#fbbf24","#fb923c","#f97316","#ef4444","#dc2626","#991b1b"]
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-xl px-5 pt-5 pb-8">
+        <h3 className="font-semibold text-gray-900 text-center mb-1">Jak się czujesz?</h3>
+        <p className="text-xs text-gray-500 text-center mb-5">Oceń poziom bólu po tym ćwiczeniu (0 = brak bólu, 10 = maksymalny)</p>
+
+        {/* Number display */}
+        <div className="flex justify-center mb-4">
+          <span className="text-5xl font-bold" style={{ color: COLORS[pain] }}>{pain}</span>
+        </div>
+
+        {/* Slider */}
+        <input
+          type="range"
+          min={0}
+          max={10}
+          value={pain}
+          onChange={e => setPain(Number(e.target.value))}
+          className="w-full h-2 rounded-full appearance-none cursor-pointer mb-3"
+          style={{ accentColor: COLORS[pain] }}
+        />
+        <div className="flex justify-between text-[10px] text-gray-400 mb-5 px-0.5">
+          <span>Brak bólu</span>
+          <span>Maksymalny ból</span>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => onSubmit(null)}
+            className="flex-1 h-11 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+          >
+            Pomiń
+          </button>
+          <button
+            onClick={() => onSubmit(pain)}
+            className="flex-1 h-11 rounded-xl text-white font-semibold text-sm transition-colors"
+            style={{ backgroundColor: COLORS[pain] }}
+          >
+            Zapisz
+          </button>
         </div>
       </div>
     </div>
