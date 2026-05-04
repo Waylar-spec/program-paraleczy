@@ -72,6 +72,58 @@ export async function logExercise(params: {
   if (error) throw new Error(error.message)
 }
 
+export async function getPatientProtocolsForPortal(patientId: string) {
+  const supabase = createServiceClient()
+
+  const { data, error } = await supabase
+    .from("patient_protocols")
+    .select(`
+      id, status, start_date, current_phase_id,
+      rehabilitation_protocols(
+        id, name, description, total_weeks, body_part,
+        protocol_phases(id, order, name, description, goals, duration_weeks, template_id)
+      )
+    `)
+    .eq("patient_id", patientId)
+    .order("created_at", { ascending: false })
+
+  if (error || !data) return []
+
+  // Also get patient's programs to link current phase → exercises
+  const { data: programs } = await supabase
+    .from("patient_programs")
+    .select("id, name, template_id, status")
+    .eq("patient_id", patientId)
+    .eq("status", "active")
+
+  return data.map((pp) => {
+    const proto = Array.isArray(pp.rehabilitation_protocols)
+      ? pp.rehabilitation_protocols[0]
+      : pp.rehabilitation_protocols
+    const phases = [...((proto as any)?.protocol_phases ?? [])].sort(
+      (a: any, b: any) => a.order - b.order
+    )
+    const currentPhaseIdx = phases.findIndex((ph: any) => ph.id === pp.current_phase_id)
+
+    // Find a patient_program matching the current phase's template
+    const currentPhase = phases[currentPhaseIdx] as any
+    const linkedProgram = currentPhase?.template_id
+      ? (programs ?? []).find((p) => p.template_id === currentPhase.template_id) ?? null
+      : null
+
+    return {
+      id: pp.id,
+      status: pp.status,
+      start_date: pp.start_date,
+      current_phase_id: pp.current_phase_id,
+      protocol: proto as any,
+      phases: phases as any[],
+      currentPhaseIdx,
+      linkedProgram,
+    }
+  })
+}
+
 export async function getTodayLogs(patientId: string, programId: string) {
   const supabase = createServiceClient()
   const today = new Date().toISOString().split("T")[0]

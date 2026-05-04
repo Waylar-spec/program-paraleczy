@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Activity } from "lucide-react"
+import { Activity, Search } from "lucide-react"
 import { assignProtocolToPatient } from "@/lib/actions/protocols"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -43,6 +43,18 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
   const [selectedProtocol, setSelectedProtocol] = useState("")
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0])
   const [startWeek, setStartWeek] = useState("")
+  const [search, setSearch] = useState("")
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return protocols
+    return protocols.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.indication ?? "").toLowerCase().includes(q) ||
+        (p.body_part ?? "").toLowerCase().includes(q)
+    )
+  }, [protocols, search])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,6 +66,7 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
       toast.success(`Protokół "${proto?.name}" przypisany`)
       setOpen(false)
       setSelectedProtocol("")
+      setSearch("")
       router.refresh()
     } catch {
       toast.error("Nie udało się przypisać protokołu")
@@ -100,8 +113,24 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
             <div className="space-y-1.5">
               <Label>Protokół *</Label>
-              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                {protocols.map((proto) => {
+              <div className="relative mb-2">
+                <Search
+                  size={14}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Szukaj protokołu..."
+                  className="w-full h-9 pl-8 pr-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 bg-white"
+                />
+              </div>
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {filtered.length === 0 && (
+                  <p className="text-sm text-gray-400 py-2 text-center">Brak wyników</p>
+                )}
+                {filtered.map((proto) => {
                   const phaseCount = proto.protocol_phases?.length ?? 0
                   return (
                     <label

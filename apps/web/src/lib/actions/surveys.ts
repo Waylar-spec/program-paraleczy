@@ -124,6 +124,61 @@ function normalizeQuestions(qs: unknown[]): SurveyQuestion[] {
 }
 
 /**
+ * Assign a survey directly to a patient, auto-creating a stub program if needed.
+ * Used when the patient has no exercise programs yet (e.g. only a protocol).
+ */
+export async function assignSurveyToPatient(
+  patientId: string,
+  surveyId: string,
+  schedule: SurveySchedule
+): Promise<string> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  // Find an existing active program for this patient
+  const { data: existing } = await supabase
+    .from("patient_programs")
+    .select("id")
+    .eq("patient_id", patientId)
+    .eq("practitioner_id", user.id)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
+
+  let programId: string
+
+  if (existing && existing.length > 0) {
+    programId = existing[0].id
+  } else {
+    // Create a stub program to hold surveys
+    const { data: prog, error: progError } = await supabase
+      .from("patient_programs")
+      .insert({
+        patient_id: patientId,
+        practitioner_id: user.id,
+        name: "Kwestionariusze",
+        status: "active",
+        start_date: new Date().toISOString().split("T")[0],
+      })
+      .select("id")
+      .single()
+
+    if (progError) throw new Error(progError.message)
+    programId = prog.id
+  }
+
+  const { data, error } = await supabase
+    .from("patient_program_surveys")
+    .insert({ program_id: programId, survey_id: surveyId, schedule })
+    .select("id")
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data.id
+}
+
+/**
  * Assign a survey to a patient program.
  * patient_program_surveys links program_id + survey_id + schedule.
  */

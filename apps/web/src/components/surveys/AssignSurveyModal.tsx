@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Search, ClipboardList } from "lucide-react"
-import { assignSurveyToProgram } from "@/lib/actions/surveys"
+import { assignSurveyToProgram, assignSurveyToPatient } from "@/lib/actions/surveys"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
@@ -54,12 +54,16 @@ export function AssignSurveyModal({ patientId, surveys, programs = [] }: Props) 
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedSurvey || !selectedProgram) return
+    if (!selectedSurvey) return
     setLoading(true)
     try {
-      await assignSurveyToProgram(selectedProgram, selectedSurvey, schedule)
+      if (selectedProgram) {
+        await assignSurveyToProgram(selectedProgram, selectedSurvey, schedule)
+      } else {
+        await assignSurveyToPatient(patientId, selectedSurvey, schedule)
+      }
       const sv = surveys.find((s) => s.id === selectedSurvey)
-      toast.success(`Kwestionariusz "${sv?.name}" został przypisany do programu`)
+      toast.success(`Kwestionariusz "${sv?.name}" został przypisany`)
       setOpen(false)
       setSelectedSurvey("")
       setSchedule("on_start")
@@ -86,11 +90,6 @@ export function AssignSurveyModal({ patientId, surveys, programs = [] }: Props) 
         {surveys.length === 0 ? (
           <div className="py-6 text-center text-sm text-gray-500">
             Brak kwestionariuszy w bibliotece.
-          </div>
-        ) : programs.length === 0 ? (
-          <div className="py-6 text-center text-sm text-gray-500">
-            Pacjent nie ma aktywnych programów.{" "}
-            <span className="text-navy-500">Najpierw przypisz program ćwiczeń.</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
@@ -151,21 +150,26 @@ export function AssignSurveyModal({ patientId, surveys, programs = [] }: Props) 
             </div>
 
             {/* Program selector */}
-            <div className="space-y-1.5">
-              <Label>Program ćwiczeń *</Label>
-              <select
-                value={selectedProgram}
-                onChange={(e) => setSelectedProgram(e.target.value)}
-                required
-                className="w-full h-9 px-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-              >
-                {programs.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {programs.length > 0 ? (
+              <div className="space-y-1.5">
+                <Label>Program ćwiczeń</Label>
+                <select
+                  value={selectedProgram}
+                  onChange={(e) => setSelectedProgram(e.target.value)}
+                  className="w-full h-9 px-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  {programs.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                Pacjent nie ma programu ćwiczeń — kwestionariusz zostanie przypisany automatycznie.
+              </p>
+            )}
 
             {/* Schedule */}
             <div className="space-y-1.5">
@@ -204,7 +208,7 @@ export function AssignSurveyModal({ patientId, surveys, programs = [] }: Props) 
               </button>
               <button
                 type="submit"
-                disabled={loading || !selectedSurvey || !selectedProgram}
+                disabled={loading || !selectedSurvey}
                 className="inline-flex items-center h-9 px-4 rounded-lg bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
               >
                 {loading ? "Przypisywanie..." : "Przypisz"}

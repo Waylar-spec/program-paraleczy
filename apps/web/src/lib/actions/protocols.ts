@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import { sendProgramAssignedEmail } from "@/lib/email"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -238,12 +239,28 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  // get all phases to find the correct starting phase
-  const { data: allPhases } = await supabase
-    .from("protocol_phases")
-    .select("id, order, duration_weeks")
-    .eq("protocol_id", protocolId)
-    .order("order", { ascending: true })
+  const [{ data: allPhases }, { data: patient }, { data: practitioner }, { data: protocol }] = await Promise.all([
+    supabase
+      .from("protocol_phases")
+      .select("id, order, duration_weeks")
+      .eq("protocol_id", protocolId)
+      .order("order", { ascending: true }),
+    supabase
+      .from("patients")
+      .select("first_name, last_name, email, access_code")
+      .eq("id", patientId)
+      .single(),
+    supabase
+      .from("practitioners")
+      .select("first_name, last_name")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("rehabilitation_protocols")
+      .select("name")
+      .eq("id", protocolId)
+      .single(),
+  ])
 
   const phases = allPhases ?? []
 
@@ -275,6 +292,20 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
     })
 
   if (error) throw new Error(error.message)
+
+  if (patient?.email && patient.access_code && protocol?.name) {
+    const practitionerName = practitioner
+      ? `${practitioner.first_name} ${practitioner.last_name}`.trim()
+      : "Twój fizjoterapeuta"
+    sendProgramAssignedEmail({
+      toEmail: patient.email,
+      patientName: `${patient.first_name} ${patient.last_name}`.trim(),
+      programName: protocol.name,
+      accessCode: patient.access_code,
+      practitionerName,
+    }).catch(() => {})
+  }
+
   revalidatePath(`/pacjenci/${patientId}`)
 }
 

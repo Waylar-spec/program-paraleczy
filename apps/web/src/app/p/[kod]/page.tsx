@@ -2,18 +2,20 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { CheckCircle2, Clock, Dumbbell } from "lucide-react"
-import { getPatientByCode, getPatientPrograms, getTodayLogs } from "@/lib/actions/patient-portal"
+import { getPatientByCode, getPatientPrograms, getTodayLogs, getPatientProtocolsForPortal } from "@/lib/actions/patient-portal"
 import { getPatientSurveysForPortal } from "@/lib/actions/surveys"
 import { SurveyPopup } from "@/components/patient/SurveyPopup"
+import { ProtocolJourney } from "@/components/patient/ProtocolJourney"
 
 export default async function PatientDashboard({ params }: { params: Promise<{ kod: string }> }) {
   const { kod } = await params
   const patient = await getPatientByCode(kod)
   if (!patient) notFound()
 
-  const [programs, allSurveys] = await Promise.all([
+  const [programs, allSurveys, patientProtocols] = await Promise.all([
     getPatientPrograms(patient.id),
     getPatientSurveysForPortal(patient.id),
+    getPatientProtocolsForPortal(patient.id),
   ])
   const active = programs.filter((p) => p.status === "active")
   const completed = programs.filter((p) => p.status !== "active")
@@ -52,20 +54,37 @@ export default async function PatientDashboard({ params }: { params: Promise<{ k
         </div>
       </div>
 
+      {/* Protocol journey */}
+      {patientProtocols.length > 0 && (
+        <div>
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            Twoja droga rehabilitacji
+          </h2>
+          <ProtocolJourney protocols={patientProtocols} kod={kod} />
+        </div>
+      )}
+
       {/* Active programs */}
-      {active.length === 0 ? (
+      {active.length === 0 && patientProtocols.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
           <Dumbbell size={32} className="text-gray-300 mx-auto mb-3" />
           <p className="text-sm text-gray-500">Brak aktywnych programów</p>
           <p className="text-xs text-gray-400 mt-1">Fizjoterapeuta wkrótce przypisze Ci ćwiczenia</p>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {active.map((program) => (
-            <ProgramCard key={program.id} program={program} patientId={patient.id} kod={kod} />
-          ))}
+      ) : active.length > 0 ? (
+        <div>
+          {patientProtocols.length === 0 && (
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Programy ćwiczeń
+            </h2>
+          )}
+          <div className="space-y-3">
+            {active.map((program) => (
+              <ProgramCard key={program.id} program={program} patientId={patient.id} kod={kod} />
+            ))}
+          </div>
         </div>
-      )}
+      ) : null}
 
       {/* Completed */}
       {completed.length > 0 && (
