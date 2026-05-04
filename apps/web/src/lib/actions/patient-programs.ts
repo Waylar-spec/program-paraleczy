@@ -415,6 +415,19 @@ export async function deletePatientProgram(programId: string, patientId: string)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
+  // Verify ownership before deleting
+  const { data: prog } = await supabase
+    .from("patient_programs")
+    .select("id")
+    .eq("id", programId)
+    .eq("practitioner_id", user.id)
+    .single()
+  if (!prog) throw new Error("Program nie istnieje lub brak uprawnień")
+
+  // Delete exercise logs first — no CASCADE on program_id FK
+  const sb = createServiceClient()
+  await sb.from("patient_exercise_logs").delete().eq("program_id", programId)
+
   const { error } = await supabase
     .from("patient_programs")
     .delete()
