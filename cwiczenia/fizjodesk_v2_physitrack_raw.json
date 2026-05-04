@@ -1,0 +1,1442 @@
+[
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "ER izometryczna (ściana, 0°)",
+    "en": "external rotation isometric wall",
+    "params": "3×10 pow., 10s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "116003",
+    "physitrack_name_en": "Isometric shoulder external rotation against wall",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/0c4af164-e60e-4de3-b9b7-95a41ba9c200/medium_line-drawing-t8hy8uaj.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "ER izometryczna (90° odwiedzenia)",
+    "en": "isometric shoulder external rotation 90 abduction",
+    "params": "3×10 pow., 10s hold",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "16509",
+    "physitrack_name_en": "Isometric Shoulder External Rotation in 90 deg.",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/7c90d349-9fa8-4fa2-89d6-c5964af3946b/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/7c90d349-9fa8-4fa2-89d6-c5964af3946b/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/7c90d349-9fa8-4fa2-89d6-c5964af3946b/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "IR izometryczna (ściana)",
+    "en": "internal rotation isometric wall shoulder",
+    "params": "3×10 pow., 10s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "116256",
+    "physitrack_name_en": "Isometric shoulder internal rotation with ball (Wheelchair)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/29bdd41c-0b81-4901-b18f-b90ec9a2cf5e/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/29bdd41c-0b81-4901-b18f-b90ec9a2cf5e/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/29bdd41c-0b81-4901-b18f-b90ec9a2cf5e/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "ER ekscentryczna z gumą (slow lowering)",
+    "en": "eccentric external rotation band slow lowering",
+    "params": "3×12 pow., 3s lowering",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "19520",
+    "physitrack_name_en": "Eccentric Shoulder External Rotation with Exercise Band",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/92cb1e11-7654-488e-a91d-ca2d83a003a9/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/92cb1e11-7654-488e-a91d-ca2d83a003a9/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/92cb1e11-7654-488e-a91d-ca2d83a003a9/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "Side-lying ER z obciążeniem (progresja)",
+    "en": "side lying external rotation weight",
+    "params": "3×12 pow., 2s hold",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "12303",
+    "physitrack_name_en": "Shoulder external rotation in side lying with weight",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/0231c50d-75d4-4564-9ac4-0e21e2153276/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/0231c50d-75d4-4564-9ac4-0e21e2153276/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/0231c50d-75d4-4564-9ac4-0e21e2153276/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "ER w 90° odwiedzenia (L-position) z gumą",
+    "en": "external rotation 90 degrees L position band",
+    "params": "3×10 pow.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "12897",
+    "physitrack_name_en": "Resisted shoulder external rotation at 90 degrees abduction - supported",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/874f2986-7ab3-436e-b35b-96337c4d16b3/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/874f2986-7ab3-436e-b35b-96337c4d16b3/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/874f2986-7ab3-436e-b35b-96337c4d16b3/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "Diagonal PNF D1 (z gumą)",
+    "en": "PNF D1 diagonal shoulder band",
+    "params": "3×10/str.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "11210",
+    "physitrack_name_en": "Diagonal shoulder flexion with resistance",
+    "physitrack_name_pl": "PNF z dołu i przekątnej do góry i do zewnątrz z oporem - staw ramienno-łopatkowy",
+    "thumbnail_url": "https://media.physitrack.com/exercises/2fb4a2e4-af33-4f4c-a14e-aff7f5523372/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/2fb4a2e4-af33-4f4c-a14e-aff7f5523372/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/2fb4a2e4-af33-4f4c-a14e-aff7f5523372/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "Diagonal PNF D2 (z gumą)",
+    "en": "PNF D2 diagonal shoulder band",
+    "params": "3×10/str.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "11211",
+    "physitrack_name_en": "Diagonal shoulder extensions with resistance",
+    "physitrack_name_pl": "PNF z góry na ukos w dół i do zewnątrz - staw ramienno-łopatkowy",
+    "thumbnail_url": "https://media.physitrack.com/exercises/2069f06d-cd31-49df-b859-0d2a2510d531/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/2069f06d-cd31-49df-b859-0d2a2510d531/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/2069f06d-cd31-49df-b859-0d2a2510d531/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "Full Can (pełna puszka — 30° elewacja)",
+    "en": "full can exercise scaption elevation",
+    "params": "3×12 pow., 2s hold",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "1942",
+    "physitrack_name_en": "Shoulder scaption in standing - empty can and full can",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/a0b3eedc-d2be-4a38-82bc-05c0cb59be40/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/a0b3eedc-d2be-4a38-82bc-05c0cb59be40/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/a0b3eedc-d2be-4a38-82bc-05c0cb59be40/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "stożek_rotatorów",
+    "name_pl": "Prone Row z ER (bent-over)",
+    "en": "prone row external rotation",
+    "params": "3×12 pow., 2s hold",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "110013",
+    "physitrack_name_en": "Prone high row with external rotation",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/984aaf68-4815-4819-86a7-e3c2129abf90/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/984aaf68-4815-4819-86a7-e3c2129abf90/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/984aaf68-4815-4819-86a7-e3c2129abf90/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Plantar Fascia Stretch — palce cofnięte (stojąc)",
+    "en": "plantar fascia stretch standing toes extended",
+    "params": "3×30s/str.",
+    "frequency": "rano (przed wstaniem)",
+    "physitrack_id": "12697",
+    "physitrack_name_en": "Plantar fascia and calf stretch in standing (wall)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/d6b84e40-cd2b-4308-9f64-1ccf4ae59287/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/d6b84e40-cd2b-4308-9f64-1ccf4ae59287/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/d6b84e40-cd2b-4308-9f64-1ccf4ae59287/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Plantar Fascia Stretch — przez butelkę z lodem",
+    "en": "plantar fascia stretch ice bottle",
+    "params": "1×5 min/str.",
+    "frequency": "po aktywności",
+    "physitrack_id": "12015",
+    "physitrack_name_en": "PIantar fascia stretch using ice bottle",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/2db6927b-4048-4a06-afb8-b3f0ce55dab5/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/2db6927b-4048-4a06-afb8-b3f0ce55dab5/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/2db6927b-4048-4a06-afb8-b3f0ce55dab5/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Toe Curl (zwijanie palców — ręcznik)",
+    "en": "towel toe curl",
+    "params": "3×20s",
+    "frequency": "codziennie",
+    "physitrack_id": "120",
+    "physitrack_name_en": "Toe curl with towel",
+    "physitrack_name_pl": "Zwijanie ręcznika palcami",
+    "thumbnail_url": "https://media.physitrack.com/exercises/afabb9d9-2888-4401-bcd9-7be5594c6182/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/afabb9d9-2888-4401-bcd9-7be5594c6182/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/afabb9d9-2888-4401-bcd9-7be5594c6182/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Short Foot Exercise (skrócenie stopy)",
+    "en": "short foot exercise",
+    "params": "3×12 pow., 5s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "116607",
+    "physitrack_name_en": "Short lever Copenhagen hip adduction exercise with hold",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/42a7814e-61b6-49e9-ac9f-a8ab369d8f78/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/42a7814e-61b6-49e9-ac9f-a8ab369d8f78/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/42a7814e-61b6-49e9-ac9f-a8ab369d8f78/en/video_preview.gif",
+    "difficulty": "advanced",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Eccentric Calf Lower na schodku",
+    "en": "eccentric calf lower step decline",
+    "params": "3×15 pow., 3s lowering",
+    "frequency": "2×/dzień",
+    "physitrack_id": "11310",
+    "physitrack_name_en": "Single-leg eccentric calf exercises on step",
+    "physitrack_name_pl": "SL ekscentryczne ćwiczenia łydki na stopniu",
+    "thumbnail_url": "https://media.physitrack.com/exercises/69b6ac5d-fc81-4685-a3e1-8cc1b159efcd/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/69b6ac5d-fc81-4685-a3e1-8cc1b159efcd/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/69b6ac5d-fc81-4685-a3e1-8cc1b159efcd/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Single-leg Calf Raise progresja",
+    "en": "single leg calf raise progression",
+    "params": "3×15/str.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "12305",
+    "physitrack_name_en": "Single leg calf raise",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/954bdd82-29a9-4412-8eed-b455b28fa3dc/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/954bdd82-29a9-4412-8eed-b455b28fa3dc/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/954bdd82-29a9-4412-8eed-b455b28fa3dc/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Toe Splay (rozstawianie palców)",
+    "en": "toe splay",
+    "params": "3×10 pow., 3s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "1140",
+    "physitrack_name_en": "SL toe touches",
+    "physitrack_name_pl": "Dotknięcia palców jednonóż",
+    "thumbnail_url": "https://media.physitrack.com/exercises/5cf51eed-f77c-415f-bf47-29591ac2b5f0/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/5cf51eed-f77c-415f-bf47-29591ac2b5f0/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/5cf51eed-f77c-415f-bf47-29591ac2b5f0/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Rolling piłką golfową (masaż rozcięgna)",
+    "en": "golf ball rolling plantar fascia massage",
+    "params": "1×3-5 min/str.",
+    "frequency": "rano i wieczór",
+    "physitrack_id": "118772",
+    "physitrack_name_en": "Double Leg Dead Lift in Golf Stance (Version 2)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/47e4e292-fb10-4584-87d5-a557a7ec894f/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/47e4e292-fb10-4584-87d5-a557a7ec894f/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/47e4e292-fb10-4584-87d5-a557a7ec894f/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Marble Pickup (palce podnoszą kulki)",
+    "en": "marble pickup toes",
+    "params": "3×10 pow./str.",
+    "frequency": "codziennie",
+    "physitrack_id": "1224",
+    "physitrack_name_en": "Intrinsic Foot Exercise (Marble pickup)",
+    "physitrack_name_pl": "Podnoszenie kamyczków",
+    "thumbnail_url": "https://media.physitrack.com/exercises/6edd1b74-8185-484d-ba93-9b5f0a31f5a6/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/6edd1b74-8185-484d-ba93-9b5f0a31f5a6/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/6edd1b74-8185-484d-ba93-9b5f0a31f5a6/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ostroga_piętowa",
+    "name_pl": "Intrinsic foot strengthening (theraband palce)",
+    "en": "intrinsic foot strengthening theraband toes",
+    "params": "3×15 pow.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "16739",
+    "physitrack_name_en": "Intrinsic foot strengthening",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/a38c11d3-a6cb-42cc-9275-2db0e4fe616a/medium_line-drawing-kygnzkqf.jpg",
+    "video_url": "https://media.physitrack.com/exercises/16a1ac8d-ab68-44c6-8de4-9e64840d425c/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/16a1ac8d-ab68-44c6-8de4-9e64840d425c/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Posterior Pelvic Tilt (leżenie, spłaszczanie LS)",
+    "en": "posterior pelvic tilt supine",
+    "params": "3×15 pow., 5s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "16125",
+    "physitrack_name_en": "Posterior Pelvic Tilt in Supine",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/f64cebc4-4c9f-41ae-ab1c-e274785a2080/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/f64cebc4-4c9f-41ae-ab1c-e274785a2080/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/f64cebc4-4c9f-41ae-ab1c-e274785a2080/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Mostek z tylnym pochyleniem miednicy",
+    "en": "bridge posterior pelvic tilt",
+    "params": "3×15 pow., 3s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "13028",
+    "physitrack_name_en": "Bridging in posterior pelvic tilt",
+    "physitrack_name_pl": "Unoszenie miednicy w tyłopochyleniu",
+    "thumbnail_url": "https://media.physitrack.com/exercises/a92e02d0-5494-4b0e-a232-8586ff927b92/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/a92e02d0-5494-4b0e-a232-8586ff927b92/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/a92e02d0-5494-4b0e-a232-8586ff927b92/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Hip Flexor Stretch (wykrok klęczny, pogłębiony)",
+    "en": "hip flexor stretch kneeling lunge deep",
+    "params": "3×45s/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "1449",
+    "physitrack_name_en": "Hip flexor stretch kneeling",
+    "physitrack_name_pl": "Rozciąganie zginaczy biodra w klęku",
+    "thumbnail_url": "https://media.physitrack.com/exercises/8b0ac48c-5f61-4a50-9056-24bb05481c00/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/8b0ac48c-5f61-4a50-9056-24bb05481c00/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/8b0ac48c-5f61-4a50-9056-24bb05481c00/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Rozciąganie prostownika grzbietu (child pose)",
+    "en": "child's pose back extension stretch",
+    "params": "3×45s",
+    "frequency": "codziennie",
+    "physitrack_id": "12569",
+    "physitrack_name_en": "Lower back stretch (child's pose)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/9b2d6001-5e46-498e-96c4-b2878d01f6fa/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/9b2d6001-5e46-498e-96c4-b2878d01f6fa/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/9b2d6001-5e46-498e-96c4-b2878d01f6fa/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Dead Bug (nacisk na PPT)",
+    "en": "dead bug posterior pelvic tilt",
+    "params": "3×8/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "113319",
+    "physitrack_name_en": "Dead Bug",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/32a4bf87-300d-4508-a9dd-b275c8fbd9d7/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/32a4bf87-300d-4508-a9dd-b275c8fbd9d7/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/32a4bf87-300d-4508-a9dd-b275c8fbd9d7/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Hollow Body Hold",
+    "en": "hollow body hold",
+    "params": "3×20s",
+    "frequency": "codziennie",
+    "physitrack_id": "17983",
+    "physitrack_name_en": "Hollow Body Hold",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/c01cc448-b000-4e3e-8313-5ab36fc0c7d1/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/c01cc448-b000-4e3e-8313-5ab36fc0c7d1/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/c01cc448-b000-4e3e-8313-5ab36fc0c7d1/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "McGill Curl-up (flexja bez zgięcia LS)",
+    "en": "McGill curl up",
+    "params": "3×10 pow., 10s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "13539",
+    "physitrack_name_en": "McGill's crunch",
+    "physitrack_name_pl": "Spięcia brzucha McGilla",
+    "thumbnail_url": "https://media.physitrack.com/exercises/6fe22632-a53b-4e52-b161-a41a88e4bd22/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/6fe22632-a53b-4e52-b161-a41a88e4bd22/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/6fe22632-a53b-4e52-b161-a41a88e4bd22/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Wall Squat z PPT (plecy przy ścianie)",
+    "en": "wall squat posterior pelvic tilt",
+    "params": "3×12 pow.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "12851",
+    "physitrack_name_en": "Posterior tilt and mini squats in two point (with stability ball)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/9de494ca-b1a0-47b6-9e73-c9b242cb91d7/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/9de494ca-b1a0-47b6-9e73-c9b242cb91d7/en/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/9de494ca-b1a0-47b6-9e73-c9b242cb91d7/en/video_preview.gif",
+    "difficulty": "advanced",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Plank z neutralizacją miednicy",
+    "en": "plank neutral pelvis",
+    "params": "3×25s",
+    "frequency": "codziennie",
+    "physitrack_id": "186",
+    "physitrack_name_en": "Plank",
+    "physitrack_name_pl": "Deska",
+    "thumbnail_url": "https://media.physitrack.com/exercises/994a8c20-1094-4213-accf-8acde732d60b/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/994a8c20-1094-4213-accf-8acde732d60b/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/994a8c20-1094-4213-accf-8acde732d60b/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Standing Hip Flexor Stretch (aktywny)",
+    "en": "standing hip flexor stretch active",
+    "params": "3×30s/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "17824",
+    "physitrack_name_en": "Standing hip flexor stretch",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/2eb47495-0401-42f9-9a98-85b85836366b/medium_line-drawing-3oybhsxa.jpg",
+    "video_url": "https://media.physitrack.com/exercises/c712d6fe-07bc-4c49-b781-55b550997d1a/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/c712d6fe-07bc-4c49-b781-55b550997d1a/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "hiperlordoza",
+    "name_pl": "Psoas Release na wałku (pasywne rolowanie)",
+    "en": "foam roller psoas release",
+    "params": "1×60s/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "1162",
+    "physitrack_name_en": "Childs pose with foam roller",
+    "physitrack_name_pl": "Pozycja dziecka z rolerem",
+    "thumbnail_url": "https://media.physitrack.com/exercises/6a455fab-063f-4877-88de-9e29f15d7731/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/6a455fab-063f-4877-88de-9e29f15d7731/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/6a455fab-063f-4877-88de-9e29f15d7731/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Muscular Cylinder (wydłużanie osiowe — stanie)",
+    "en": "muscular cylinder axial elongation Schroth standing",
+    "params": "3×5 odd., 10s hold",
+    "frequency": "codziennie",
+    "manual_add_required": true,
+    "physitrack_id": null,
+    "physitrack_name_en": null,
+    "physitrack_name_pl": null,
+    "thumbnail_url": null,
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": null,
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Passive Correction w leżeniu na boku (strona wypukła)",
+    "en": "side lying passive correction scoliosis",
+    "params": "1×5-10 min",
+    "frequency": "codziennie",
+    "physitrack_id": "11727",
+    "physitrack_name_en": "Thoracic rotations in side lying (open book) - Version 1",
+    "physitrack_name_pl": "Rotacja odcinka piersiowego leżąc na boku Poziom2",
+    "thumbnail_url": "https://media.physitrack.com/exercises/72fc4d2e-cb8a-4f5b-a28f-3c0ae94d0bde/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/72fc4d2e-cb8a-4f5b-a28f-3c0ae94d0bde/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/72fc4d2e-cb8a-4f5b-a28f-3c0ae94d0bde/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Rotational Angular Breathing (RAB)",
+    "en": "rotational angular breathing Schroth scoliosis",
+    "params": "3×5 wdechów",
+    "frequency": "codziennie",
+    "physitrack_id": "1318",
+    "physitrack_name_en": "Rotational obliques unidirectional",
+    "physitrack_name_pl": "Jednokierunkowa rotacja dla mięśni skośnych",
+    "thumbnail_url": "https://media.physitrack.com/exercises/23fab42d-aa30-4777-b2ac-38d2801ea91d/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/23fab42d-aa30-4777-b2ac-38d2801ea91d/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/23fab42d-aa30-4777-b2ac-38d2801ea91d/pl/video_preview.gif",
+    "difficulty": "advanced",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Asymetryczne rozciąganie (strona wklęsła)",
+    "en": "asymmetric stretch scoliosis concave",
+    "params": "3×30s",
+    "frequency": "codziennie",
+    "physitrack_id": "15228",
+    "physitrack_name_en": "Asymmetrical skipping high knee march with knee extension sweep (arm swing)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/b63722f9-a1df-4b3d-bb5f-a8bff4b1bd08/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/b63722f9-a1df-4b3d-bb5f-a8bff4b1bd08/en/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/b63722f9-a1df-4b3d-bb5f-a8bff4b1bd08/en/video_preview.gif",
+    "difficulty": "advanced",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Side Plank — po stronie wklęsłej (dłużej)",
+    "en": "side plank",
+    "params": "3×20s (wkł.) / 10s (wyp.)",
+    "frequency": "codziennie",
+    "physitrack_id": "187",
+    "physitrack_name_en": "Side plank",
+    "physitrack_name_pl": "Deska bokiem",
+    "thumbnail_url": "https://media.physitrack.com/exercises/0f618659-0ff7-466d-b1dc-787da1418cfa/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/0f618659-0ff7-466d-b1dc-787da1418cfa/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/0f618659-0ff7-466d-b1dc-787da1418cfa/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Cat-Cow z rotacją (derotacja)",
+    "en": "cat cow rotation derotation",
+    "params": "3×10 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "113230",
+    "physitrack_name_en": "Cat Cow",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/34d1032c-de40-4f1f-ad84-75a7a6b5155b/medium_line-drawing-67ctjfxu.jpg",
+    "video_url": "https://media.physitrack.com/exercises/c9ca78aa-432a-4c69-9e4f-45918f35c9f7/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/c9ca78aa-432a-4c69-9e4f-45918f35c9f7/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Bird-Dog asymetryczny (strona wklęsła górna)",
+    "en": "bird dog asymmetric",
+    "params": "3×10/str., 3s hold",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "196",
+    "physitrack_name_en": "Bird dog",
+    "physitrack_name_pl": "Bird dog",
+    "thumbnail_url": "https://media.physitrack.com/exercises/d10e651b-d132-4663-b431-424b00ea3dd8/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/d10e651b-d132-4663-b431-424b00ea3dd8/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/d10e651b-d132-4663-b431-424b00ea3dd8/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Seated elongation (siedzenie z elongacją)",
+    "en": "seated elongation scoliosis",
+    "params": "3×5 oddechów, 10s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "12661",
+    "physitrack_name_en": "Seated weight shifts - lifting pelvis",
+    "physitrack_name_pl": "Boczne przechylenie miednicy",
+    "thumbnail_url": "https://media.physitrack.com/exercises/1bb4ec19-53cf-449a-8c61-882c2934c284/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/1bb4ec19-53cf-449a-8c61-882c2934c284/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/1bb4ec19-53cf-449a-8c61-882c2934c284/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Ćwiczenie \"Łuk\" (bow exercise — Schroth)",
+    "en": "bow exercise Schroth scoliosis",
+    "params": "3×5 pow., 10s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "14479",
+    "physitrack_name_en": "Waiters bow - with stick (bilateral leg)",
+    "physitrack_name_pl": "Waiters bow - z laską",
+    "thumbnail_url": "https://media.physitrack.com/exercises/94ef6853-e877-44f1-ad2d-35bd77b69496/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/94ef6853-e877-44f1-ad2d-35bd77b69496/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/94ef6853-e877-44f1-ad2d-35bd77b69496/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "skolioza",
+    "name_pl": "Plank z korekcją tułowia",
+    "en": "plank trunk correction",
+    "params": "3×20s",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "14289",
+    "physitrack_name_en": "High plank with trunk rotation",
+    "physitrack_name_pl": "\"Deska\" w pozycji wysokiej z rotacją tułowia",
+    "thumbnail_url": "https://media.physitrack.com/exercises/219211f4-72bd-4c87-be2f-64a12d77c857/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/219211f4-72bd-4c87-be2f-64a12d77c857/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/219211f4-72bd-4c87-be2f-64a12d77c857/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Wrist Extension Stretch (rozciąganie prostowników)",
+    "en": "wrist extension stretch",
+    "params": "3×30s/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "112592",
+    "physitrack_name_en": "Wrist Extension Stretch",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/fc277282-6138-44b1-8166-d2a5a46b27b3/medium_line-drawing-f2fcsxht.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Wrist Flexion Stretch (rozciąganie zginaczy)",
+    "en": "wrist flexion stretch",
+    "params": "3×30s/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "19255",
+    "physitrack_name_en": "Wrist Flexion Stretch",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/9415fa5f-ae29-4c41-9830-552d6ee3c529/medium_line-drawing-hcoq4mrt.jpg",
+    "video_url": "https://media.physitrack.com/exercises/5319bda4-0175-4add-b90b-520a29a18db4/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/5319bda4-0175-4add-b90b-520a29a18db4/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Eccentric Wrist Extension (Tyler Twist / Therabar)",
+    "en": "eccentric wrist extension Tyler Twist therabar",
+    "params": "3×15 pow., 3s lowering",
+    "frequency": "2×/dzień",
+    "physitrack_id": "14506",
+    "physitrack_name_en": "Therabar eccentric wrist extension \"Tyler twist\"",
+    "physitrack_name_pl": "Ekscentryczne zgięcie z Therabarem \"Tyler twist\"",
+    "thumbnail_url": "https://media.physitrack.com/exercises/c2056fce-3ec5-45ee-849f-20daebaab4a4/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/c2056fce-3ec5-45ee-849f-20daebaab4a4/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/c2056fce-3ec5-45ee-849f-20daebaab4a4/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Eccentric Wrist Flexion (golfista)",
+    "en": "eccentric wrist flexion golfer elbow",
+    "params": "3×15 pow., 3s lowering",
+    "frequency": "2×/dzień",
+    "physitrack_id": "11255",
+    "physitrack_name_en": "Eccentric wrist flexion",
+    "physitrack_name_pl": "Ekscentryczne zgięcie nadgarstka",
+    "thumbnail_url": "https://media.physitrack.com/exercises/d2edf3f3-9795-460d-8532-74fe839afd38/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/d2edf3f3-9795-460d-8532-74fe839afd38/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/d2edf3f3-9795-460d-8532-74fe839afd38/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Wrist Extension izometryczna",
+    "en": "wrist extension isometric",
+    "params": "5×45s",
+    "frequency": "codziennie",
+    "physitrack_id": "12456",
+    "physitrack_name_en": "Isometric wrist extension",
+    "physitrack_name_pl": "Izometryczny wyprost nadgarstka",
+    "thumbnail_url": "https://media.physitrack.com/exercises/fa850f0d-5c9d-4214-873f-e0ad61f3ec42/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/fa850f0d-5c9d-4214-873f-e0ad61f3ec42/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/fa850f0d-5c9d-4214-873f-e0ad61f3ec42/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Wrist Flexion izometryczna",
+    "en": "wrist flexion isometric",
+    "params": "5×45s",
+    "frequency": "codziennie",
+    "physitrack_id": "16727",
+    "physitrack_name_en": "Isometric Wrist Flexion",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/4396739c-e654-4328-84cf-1036cd480d85/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/4396739c-e654-4328-84cf-1036cd480d85/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/4396739c-e654-4328-84cf-1036cd480d85/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Forearm Pronation/Supination z obciążeniem",
+    "en": "forearm pronation supination weight",
+    "params": "3×15/kier.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "116569",
+    "physitrack_name_en": "Forearm pronation and supination (Wheelchair)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/c2b18ff5-02b8-4e70-80c0-d2436dbc04b8/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/c2b18ff5-02b8-4e70-80c0-d2436dbc04b8/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/c2b18ff5-02b8-4e70-80c0-d2436dbc04b8/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Grip Strengthening (piłka/expander)",
+    "en": "grip strengthening ball",
+    "params": "3×15 pow., 2s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "19120",
+    "physitrack_name_en": "Wrist/finger flexion strengthening, squeezing ball - hand grip; 02",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/9919a525-009b-4bd8-ba00-bdc5ad1b931a/medium_line-drawing-zuvsyrax.jpg",
+    "video_url": "https://media.physitrack.com/exercises/8db4966a-db40-4c7b-8346-4e58c902e8f8/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/8db4966a-db40-4c7b-8346-4e58c902e8f8/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Finger Extension (gumka na palcach)",
+    "en": "finger extension rubber band",
+    "params": "3×15 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "142",
+    "physitrack_name_en": "Resisted finger extension with band",
+    "physitrack_name_pl": "Oporowany wyprost palców",
+    "thumbnail_url": "https://media.physitrack.com/exercises/5c140374-6588-4cda-a7c8-108ab21edff3/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/5c140374-6588-4cda-a7c8-108ab21edff3/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/5c140374-6588-4cda-a7c8-108ab21edff3/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Elbow Flexion/Extension (bez obciążenia — ROM)",
+    "en": "elbow flexion extension range of motion",
+    "params": "3×10 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "111880",
+    "physitrack_name_en": "Elbow Extension & Flexion",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/54c590a9-095a-40f5-b78f-59d1d93c94cf/medium_line-drawing-uzfdpgdg.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Scapular stabilization (wpływa na łokieć)",
+    "en": "scapular stabilization",
+    "params": "3×12 pow., 3s hold",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "12",
+    "physitrack_name_en": "Prone scapular stabilization on ball",
+    "physitrack_name_pl": "Stabilizacja łopatki przodem na piłce",
+    "thumbnail_url": "https://media.physitrack.com/exercises/f5d09b4a-6716-478c-962d-3de3b598d615/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/f5d09b4a-6716-478c-962d-3de3b598d615/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/f5d09b4a-6716-478c-962d-3de3b598d615/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "ból_łokcia",
+    "name_pl": "Neural mobilization — Radial Nerve (neurodynamika)",
+    "en": "radial nerve mobilization neural",
+    "params": "3×10/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "115399",
+    "physitrack_name_en": "Neural Mobilisation - Radial Nerve Slider",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/7fb2fb61-277e-44e8-9ed5-935efbe8dc64/en/thumbnail_800x450.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Quad Set izometryczny (różne kąty)",
+    "en": "quad set isometric quadriceps",
+    "params": "3×10 pow., 10s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "12624",
+    "physitrack_name_en": "Static quadriceps",
+    "physitrack_name_pl": null,
+    "thumbnail_url": null,
+    "video_url": null,
+    "animated_gif_url": "https://media.physitrack.com/exercises/a11c9abb-0134-401d-8236-501729f9befd/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "SLR z obciążeniem (progresja)",
+    "en": "straight leg raise weight quadriceps",
+    "params": "3×12 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "14732",
+    "physitrack_name_en": "SLR in long sit with weight (quadriceps)",
+    "physitrack_name_pl": "Uniesienie wyprostowanej nogi w siadzie płaskim z obciążeniem wokół kostki",
+    "thumbnail_url": "https://media.physitrack.com/exercises/39f7c44d-e430-4ed9-bab4-5b4452132034/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/39f7c44d-e430-4ed9-bab4-5b4452132034/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/39f7c44d-e430-4ed9-bab4-5b4452132034/pl/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Short Arc Quad (SAQ — zakres 0-30°)",
+    "en": "short arc quad",
+    "params": "3×15 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "113012",
+    "physitrack_name_en": "Short Arc Quads",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/952432b2-1e8a-4ecf-84d3-4230e00824e4/medium_line-drawing-nsupr89p.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Mini Squat (0-45°)",
+    "en": "mini squat knee",
+    "params": "3×15 pow.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "112589",
+    "physitrack_name_en": "Knee mobilisation in Half Squat",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/8d0f9f5d-a1e6-404d-ad4d-991818c438c1/medium_line-drawing-g1dnlr9b.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Chair Stand (sit-to-stand)",
+    "en": "sit to stand chair",
+    "params": "3×10 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "16226",
+    "physitrack_name_en": "Single-leg Chair Squat",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/53d683fd-81a9-4125-887e-ebbf137a1942/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/53d683fd-81a9-4125-887e-ebbf137a1942/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/53d683fd-81a9-4125-887e-ebbf137a1942/en/video_preview.gif",
+    "difficulty": "advanced",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Step Up 10cm (niski stopień)",
+    "en": "step up low step knee",
+    "params": "3×12/str.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "18435",
+    "physitrack_name_en": "Low Lateral Step Up - Knee Alignment",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/90eeac3a-0de7-40db-9ba7-c26c5dc7a2a9/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/90eeac3a-0de7-40db-9ba7-c26c5dc7a2a9/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/90eeac3a-0de7-40db-9ba7-c26c5dc7a2a9/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Clamshell z gumą (siła abduktorów biodra)",
+    "en": "clamshell resistance band hip abductor",
+    "params": "3×15/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "113101",
+    "physitrack_name_en": "Pelvic floor contraction in clamshell (Hip External Rotators)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/29374450-8644-4453-8935-d7f206f62f3b/medium_line-drawing-xskg9y6q.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Hip Abduction stojąc (odciążenie kolana)",
+    "en": "hip abduction standing",
+    "params": "3×15/str.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "111263",
+    "physitrack_name_en": "Hip Abduction (Standing))",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/16d1f866-8756-455a-80dc-fa2c9a5631c9/medium_line-drawing-w3h1tehz.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Stationary Bike (niski opór)",
+    "en": "stationary bike low resistance",
+    "params": "1×15-20 min",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "11067",
+    "physitrack_name_en": "Stationary cycle spin bike",
+    "physitrack_name_pl": "Stacjonarny rower spinningowy",
+    "thumbnail_url": "https://media.physitrack.com/exercises/3ebc0298-de29-4091-bdda-e95b4505842a/pl/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/3ebc0298-de29-4091-bdda-e95b4505842a/pl/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/3ebc0298-de29-4091-bdda-e95b4505842a/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "gonarthroza",
+    "name_pl": "Water walking / pływanie (jeśli dostępne)",
+    "en": "water walking aquatic therapy",
+    "params": "1×20-30 min",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "112032",
+    "physitrack_name_en": "Walking in water",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/fd821ab1-eb8d-40fe-a627-b2960acde052/medium_line-drawing-adt1twby.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Quad Set",
+    "en": "quad set static quadriceps",
+    "params": "3×10 pow., 10s hold",
+    "frequency": "codziennie",
+    "physitrack_id": "111060",
+    "physitrack_name_en": "Static quadriceps training - against wall",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/2636fdea-142d-4c06-a8ce-b038114abb9d/medium_line-drawing-rxaz5veq.jpg",
+    "video_url": "https://media.physitrack.com/exercises/1ecfa55d-39b8-48ba-873c-fbfd0a4a00f7/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/1ecfa55d-39b8-48ba-873c-fbfd0a4a00f7/en/video_preview.gif",
+    "difficulty": "intermediate",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Heel Slide (zakres ruchu)",
+    "en": "heel slide range of motion knee",
+    "params": "3×15 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "13019",
+    "physitrack_name_en": "Heel slide in supine",
+    "physitrack_name_pl": "Pojedyncze zgięcie/wyprost nogi w pozycji haka",
+    "thumbnail_url": "https://media.physitrack.com/exercises/2c4c3ed1-a8e6-4742-852f-1a324bf5c781/en/thumbnail_800x450.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "SLR",
+    "en": "straight leg raise",
+    "params": "3×12 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "14784",
+    "physitrack_name_en": "SLR",
+    "physitrack_name_pl": "Uniesienie prostej nogi",
+    "thumbnail_url": "https://media.physitrack.com/exercises/db9b22ef-7cc1-46c6-b9dc-5e57826146a9/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/db9b22ef-7cc1-46c6-b9dc-5e57826146a9/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/db9b22ef-7cc1-46c6-b9dc-5e57826146a9/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Terminal Knee Extension (TKE) z gumą",
+    "en": "terminal knee extension band",
+    "params": "3×15 pow.",
+    "frequency": "codziennie",
+    "physitrack_id": "17982",
+    "physitrack_name_en": "Seated End-range Knee Extension (Exercise Band)",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/9ef1e74f-a624-451f-bcdf-145f70af5a52/en/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/9ef1e74f-a624-451f-bcdf-145f70af5a52/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/9ef1e74f-a624-451f-bcdf-145f70af5a52/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Mini Squat (ostrożnie — zakres do granicy bólu)",
+    "en": "mini squat pain free",
+    "params": "3×12 pow.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "1147",
+    "physitrack_name_en": "Mini squat on a balance pad",
+    "physitrack_name_pl": "Mini przysiad na podkładce równoważnej",
+    "thumbnail_url": "https://media.physitrack.com/exercises/6db365b5-9fa1-4082-a843-e82263573600/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/6db365b5-9fa1-4082-a843-e82263573600/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/6db365b5-9fa1-4082-a843-e82263573600/pl/video_preview.gif",
+    "difficulty": "advanced",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Step Up (10cm, bez bólu)",
+    "en": "step up pain free meniscus",
+    "params": "3×10/str.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "11292",
+    "physitrack_name_en": "Step up",
+    "physitrack_name_pl": "Wchodzenie na stopień",
+    "thumbnail_url": "https://media.physitrack.com/exercises/b1a20197-7b9f-4fb0-ab24-76f5ec261140/pl/thumbnail_800x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/b1a20197-7b9f-4fb0-ab24-76f5ec261140/pl/video_720p.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/b1a20197-7b9f-4fb0-ab24-76f5ec261140/pl/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Hamstring Curl (leżenie — bierne zginanie)",
+    "en": "hamstring curl prone",
+    "params": "3×12 pow.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "12910",
+    "physitrack_name_en": "Prone hamstring curl",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/dfe938db-e828-4518-adde-147782765b43/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/dfe938db-e828-4518-adde-147782765b43/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/dfe938db-e828-4518-adde-147782765b43/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Propriocepcja — stanie na jednej nodze",
+    "en": "single leg balance proprioception",
+    "params": "3×20s/str.",
+    "frequency": "codziennie",
+    "physitrack_id": "113838",
+    "physitrack_name_en": "Single Leg Balance",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://s3.eu-central-1.amazonaws.com/media.physitrack.com/exercise-images/e4b4c8d9-18b5-4d0f-9070-452bff824a72/medium_line-drawing-zf9dy63y.jpg",
+    "video_url": null,
+    "animated_gif_url": null,
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  },
+  {
+    "group": "menisk",
+    "name_pl": "Lateral Band Walk",
+    "en": "lateral band walk",
+    "params": "3×10/str.",
+    "frequency": "co 2. dzień",
+    "physitrack_id": "118355",
+    "physitrack_name_en": "Resisted lateral walk - band above knees, knees straight",
+    "physitrack_name_pl": null,
+    "thumbnail_url": "https://media.physitrack.com/exercises/2d2efc4f-1deb-44b8-aceb-fa4732142ccc/en/thumbnail_x450.jpg",
+    "video_url": "https://media.physitrack.com/exercises/2d2efc4f-1deb-44b8-aceb-fa4732142ccc/en/video_1280x720.mp4",
+    "animated_gif_url": "https://media.physitrack.com/exercises/2d2efc4f-1deb-44b8-aceb-fa4732142ccc/en/video_preview.gif",
+    "difficulty": "beginner",
+    "locales": [
+      "en",
+      "pl"
+    ],
+    "found_in_physitrack": true,
+    "manual_add_required": false
+  }
+]

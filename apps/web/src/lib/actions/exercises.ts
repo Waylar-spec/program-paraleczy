@@ -175,3 +175,13 @@ export async function toggleFavorite(id: string, isFavorite: boolean) {
   revalidateTag("exercises", "max")
   revalidatePath("/biblioteka")
 }
+
+export async function getExercisesByIds(ids: string[]) {
+  if (!ids.length) return []
+  const sb = createServiceClient()
+  const { data } = await sb
+    .from("exercises")
+    .select("id, name, description, body_part, thumbnail_url, step_images, default_sets, default_reps, default_duration_seconds, default_rest_seconds")
+    .in("id", ids)
+  return data ?? []
+}

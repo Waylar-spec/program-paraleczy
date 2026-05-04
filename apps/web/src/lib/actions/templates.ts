@@ -311,3 +311,19 @@ export async function updateTemplateItem(itemId: string, templateId: string, par
   revalidateTag("templates", "max")
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
+
+export async function deleteTemplate(templateId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const { error } = await supabase
+    .from("program_templates")
+    .delete()
+    .eq("id", templateId)
+    .eq("practitioner_id", user.id)
+
+  if (error) throw new Error(error.message)
+  revalidateTag("templates", "max")
+  revalidatePath("/biblioteka/szablony")
+}

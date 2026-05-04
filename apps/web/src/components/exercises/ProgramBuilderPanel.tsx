@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { X, Trash2, Dumbbell, ChevronDown, ChevronUp, Send, FileText, ExternalLink, BookOpen, Search, Plus, ClipboardList, ArrowLeft, Save } from "lucide-react"
+import { X, Trash2, Dumbbell, ChevronDown, ChevronUp, Send, FileText, ExternalLink, BookOpen, Search, Plus, ClipboardList, ArrowLeft, Save, Printer } from "lucide-react"
 import { useProgramBuilder, type BuilderExercise } from "@/store/programBuilder"
 import { createTemplate, addExerciseToTemplate, addSurveyToTemplate } from "@/lib/actions/templates"
 import { createQuickProgram } from "@/lib/actions/patient-programs"
@@ -208,6 +208,30 @@ export function ProgramBuilderPanel() {
     }
   }
 
+  function handlePrint() {
+    const data = {
+      programName,
+      exercises: exercises.map((ex) => ({
+        exerciseId: ex.exerciseId,
+        name: ex.name,
+        thumbnailUrl: ex.thumbnailUrl,
+        sets: ex.sets,
+        reps: ex.reps,
+        durationSeconds: ex.durationSeconds,
+        notes: ex.notes,
+      })),
+      contentItems: contentItems.map((c) => ({
+        contentId: c.contentId,
+        name: c.name,
+        type: c.type,
+        fileUrl: c.fileUrl,
+        externalUrl: c.externalUrl,
+      })),
+    }
+    sessionStorage.setItem("builderPrint", JSON.stringify(data))
+    window.open("/drukuj/builder", "_blank")
+  }
+
   async function handleSaveTemplate() {
     if (!exercises.length) return
     setSaving(true)
@@ -263,6 +287,15 @@ export function ProgramBuilderPanel() {
                   className="h-8 px-3 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
                 >
                   Wyczyść
+                </button>
+                <button
+                  onClick={handlePrint}
+                  disabled={!exercises.length}
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                  title="Drukuj / PDF"
+                >
+                  <Printer size={13} />
+                  PDF
                 </button>
                 <button
                   onClick={handleSaveTemplate}

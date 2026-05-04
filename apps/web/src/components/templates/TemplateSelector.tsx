@@ -3,9 +3,9 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LayoutTemplate, X, Dumbbell, Search, Check, Pencil, ExternalLink } from "lucide-react"
+import { LayoutTemplate, X, Dumbbell, Search, Check, Pencil, ExternalLink, Trash2 } from "lucide-react"
 import { useProgramBuilder } from "@/store/programBuilder"
-import { updateTemplate } from "@/lib/actions/templates"
+import { updateTemplate, deleteTemplate } from "@/lib/actions/templates"
 import { toast } from "sonner"
 
 const BODY_PARTS = ["Kolano", "Bark", "Biodro", "Kręgosłup lędźwiowy", "Kręgosłup szyjny", "Łokieć", "Nadgarstek", "Stopa/Skokowy", "Całe ciało", "Inne"]
@@ -124,8 +124,25 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
   const [templates, setTemplates] = useState(initialTemplates)
   const [search, setSearch] = useState("")
   const [editing, setEditing] = useState<Template | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [loadedId, setLoadedId] = useState<string | null>(null)
   const { clearAll, addExercise, setProgramName } = useProgramBuilder()
+
+  async function handleDelete(templateId: string) {
+    setDeleting(true)
+    try {
+      await deleteTemplate(templateId)
+      setTemplates(prev => prev.filter(t => t.id !== templateId))
+      if (loadedId === templateId) { clearAll(); setLoadedId(null) }
+      toast.success("Szablon usunięty")
+      setConfirmDeleteId(null)
+    } catch {
+      toast.error("Nie udało się usunąć szablonu")
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -218,23 +235,50 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
                 {selected && <Check size={12} className="text-white" strokeWidth={3} />}
               </div>
 
-              {/* Edit + external link icons */}
+              {/* Edit + external link + delete icons */}
               <div className="absolute top-2 right-2 z-10 flex gap-1">
-                <button
-                  onClick={e => { e.stopPropagation(); setEditing(template) }}
-                  className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
-                  title="Edytuj szablon"
-                >
-                  <Pencil size={11} />
-                </button>
-                <Link
-                  href={`/biblioteka/szablony/${template.id}`}
-                  onClick={e => e.stopPropagation()}
-                  className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
-                  title="Otwórz pełny edytor"
-                >
-                  <ExternalLink size={11} />
-                </Link>
+                {confirmDeleteId === template.id ? (
+                  <>
+                    <button
+                      onClick={e => { e.stopPropagation(); setConfirmDeleteId(null) }}
+                      className="h-7 px-2 rounded-lg bg-white border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      Anuluj
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); handleDelete(template.id) }}
+                      disabled={deleting}
+                      className="h-7 px-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-medium disabled:opacity-50 transition-colors"
+                    >
+                      {deleting ? "..." : "Usuń"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={e => { e.stopPropagation(); setEditing(template) }}
+                      className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Edytuj szablon"
+                    >
+                      <Pencil size={11} />
+                    </button>
+                    <Link
+                      href={`/biblioteka/szablony/${template.id}`}
+                      onClick={e => e.stopPropagation()}
+                      className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Otwórz pełny edytor"
+                    >
+                      <ExternalLink size={11} />
+                    </Link>
+                    <button
+                      onClick={e => { e.stopPropagation(); setConfirmDeleteId(template.id) }}
+                      className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-red-500 transition-colors"
+                      title="Usuń szablon"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Thumbnail strip */}
