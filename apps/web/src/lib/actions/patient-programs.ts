@@ -247,7 +247,10 @@ export async function getPatientProgramWithItems(programId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data } = await supabase
+  // Use service client so public exercises (owned by other practitioners)
+  // are visible despite RLS on the exercises table
+  const sb = createServiceClient()
+  const { data } = await sb
     .from("patient_programs")
     .select(`
       id, name, status, start_date, end_date,
@@ -362,7 +365,8 @@ export async function getPatientProgramForPrint(programId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data } = await supabase
+  const sb = createServiceClient()
+  const { data } = await sb
     .from("patient_programs")
     .select(`
       id, name, status, start_date, end_date,
@@ -388,7 +392,8 @@ export async function getPatientPrograms(patientId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data, error } = await supabase
+  const sb = createServiceClient()
+  const { data, error } = await sb
     .from("patient_programs")
     .select(`
       id, name, status, start_date, end_date, created_at,
