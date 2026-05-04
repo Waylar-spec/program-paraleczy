@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 import { sendProgramAssignedEmail } from "@/lib/email"
 
 export async function assignTemplateToPatient(patientId: string, templateId: string, params: {
@@ -14,8 +15,10 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
+  const sb = createServiceClient()
+
   const [{ data: template }, { data: patient }, { data: practitioner }] = await Promise.all([
-    (supabase as any)
+    sb
       .from("program_templates")
       .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes)")
       .eq("id", templateId)
@@ -37,7 +40,7 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
   // Fetch template surveys separately — table may not exist yet
   let templateSurveys: { survey_id: string; schedule: string }[] = []
   try {
-    const { data: surveyData } = await (supabase as any)
+    const { data: surveyData } = await (sb as any)
       .from("program_template_surveys")
       .select("survey_id, schedule")
       .eq("template_id", templateId)
@@ -400,6 +403,21 @@ export async function getPatientPrograms(patientId: string) {
 
   if (error) return []
   return data
+}
+
+export async function deletePatientProgram(programId: string, patientId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const { error } = await supabase
+    .from("patient_programs")
+    .delete()
+    .eq("id", programId)
+    .eq("practitioner_id", user.id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath(`/pacjenci/${patientId}`)
 }
 
 export async function endPatientProgram(programId: string, patientId: string) {
