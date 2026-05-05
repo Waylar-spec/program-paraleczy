@@ -9,6 +9,7 @@ const TABS = [
   { label: "Protokoły", href: "/biblioteka/protokoly" },
   { label: "Edukacja", href: "/biblioteka/edukacja" },
   { label: "Kwestionariusze", href: "/biblioteka/kwestionariusze" },
+  { label: "Suplementy", href: "/biblioteka/suplementy" },
 ]
 
 export function LibraryTabs() {
