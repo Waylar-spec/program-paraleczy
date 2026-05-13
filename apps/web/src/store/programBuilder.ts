@@ -5,6 +5,7 @@ export type BuilderExercise = {
   exerciseId: string
   name: string
   thumbnailUrl: string | null
+  animatedGifUrl: string | null
   sets: number
   reps: number | null
   durationSeconds: number | null

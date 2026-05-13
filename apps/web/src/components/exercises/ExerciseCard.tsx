@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Star, Play, Dumbbell, Trash2 } from "lucide-react"
+import { Star, Dumbbell, Trash2 } from "lucide-react"
 import { toggleFavorite, deleteExercise } from "@/lib/actions/exercises"
 import { toast } from "sonner"
 import { useProgramBuilder } from "@/store/programBuilder"
@@ -38,9 +38,12 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
   const [showDetail, setShowDetail] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const { addExercise, removeExercise, hasExercise, exercises } = useProgramBuilder()
+  const { addExercise, removeExercise, hasExercise, exercises, isOpen: builderOpen } = useProgramBuilder()
   const inProgram = hasExercise(exercise.id)
   const isOwn = !!exercise.practitioner_id
+
+  const hasGif = !!exercise.animated_gif_url
+  const hasThumb = !!exercise.thumbnail_url
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
@@ -83,6 +86,7 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
         exerciseId: exercise.id,
         name: exercise.name,
         thumbnailUrl: exercise.thumbnail_url,
+        animatedGifUrl: exercise.animated_gif_url ?? null,
         sets: exercise.default_sets ?? 3,
         reps: exercise.default_reps ?? null,
         durationSeconds: exercise.default_duration_seconds ?? null,
@@ -100,18 +104,37 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
   return (
     <>
       <div
-        onClick={() => setShowDetail(true)}
-        className={`group bg-white rounded-xl border overflow-hidden hover:shadow-sm transition-all cursor-pointer ${
-          inProgram ? "border-navy-400 ring-1 ring-navy-300" : "border-gray-200 hover:border-navy-100"
-        }`}
+        onClick={builderOpen ? undefined : () => setShowDetail(true)}
+        className={`group bg-white rounded-xl border overflow-hidden transition-all ${
+          inProgram ? "border-navy-400 ring-1 ring-navy-300" : "border-gray-200"
+        } ${builderOpen ? "cursor-default" : "cursor-pointer hover:shadow-sm hover:border-navy-200"}`}
       >
-        {/* Thumbnail */}
+        {/* Thumbnail / GIF area */}
         <div className="relative aspect-video bg-white flex items-center justify-center overflow-hidden">
-          {exercise.animated_gif_url ? (
-            <img src={exercise.animated_gif_url} alt={exercise.name} className="w-full h-full object-contain" />
-          ) : exercise.thumbnail_url ? (
-            <img src={exercise.thumbnail_url} alt={exercise.name} className="w-full h-full object-cover" />
-          ) : (
+          {/* Thumbnail — visible at rest, fades on hover if GIF exists and builder is closed */}
+          {hasThumb && (
+            <img
+              src={exercise.thumbnail_url!}
+              alt={exercise.name}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-150 ${
+                hasGif && !builderOpen ? "group-hover:opacity-0" : ""
+              }`}
+            />
+          )}
+
+          {/* GIF — always visible if builder open OR no thumbnail; on hover if builder closed */}
+          {hasGif && (
+            <img
+              src={exercise.animated_gif_url!}
+              alt={exercise.name}
+              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-150 ${
+                hasThumb && !builderOpen ? "opacity-0 group-hover:opacity-100" : ""
+              }`}
+            />
+          )}
+
+          {/* Fallback icon */}
+          {!hasThumb && !hasGif && (
             <Dumbbell size={32} className="text-gray-300" />
           )}
 
@@ -131,18 +154,10 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
             )}
           </button>
 
-          {exercise.video_url && (
-            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm">
-                <Play size={13} className="text-navy-500 ml-0.5" />
-              </div>
-            </div>
-          )}
-
           {/* Favorite top-right */}
           <button
             onClick={handleFavorite}
-            className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/80 hover:bg-white transition-colors"
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/80 hover:bg-white transition-colors z-10"
           >
             <Star
               size={14}
@@ -151,7 +166,7 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
           </button>
 
           {!isOwn && (
-            <span className="absolute bottom-2 left-2 text-xs px-1.5 py-0.5 rounded bg-navy-500 text-white font-medium">
+            <span className="absolute bottom-2 left-2 text-xs px-1.5 py-0.5 rounded bg-navy-500 text-white font-medium z-10">
               Biblioteka
             </span>
           )}

@@ -496,6 +496,7 @@ export function ExerciseDetailModal({ exercise: initialExercise, onClose }: Prop
         exerciseId: exercise.id,
         name: exercise.name,
         thumbnailUrl: exercise.thumbnail_url,
+        animatedGifUrl: exercise.animated_gif_url ?? null,
         sets: exercise.default_sets ?? 3,
         reps: exercise.default_reps ?? null,
         durationSeconds: exercise.default_duration_seconds ?? null,
