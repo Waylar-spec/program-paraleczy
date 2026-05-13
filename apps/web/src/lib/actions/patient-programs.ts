@@ -8,6 +8,7 @@ import { sendProgramAssignedEmail } from "@/lib/email"
 export async function assignTemplateToPatient(patientId: string, templateId: string, params: {
   startDate: string
   endDate?: string
+  name?: string
   notes?: string
   contentIds?: string[]
 }) {
@@ -56,7 +57,7 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
       patient_id: patientId,
       practitioner_id: user.id,
       template_id: templateId,
-      name: template.name,
+      name: params.name || template.name,
       status: "active",
       start_date: params.startDate,
       end_date: params.endDate || null,

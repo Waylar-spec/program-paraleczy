@@ -27,7 +27,8 @@ async function _fetchTemplates(userId: string) {
           id,
           name,
           body_part,
-          thumbnail_url
+          thumbnail_url,
+          animated_gif_url
         )
       )
     `)
