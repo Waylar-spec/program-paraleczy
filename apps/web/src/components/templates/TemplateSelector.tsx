@@ -18,7 +18,7 @@ type TemplateItem = {
   duration_seconds: number | null
   rest_seconds: number | null
   notes: string | null
-  exercises: { id: string; name: string; thumbnail_url: string | null } | { id: string; name: string; thumbnail_url: string | null }[] | null
+  exercises: { id: string; name: string; thumbnail_url: string | null; animated_gif_url?: string | null } | { id: string; name: string; thumbnail_url: string | null; animated_gif_url?: string | null }[] | null
 }
 
 type Template = {
@@ -170,6 +170,7 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
         exerciseId: ex.id,
         name: ex.name,
         thumbnailUrl: ex.thumbnail_url,
+        animatedGifUrl: ex.animated_gif_url ?? null,
         sets: item.sets ?? 3,
         reps: item.reps ?? null,
         durationSeconds: item.duration_seconds ?? null,
