@@ -6,7 +6,7 @@ import { useProgramBuilder } from "@/store/programBuilder"
 import { ProgramBuilderPanel } from "./ProgramBuilderPanel"
 
 export function ProgramBuilderButton() {
-  const { exercises, contentItems, open } = useProgramBuilder()
+  const { exercises, contentItems, open, isOpen } = useProgramBuilder()
   const count = exercises.length + contentItems.length
   const [hovered, setHovered] = useState(false)
 
@@ -28,8 +28,8 @@ export function ProgramBuilderButton() {
         )}
       </button>
 
-      {/* Hover preview */}
-      {hovered && (
+      {/* Hover preview — hidden when builder is open */}
+      {hovered && !isOpen && (
         <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border border-gray-200 shadow-lg z-50 overflow-hidden pointer-events-none">
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-xs font-semibold text-gray-700">Wybrana treść ({count})</p>
@@ -45,8 +45,8 @@ export function ProgramBuilderButton() {
               {exercises.slice(0, 5).map((ex) => (
                 <div key={ex.itemId} className="flex items-center gap-2.5 px-4 py-2 border-b border-gray-50 last:border-0">
                   <div className="w-8 h-8 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center">
-                    {ex.thumbnailUrl
-                      ? <img src={ex.thumbnailUrl} alt={ex.name} className="w-full h-full object-cover" />
+                    {(ex.animatedGifUrl ?? ex.thumbnailUrl)
+                      ? <img src={(ex.animatedGifUrl ?? ex.thumbnailUrl)!} alt={ex.name} className="w-full h-full object-contain" />
                       : <Dumbbell size={12} className="text-gray-300" />
                     }
                   </div>
