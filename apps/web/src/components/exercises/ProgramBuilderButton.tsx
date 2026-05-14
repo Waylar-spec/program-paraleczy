@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dumbbell } from "lucide-react"
 import { useProgramBuilder } from "@/store/programBuilder"
 import { ProgramBuilderPanel } from "./ProgramBuilderPanel"
@@ -9,6 +9,19 @@ export function ProgramBuilderButton() {
   const { exercises, contentItems, open, isOpen } = useProgramBuilder()
   const count = exercises.length + contentItems.length
   const [hovered, setHovered] = useState(false)
+  const [flash, setFlash] = useState(false)
+  const prevCount = useRef(count)
+
+  // Flash the badge whenever count increases
+  useEffect(() => {
+    if (count > prevCount.current) {
+      setFlash(true)
+      const t = setTimeout(() => setFlash(false), 500)
+      prevCount.current = count
+      return () => clearTimeout(t)
+    }
+    prevCount.current = count
+  }, [count])
 
   return (
     <div
@@ -22,7 +35,12 @@ export function ProgramBuilderButton() {
       >
         Edytor programów
         {count > 0 && (
-          <span className="ml-0.5 bg-white text-navy-600 rounded-full w-4 h-4 text-[10px] font-bold flex items-center justify-center leading-none">
+          <span
+            key={count}
+            className={`ml-0.5 bg-white text-navy-600 rounded-full w-4 h-4 text-[10px] font-bold flex items-center justify-center leading-none transition-transform ${
+              flash ? "scale-125" : "scale-100"
+            }`}
+          >
             {count}
           </span>
         )}
@@ -53,7 +71,7 @@ export function ProgramBuilderButton() {
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-gray-800 truncate">{ex.name}</p>
                     <p className="text-[10px] text-gray-400">
-                      {ex.sets}s{ex.reps ? ` · ${ex.reps}p` : ""}
+                      {ex.sets}s · {ex.reps ? `${ex.reps} powt.` : ""}
                       {ex.durationSeconds ? ` · ${ex.durationSeconds}s` : ""}
                     </p>
                   </div>

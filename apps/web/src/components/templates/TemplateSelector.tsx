@@ -178,7 +178,6 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
       })
     }
     setLoadedId(template.id)
-    toast.success(`Załadowano „${template.name}"`)
   }
 
   function handleSaved(updated: Template) {
