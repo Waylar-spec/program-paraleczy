@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Program ćwiczeń",
+  title: "Program ćwiczeń – Para Leczy",
   description: "Platforma rehabilitacyjna dla fizjoterapeutów",
   robots: { index: false, follow: false },
 };
