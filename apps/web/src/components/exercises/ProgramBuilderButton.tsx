@@ -63,8 +63,8 @@ export function ProgramBuilderButton() {
               {exercises.slice(0, 5).map((ex) => (
                 <div key={ex.itemId} className="flex items-center gap-2.5 px-4 py-2 border-b border-gray-50 last:border-0">
                   <div className="w-8 h-8 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center">
-                    {(ex.animatedGifUrl ?? ex.thumbnailUrl)
-                      ? <img src={(ex.animatedGifUrl ?? ex.thumbnailUrl)!} alt={ex.name} className="w-full h-full object-contain" />
+                    {(ex.thumbnailUrl ?? ex.animatedGifUrl)
+                      ? <img src={(ex.thumbnailUrl ?? ex.animatedGifUrl)!} alt={ex.name} className="w-full h-full object-contain" />
                       : <Dumbbell size={12} className="text-gray-300" />
                     }
                   </div>

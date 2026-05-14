@@ -111,30 +111,20 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
       >
         {/* Thumbnail / GIF area */}
         <div className="relative aspect-video bg-white flex items-center justify-center overflow-hidden">
-          {/* Thumbnail — visible at rest, fades on hover if GIF exists and builder is closed */}
-          {hasThumb && (
+            {/* Static thumbnail always — GIF only in detail modal */}
+          {hasThumb ? (
             <img
               src={exercise.thumbnail_url!}
               alt={exercise.name}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-150 ${
-                hasGif && !builderOpen ? "group-hover:opacity-0" : ""
-              }`}
+              className="absolute inset-0 w-full h-full object-cover"
             />
-          )}
-
-          {/* GIF — always visible if builder open OR no thumbnail; on hover if builder closed */}
-          {hasGif && (
+          ) : hasGif ? (
             <img
               src={exercise.animated_gif_url!}
               alt={exercise.name}
-              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-150 ${
-                hasThumb && !builderOpen ? "opacity-0 group-hover:opacity-100" : ""
-              }`}
+              className="absolute inset-0 w-full h-full object-contain"
             />
-          )}
-
-          {/* Fallback icon */}
-          {!hasThumb && !hasGif && (
+          ) : (
             <Dumbbell size={32} className="text-gray-300" />
           )}
 

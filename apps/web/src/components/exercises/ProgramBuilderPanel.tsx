@@ -24,7 +24,7 @@ function BuilderCard({ item, onPreview }: { item: BuilderExercise; onPreview: (i
   const { removeExercise, updateExercise } = useProgramBuilder()
   const [expanded, setExpanded] = useState(false)
 
-  const mediaSrc = item.animatedGifUrl ?? item.thumbnailUrl
+  const mediaSrc = item.thumbnailUrl ?? item.animatedGifUrl
 
   return (
     <div className="relative bg-white rounded-xl border border-gray-200 overflow-hidden group/card">
@@ -122,7 +122,7 @@ function BuilderCard({ item, onPreview }: { item: BuilderExercise; onPreview: (i
 // ── GIF preview modal ─────────────────────────────────────────────────────────
 
 function ExercisePreviewModal({ item, onClose }: { item: BuilderExercise; onClose: () => void }) {
-  const mediaSrc = item.animatedGifUrl ?? item.thumbnailUrl
+  const mediaSrc = item.thumbnailUrl ?? item.animatedGifUrl
   return (
     <div
       className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
@@ -799,7 +799,7 @@ export function ProgramBuilderPanel() {
                   {showExerciseList && exercises.length > 0 && (
                     <div className="border-t border-gray-100 divide-y divide-gray-50 max-h-48 overflow-y-auto">
                       {exercises.map((ex, i) => {
-                        const mediaSrc = ex.animatedGifUrl ?? ex.thumbnailUrl
+                        const mediaSrc = ex.thumbnailUrl ?? ex.animatedGifUrl
                         return (
                           <div key={ex.itemId} className="flex items-center gap-2.5 px-4 py-2">
                             <span className="text-xs text-gray-400 w-4 shrink-0">{i + 1}.</span>

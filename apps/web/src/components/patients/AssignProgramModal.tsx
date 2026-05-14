@@ -203,7 +203,7 @@ export function AssignProgramModal({ patientId, templates }: Props) {
                             <div className="flex gap-0.5 shrink-0">
                               {items.slice(0, 3).map((item) => {
                                 const ex = getExercise(item)
-                                const src = ex?.animated_gif_url ?? ex?.thumbnail_url
+                                const src = ex?.thumbnail_url ?? ex?.animated_gif_url
                                 return (
                                   <div key={item.id} className="w-7 h-7 rounded bg-gray-100 overflow-hidden">
                                     {src
