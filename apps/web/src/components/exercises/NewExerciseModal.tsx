@@ -26,7 +26,7 @@ import { toast } from "sonner"
 const BODY_PARTS = ["Kolano", "Bark", "Biodro", "Kręgosłup lędźwiowy", "Kręgosłup szyjny", "Łokieć", "Nadgarstek", "Stopa/Skokowy", "Całe ciało", "Inne"]
 const CATEGORIES = ["Siła", "Rozciąganie", "Stabilizacja", "Mobilność", "Propriocepcja", "Kardio", "Relaksacja"]
 
-function resizeToWebP(file: File | Blob, maxWidth = 1200): Promise<Blob> {
+function resizeToWebP(file: File | Blob, maxWidth = 800): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new window.Image()
     img.onload = () => {
@@ -39,7 +39,7 @@ function resizeToWebP(file: File | Blob, maxWidth = 1200): Promise<Blob> {
       const ctx = canvas.getContext("2d")
       if (!ctx) { reject(new Error("canvas context unavailable")); return }
       ctx.drawImage(img, 0, 0, w, h)
-      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("toBlob failed")), "image/webp", 0.85)
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("toBlob failed")), "image/webp", 0.78)
     }
     img.onerror = reject
     img.src = URL.createObjectURL(file instanceof File ? file : new File([file], "img"))

@@ -79,7 +79,7 @@ async function getThumbnailFromUrl(url: string): Promise<string | null> {
   return null
 }
 
-function resizeToWebP(file: File | Blob, maxWidth: number): Promise<Blob> {
+function resizeToWebP(file: File | Blob, maxWidth = 800): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new window.Image()
     img.onload = () => {
@@ -90,7 +90,7 @@ function resizeToWebP(file: File | Blob, maxWidth: number): Promise<Blob> {
       canvas.width = w
       canvas.height = h
       canvas.getContext("2d")!.drawImage(img, 0, 0, w, h)
-      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("toBlob failed")), "image/webp", 0.85)
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("toBlob failed")), "image/webp", 0.78)
     }
     img.onerror = reject
     img.src = URL.createObjectURL(file instanceof File ? file : new File([file], "img"))
