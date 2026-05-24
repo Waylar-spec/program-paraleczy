@@ -3,7 +3,14 @@
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Loader2, ImageIcon, Film, X } from "lucide-react"
-import { createExercise, uploadExerciseImage } from "@/lib/actions/exercises"
+import { createExercise } from "@/lib/actions/exercises"
+
+async function uploadViaApi(blob: Blob, name: string): Promise<{ url: string } | { error: string }> {
+  const fd = new FormData()
+  fd.append("file", blob, name)
+  const res = await fetch("/api/upload-exercise-image", { method: "POST", body: fd })
+  return res.json()
+}
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -85,9 +92,8 @@ export function NewExerciseModal() {
     setPhotoUploading(true)
     try {
       const webpBlob = await resizeToWebP(file)
-      const fd = new FormData()
-      fd.append("file", webpBlob, name.replace(/\.[^.]+$/, "") + ".webp")
-      const result = await uploadExerciseImage(fd)
+      const filename = name.replace(/\.[^.]+$/, "") + ".webp"
+      const result = await uploadViaApi(webpBlob, filename)
       if ("error" in result) { toast.error("Błąd uploadu: " + result.error); return }
       setPhotoUrl(result.url)
     } catch (err) {

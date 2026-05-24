@@ -3,9 +3,16 @@
 import { useState, useRef } from "react"
 import { X, Dumbbell, Star, Plus, Check, Pencil, Loader2, ImageIcon, Film } from "lucide-react"
 import { useProgramBuilder } from "@/store/programBuilder"
-import { toggleFavorite, updateExercise, uploadExerciseImage } from "@/lib/actions/exercises"
+import { toggleFavorite, updateExercise } from "@/lib/actions/exercises"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+
+async function uploadViaApi(blob: Blob, name: string): Promise<{ url: string } | { error: string }> {
+  const fd = new FormData()
+  fd.append("file", blob, name)
+  const res = await fetch("/api/upload-exercise-image", { method: "POST", body: fd })
+  return res.json()
+}
 
 type Exercise = {
   id: string
@@ -278,9 +285,8 @@ function EditMode({ exercise, onClose, onSaved }: {
     setPhotoUploading(true)
     try {
       const webpBlob = await resizeToWebP(file, 1200)
-      const fd = new FormData()
-      fd.append("file", webpBlob, name.replace(/\.[^.]+$/, "") + ".webp")
-      const result = await uploadExerciseImage(fd)
+      const filename = name.replace(/\.[^.]+$/, "") + ".webp"
+      const result = await uploadViaApi(webpBlob, filename)
       if ("error" in result) { toast.error("Błąd uploadu: " + result.error); return }
       setPhotoUrl(result.url)
     } catch (err) {
