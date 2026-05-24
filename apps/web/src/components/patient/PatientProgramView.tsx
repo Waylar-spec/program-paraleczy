@@ -281,7 +281,9 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: Ses
         {embedUrl ? (
           <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
         ) : ex?.animated_gif_url ? (
-          <img src={ex.animated_gif_url} alt={ex.name} className="w-full h-full object-contain" />
+          /\.(mp4|webm)(\?|$)/i.test(ex.animated_gif_url)
+            ? <video src={ex.animated_gif_url} className="w-full h-full object-contain bg-black" controls playsInline autoPlay />
+            : <img src={ex.animated_gif_url} alt={ex.name ?? ""} className="w-full h-full object-contain" />
         ) : ex?.thumbnail_url ? (
           <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
         ) : (
