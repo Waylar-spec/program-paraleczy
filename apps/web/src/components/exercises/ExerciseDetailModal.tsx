@@ -280,8 +280,9 @@ function EditMode({ exercise, onClose, onSaved }: {
       const webpBlob = await resizeToWebP(file, 1200)
       const fd = new FormData()
       fd.append("file", webpBlob, name.replace(/\.[^.]+$/, "") + ".webp")
-      const url = await uploadExerciseImage(fd)
-      setPhotoUrl(url)
+      const result = await uploadExerciseImage(fd)
+      if ("error" in result) { toast.error("Błąd uploadu: " + result.error); return }
+      setPhotoUrl(result.url)
     } catch (err) {
       toast.error("Błąd uploadu: " + (err instanceof Error ? err.message : String(err)))
     } finally {

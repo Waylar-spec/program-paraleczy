@@ -35,28 +35,31 @@ export async function getExercises(filter?: { bodyPart?: string; search?: string
   return _cachedFetchExercises(user.id, filter?.bodyPart, filter?.search)
 }
 
-export async function uploadExerciseImage(formData: FormData): Promise<string> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Brak autoryzacji")
+export async function uploadExerciseImage(formData: FormData): Promise<{ url: string } | { error: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: "Brak autoryzacji" }
 
-  const file = formData.get("file") as File
-  if (!file) throw new Error("Brak pliku")
+    const file = formData.get("file") as File
+    if (!file) return { error: "Brak pliku w formularzu" }
 
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg"
-  const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const ext = (file.name ?? "file").split(".").pop()?.toLowerCase() ?? "webp"
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
-  const { createServiceClient } = await import("@/lib/supabase/service")
-  const storage = createServiceClient().storage
+    const storage = createServiceClient().storage
 
-  const { error } = await storage
-    .from("exercise-media")
-    .upload(path, file, { contentType: file.type || "image/webp", upsert: false })
+    const { error } = await storage
+      .from("exercise-media")
+      .upload(path, file, { contentType: file.type || "image/webp", upsert: false })
 
-  if (error) throw new Error(error.message)
+    if (error) return { error: `Storage: ${error.message}` }
 
-  const { data: { publicUrl } } = storage.from("exercise-media").getPublicUrl(path)
-  return publicUrl
+    const { data: { publicUrl } } = storage.from("exercise-media").getPublicUrl(path)
+    return { url: publicUrl }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) }
+  }
 }
 
 export async function createExercise(formData: {
