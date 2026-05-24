@@ -100,6 +100,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
   }
 
   if (active) {
+    const isLastUndone = items.filter(i => !done.has(i.id) && i.id !== active.id).length === 0
     return (
       <ExerciseSession
         item={active}
@@ -112,6 +113,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
           setActive(next ?? null)
         }}
         hasNext={items.findIndex((i) => i.id === active.id) < items.length - 1}
+        showVasOnComplete={isLastUndone}
         phaseInfo={phaseInfo}
         kod={kod}
       />
@@ -322,11 +324,12 @@ interface SessionProps {
   onClose: () => void
   onNext: () => void
   hasNext: boolean
+  showVasOnComplete: boolean
   phaseInfo?: PhaseInfo
   kod: string
 }
 
-function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, phaseInfo }: SessionProps) {
+function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showVasOnComplete, phaseInfo }: SessionProps) {
   const [timerActive, setTimerActive] = useState(false)
   const [timeLeft, setTimeLeft] = useState(item.duration_seconds ?? 0)
   const [timerDone, setTimerDone] = useState(false)
@@ -480,7 +483,7 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, phase
           <div className="flex flex-col gap-2">
             {!isDone && (
               <button
-                onClick={() => setShowVas(true)}
+                onClick={() => showVasOnComplete ? setShowVas(true) : onMark(null)}
                 className="w-full h-12 rounded-xl bg-navy-500 hover:bg-navy-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <CheckCircle2 size={18} />
@@ -558,8 +561,8 @@ function VasPainModal({ onSubmit }: VasModalProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-xl px-5 pt-5 pb-8">
-        <h3 className="font-semibold text-gray-900 text-center mb-1">Jak się czujesz?</h3>
-        <p className="text-xs text-gray-500 text-center mb-5">Oceń poziom bólu po tym ćwiczeniu (0 = brak bólu, 10 = maksymalny)</p>
+        <h3 className="font-semibold text-gray-900 text-center mb-1">Jak się czujesz po treningu?</h3>
+        <p className="text-xs text-gray-500 text-center mb-5">Oceń ogólny poziom bólu po dzisiejszej sesji (0 = brak bólu, 10 = maksymalny)</p>
 
         <div className="flex justify-center mb-4">
           <span className="text-5xl font-bold" style={{ color: COLORS[pain] }}>{pain}</span>
