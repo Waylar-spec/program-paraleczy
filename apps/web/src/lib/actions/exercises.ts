@@ -163,11 +163,10 @@ export async function deleteExercise(id: string) {
   if (!ex) throw new Error("Ćwiczenie nie istnieje")
   if (ex.practitioner_id !== null && ex.practitioner_id !== user.id) throw new Error("Brak uprawnień")
 
-  // Remove all FK references before deleting
+  // Remove FK references before deleting (logs use program_item_id, not exercise_id directly)
   await Promise.all([
     sb.from("program_template_items").delete().eq("exercise_id", id),
     sb.from("patient_program_items").delete().eq("exercise_id", id),
-    sb.from("patient_exercise_logs").delete().eq("exercise_id", id),
   ])
 
   const { error } = await sb.from("exercises").delete().eq("id", id)
