@@ -81,7 +81,7 @@ export async function getPatientProtocolsForPortal(patientId: string) {
       id, status, start_date, current_phase_id,
       rehabilitation_protocols(
         id, name, description, total_weeks, body_part,
-        protocol_phases(id, order, name, description, goals, duration_weeks, template_id)
+        protocol_phases(id, order, name, description, goals, patient_intro, rules, duration_weeks, template_id)
       )
     `)
     .eq("patient_id", patientId)

@@ -62,6 +62,7 @@ const VIDEO_FIXES = [
   { name: 'Side Plank',                      uuid: '0f618659-0ff7-466d-b1dc-787da1418cfa' },
   { name: 'Mostek (Glute Bridge)',            uuid: '69414924-f275-4510-b44c-84dac0c82383' },
   { name: 'Dead Bug',                         uuid: '6b4a6f96-f019-4dff-9001-8d8d5b993119' },
+  { name: 'Rotacje kolan (Knee Rocks)',        uuid: '12fc9764-3286-4add-b30a-32032f1bec40' },
   { name: 'Pallof Press z gumą',              uuid: '0054065b-b484-438c-919c-9b3dd5ef3169' },
   { name: 'Plank (przodem)',                  uuid: 'a4a9855b-96b7-4bee-90c3-b1f01a5006b7' },
   { name: 'Plank przodem',                    uuid: 'a4a9855b-96b7-4bee-90c3-b1f01a5006b7' },

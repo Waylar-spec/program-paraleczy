@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink } from "lucide-react"
+import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw } from "lucide-react"
 import { logExercise } from "@/lib/actions/patient-portal"
 import { toast } from "sonner"
 
@@ -51,15 +51,26 @@ type Program = {
   patient_program_content?: ContentItem[]
 }
 
+type PhaseInfo = {
+  name: string
+  description: string | null
+  goals: string | null
+  patient_intro: string | null
+  rules: string | null
+  duration_weeks: number
+  protocolName: string
+} | null
+
 interface Props {
   program: Program
   patientId: string
   patientName: string
   kod: string
   doneTodayIds: string[]
+  phaseInfo?: PhaseInfo
 }
 
-export function PatientProgramView({ program, patientId, patientName, kod, doneTodayIds }: Props) {
+export function PatientProgramView({ program, patientId, patientName, kod, doneTodayIds, phaseInfo }: Props) {
   const [done, setDone] = useState<Set<string>>(new Set(doneTodayIds))
   const [active, setActive] = useState<ExerciseItem | null>(null)
 
@@ -101,129 +112,203 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
           setActive(next ?? null)
         }}
         hasNext={items.findIndex((i) => i.id === active.id) < items.length - 1}
+        phaseInfo={phaseInfo}
+        kod={kod}
       />
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-5 pb-4 space-y-4">
+    <div className="max-w-5xl mx-auto px-4 pt-5 pb-10">
       {/* Back */}
-      <Link href={`/p/${kod}`} className="inline-flex items-center gap-1.5 text-sm text-gray-500">
+      <Link href={`/p/${kod}`} className="inline-flex items-center gap-1.5 text-sm text-gray-500 mb-4">
         <ArrowLeft size={14} />
         {patientName}
       </Link>
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="lg:grid lg:grid-cols-[1fr_300px] lg:gap-6 lg:items-start">
+        {/* ── Left: exercises ── */}
         <div>
-          <h1 className="text-base font-semibold text-gray-900">{program.name}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {items.length} {items.length === 1 ? "ćwiczenie" : items.length < 5 ? "ćwiczenia" : "ćwiczeń"}
-            {done.size > 0 && ` · ${done.size} zrobione dziś`}
-          </p>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-base font-semibold text-gray-900">{program.name}</h1>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {items.length} {items.length === 1 ? "ćwiczenie" : items.length < 5 ? "ćwiczenia" : "ćwiczeń"}
+                {done.size > 0 && ` · ${done.size} zrobione dziś`}
+              </p>
+            </div>
+            {allDone && (
+              <span className="text-xs bg-green-50 text-green-600 font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+                <CheckCircle2 size={11} /> Dziś zrobione!
+              </span>
+            )}
+          </div>
+
+          {/* Exercise grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {items.map((item) => {
+              const isDone = done.has(item.id)
+              const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActive(item)}
+                  className={`relative text-left rounded-2xl overflow-hidden border-2 transition-all shadow-xs hover:shadow-md ${
+                    isDone ? "border-green-400" : "border-transparent hover:border-navy-200"
+                  }`}
+                >
+                  <div className="w-full aspect-[4/3] bg-gray-100 relative">
+                    {ex?.thumbnail_url ? (
+                      <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Dumbbell size={20} className="text-gray-300" />
+                      </div>
+                    )}
+                    {isDone && (
+                      <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
+                        <CheckCircle2 size={22} className="text-green-600 drop-shadow" />
+                      </div>
+                    )}
+                    {!isDone && (
+                      <div className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/90 shadow flex items-center justify-center">
+                        <Play size={11} className="text-navy-500 ml-0.5" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="bg-white px-2.5 py-2.5">
+                    <p className={`text-xs font-semibold leading-tight line-clamp-2 ${isDone ? "text-green-700" : "text-gray-900"}`}>
+                      {ex?.name ?? "Ćwiczenie"}
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      {[
+                        item.reps && `${item.reps} powt.`,
+                        item.sets && `${item.sets} serii`,
+                        item.duration_seconds && `${item.duration_seconds}s`,
+                      ].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Educational materials */}
+          {(program.patient_program_content?.length ?? 0) > 0 && (
+            <div className="mt-6">
+              <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Materiały edukacyjne</h2>
+              <div className="space-y-2">
+                {program.patient_program_content!
+                  .slice()
+                  .sort((a, b) => a.order - b.order)
+                  .map((pc) => {
+                    const content = Array.isArray(pc.educational_content)
+                      ? pc.educational_content[0]
+                      : pc.educational_content
+                    if (!content) return null
+                    const url = content.file_url ?? content.external_url
+                    return (
+                      <a
+                        key={pc.id}
+                        href={url ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl p-3 hover:border-navy-300 transition-all"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center shrink-0">
+                          {content.type === "link" ? (
+                            <ExternalLink size={18} className="text-navy-500" />
+                          ) : (
+                            <FileText size={18} className="text-navy-500" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{content.name}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {content.type === "pdf" ? "PDF" : content.type === "link" ? "Link" : content.type}
+                          </p>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-300 shrink-0" />
+                      </a>
+                    )
+                  })}
+              </div>
+            </div>
+          )}
         </div>
-        {allDone && (
-          <span className="text-xs bg-green-50 text-green-600 font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
-            <CheckCircle2 size={11} /> Dziś zrobione!
-          </span>
+
+        {/* ── Right: phase sidebar ── */}
+        {phaseInfo && (
+          <aside className="hidden lg:block space-y-3 sticky top-6">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+              <div className="bg-navy-700 px-4 py-3">
+                <p className="text-[10px] font-semibold text-white/60 uppercase tracking-wide mb-0.5">{phaseInfo.protocolName}</p>
+                <p className="text-sm font-bold text-white leading-snug">{phaseInfo.name}</p>
+                <p className="text-xs text-white/60 mt-0.5">
+                  {phaseInfo.duration_weeks} {phaseInfo.duration_weeks === 1 ? "tydzień" : phaseInfo.duration_weeks < 5 ? "tygodnie" : "tygodni"}
+                </p>
+              </div>
+
+              <div className="px-4 py-3 space-y-3">
+                {phaseInfo.description && (
+                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.description}</p>
+                )}
+
+                {phaseInfo.goals && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Target size={12} className="text-navy-500" />
+                      <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
+                    </div>
+                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
+                  </div>
+                )}
+
+                {phaseInfo.patient_intro && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <BookOpen size={12} className="text-navy-500" />
+                      <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Co cię czeka</p>
+                    </div>
+                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.patient_intro}</p>
+                  </div>
+                )}
+
+                {phaseInfo.rules && (
+                  <div className="bg-amber-50 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <ShieldCheck size={12} className="text-amber-600" />
+                      <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
+                    </div>
+                    <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Progress */}
+            <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Postęp dzisiaj</p>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all"
+                    style={{ width: `${items.length > 0 ? Math.round((done.size / items.length) * 100) : 0}%` }}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-gray-600">{done.size}/{items.length}</span>
+              </div>
+              <p className="text-xs text-gray-400">
+                {done.size === items.length && items.length > 0
+                  ? "Wszystkie ćwiczenia zrobione!"
+                  : `Pozostało ${items.length - done.size} ćwiczeń`}
+              </p>
+            </div>
+          </aside>
         )}
       </div>
-
-      {/* Exercise grid — 2 cols mobile, 3 cols tablet+ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {items.map((item) => {
-          const isDone = done.has(item.id)
-          const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActive(item)}
-              className={`relative text-left rounded-xl overflow-hidden border-2 transition-all ${
-                isDone ? "border-green-400" : "border-transparent"
-              }`}
-            >
-              {/* Image */}
-              <div className="w-full aspect-[4/3] bg-gray-100 relative">
-                {ex?.thumbnail_url ? (
-                  <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Dumbbell size={20} className="text-gray-300" />
-                  </div>
-                )}
-                {isDone && (
-                  <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
-                    <CheckCircle2 size={22} className="text-green-600 drop-shadow" />
-                  </div>
-                )}
-                {!isDone && ex?.video_url && (
-                  <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
-                    <Play size={10} className="text-navy-500 ml-0.5" />
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="bg-white px-2.5 py-2.5">
-                <p className={`text-xs font-semibold leading-tight line-clamp-2 ${isDone ? "text-green-700" : "text-gray-900"}`}>
-                  {ex?.name ?? "Ćwiczenie"}
-                </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  {[
-                    item.reps && `${item.reps} powt.`,
-                    item.sets && `${item.sets} serii`,
-                    item.duration_seconds && `${item.duration_seconds}s`,
-                  ].filter(Boolean).join(" · ")}
-                </p>
-              </div>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Educational materials */}
-      {(program.patient_program_content?.length ?? 0) > 0 && (
-        <div>
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Materiały edukacyjne</h2>
-          <div className="space-y-2">
-            {program.patient_program_content!
-              .slice()
-              .sort((a, b) => a.order - b.order)
-              .map((pc) => {
-                const content = Array.isArray(pc.educational_content)
-                  ? pc.educational_content[0]
-                  : pc.educational_content
-                if (!content) return null
-                const url = content.file_url ?? content.external_url
-                return (
-                  <a
-                    key={pc.id}
-                    href={url ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl p-3 hover:border-navy-300 transition-all"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center shrink-0">
-                      {content.type === "link" ? (
-                        <ExternalLink size={18} className="text-navy-500" />
-                      ) : (
-                        <FileText size={18} className="text-navy-500" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{content.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {content.type === "pdf" ? "PDF" : content.type === "link" ? "Link" : content.type}
-                      </p>
-                    </div>
-                    <ChevronRight size={16} className="text-gray-300 shrink-0" />
-                  </a>
-                )
-              })}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -237,20 +322,29 @@ interface SessionProps {
   onClose: () => void
   onNext: () => void
   hasNext: boolean
+  phaseInfo?: PhaseInfo
+  kod: string
 }
 
-function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: SessionProps) {
+function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, phaseInfo }: SessionProps) {
   const [timerActive, setTimerActive] = useState(false)
   const [timeLeft, setTimeLeft] = useState(item.duration_seconds ?? 0)
+  const [timerDone, setTimerDone] = useState(false)
   const [showVas, setShowVas] = useState(false)
   const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
 
   function startTimer() {
     setTimerActive(true)
+    setTimerDone(false)
     setTimeLeft(item.duration_seconds ?? 0)
     const interval = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(interval); setTimerActive(false); return 0 }
+        if (t <= 1) {
+          clearInterval(interval)
+          setTimerActive(false)
+          setTimerDone(true)
+          return 0
+        }
         return t - 1
       })
     }, 1000)
@@ -265,121 +359,185 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext }: Ses
   }
 
   const embedUrl = ex?.video_url ? getEmbedUrl(ex.video_url) : null
+  const isVideoFile = ex?.animated_gif_url && /\.(mp4|webm)(\?|$)/i.test(ex.animated_gif_url)
 
   return (
-    <div className="max-w-2xl mx-auto pb-4">
+    <div className="min-h-screen bg-gray-50">
       {showVas && (
         <VasPainModal onSubmit={(pain) => { setShowVas(false); onMark(pain) }} />
       )}
+
+      {/* Back button */}
       <button onClick={onClose} className="inline-flex items-center gap-1.5 text-sm text-gray-500 px-4 pt-5 pb-3">
         <ArrowLeft size={14} />
         Wróć do listy
       </button>
 
-      {/* Video or image */}
-      <div className="w-full aspect-video bg-white">
-        {embedUrl ? (
-          <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
-        ) : ex?.animated_gif_url ? (
-          /\.(mp4|webm)(\?|$)/i.test(ex.animated_gif_url)
-            ? <video src={ex.animated_gif_url} className="w-full h-full object-contain bg-black" controls playsInline autoPlay />
-            : <img src={ex.animated_gif_url} alt={ex.name ?? ""} className="w-full h-full object-contain" />
-        ) : ex?.thumbnail_url ? (
-          <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <Dumbbell size={48} className="text-gray-400" />
+      <div className="lg:grid lg:grid-cols-[1fr_380px] lg:gap-0 lg:items-start max-w-5xl mx-auto">
+        {/* ── Video panel ── */}
+        <div className="lg:sticky lg:top-0">
+          <div className="w-full aspect-video bg-black">
+            {embedUrl ? (
+              <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
+            ) : isVideoFile ? (
+              <video src={ex!.animated_gif_url!} className="w-full h-full object-contain" controls playsInline autoPlay />
+            ) : ex?.animated_gif_url ? (
+              <img src={ex.animated_gif_url} alt={ex.name ?? ""} className="w-full h-full object-contain" />
+            ) : ex?.thumbnail_url ? (
+              <img src={ex.thumbnail_url} alt={ex.name ?? ""} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-900">
+                <Dumbbell size={48} className="text-gray-600" />
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div className="px-4 pt-4 space-y-4">
-        {/* Name */}
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900">{ex?.name}</h1>
-          {ex?.body_part && <p className="text-sm text-gray-400 mt-0.5">{ex.body_part}</p>}
-        </div>
-
-        {/* Params chips */}
-        <div className="flex gap-3">
-          {item.sets && (
-            <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-navy-700">{item.sets}</p>
-              <p className="text-xs text-navy-500 mt-0.5">serie</p>
-            </div>
-          )}
-          {item.reps && (
-            <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-navy-700">{item.reps}</p>
-              <p className="text-xs text-navy-500 mt-0.5">powtórzeń</p>
-            </div>
-          )}
-          {item.duration_seconds && (
-            <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-navy-700">
-                {timerActive
-                  ? `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, "0")}`
-                  : item.duration_seconds}
-              </p>
-              <p className="text-xs text-navy-500 mt-0.5">sekund</p>
+          {/* Phase info panel — visible only on desktop, below video */}
+          {phaseInfo && (phaseInfo.goals || phaseInfo.rules) && (
+            <div className="hidden lg:block bg-white border-t border-gray-100 px-5 py-4 space-y-3">
+              {phaseInfo.goals && (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Target size={12} className="text-navy-500" />
+                    <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
+                </div>
+              )}
+              {phaseInfo.rules && (
+                <div className="bg-amber-50 rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <ShieldCheck size={12} className="text-amber-600" />
+                    <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
+                  </div>
+                  <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Description */}
-        {ex?.description && (
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-sm text-gray-600 leading-relaxed">{ex.description}</p>
+        {/* ── Info panel ── */}
+        <div className="bg-white lg:min-h-screen lg:border-l border-gray-100 px-5 pt-5 pb-10 space-y-5">
+          {/* Name */}
+          <div>
+            <h1 className="text-lg font-bold text-gray-900 leading-tight">{ex?.name}</h1>
+            {ex?.body_part && <p className="text-sm text-gray-400 mt-0.5">{ex.body_part}</p>}
           </div>
-        )}
 
-        {/* Note */}
-        {item.notes && (
-          <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3">
-            <p className="text-xs font-medium text-yellow-700 mb-1">Wskazówka od fizjoterapeuty</p>
-            <p className="text-sm text-yellow-800">{item.notes}</p>
+          {/* Params chips */}
+          <div className="flex gap-2">
+            {item.sets && (
+              <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold text-navy-700">{item.sets}</p>
+                <p className="text-xs text-navy-400 mt-0.5">serie</p>
+              </div>
+            )}
+            {item.reps && (
+              <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold text-navy-700">{item.reps}</p>
+                <p className="text-xs text-navy-400 mt-0.5">powtórzeń</p>
+              </div>
+            )}
+            {item.duration_seconds && (
+              <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold text-navy-700">
+                  {timerActive
+                    ? `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, "0")}`
+                    : timerDone ? "✓" : item.duration_seconds}
+                </p>
+                <p className="text-xs text-navy-400 mt-0.5">sekund</p>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Timer */}
-        {item.duration_seconds && !timerActive && !isDone && (
-          <button
-            onClick={startTimer}
-            className="w-full h-11 rounded-xl border border-navy-200 text-navy-600 font-medium text-sm flex items-center justify-center gap-2 hover:bg-navy-50 transition-colors"
-          >
-            <Play size={16} />
-            Uruchom timer
-          </button>
-        )}
+          {/* Description */}
+          {ex?.description && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-sm text-gray-600 leading-relaxed">{ex.description}</p>
+            </div>
+          )}
 
-        {/* Actions */}
-        <div className="flex gap-3">
-          {!isDone && (
+          {/* Note from physio */}
+          {item.notes && (
+            <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3">
+              <p className="text-xs font-semibold text-yellow-700 mb-1">Wskazówka od fizjoterapeuty</p>
+              <p className="text-sm text-yellow-800 leading-relaxed">{item.notes}</p>
+            </div>
+          )}
+
+          {/* Timer */}
+          {item.duration_seconds && !timerActive && !isDone && (
             <button
-              onClick={() => setShowVas(true)}
-              className="flex-1 h-12 rounded-xl bg-navy-500 hover:bg-navy-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+              onClick={startTimer}
+              className="w-full h-11 rounded-xl border border-navy-200 text-navy-600 font-medium text-sm flex items-center justify-center gap-2 hover:bg-navy-50 transition-colors"
             >
-              <CheckCircle2 size={18} />
-              Zrobione!
+              {timerDone ? <><RotateCcw size={15} /> Ponów timer</> : <><Clock size={15} /> Uruchom timer</>}
             </button>
           )}
-          {isDone && hasNext && (
-            <button
-              onClick={onNext}
-              className="flex-1 h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              Następne ćwiczenie
-              <ChevronRight size={18} />
-            </button>
-          )}
-          {isDone && !hasNext && (
-            <button
-              onClick={onClose}
-              className="flex-1 h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              <CheckCircle2 size={18} />
-              Koniec programu!
-            </button>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2">
+            {!isDone && (
+              <button
+                onClick={() => setShowVas(true)}
+                className="w-full h-12 rounded-xl bg-navy-500 hover:bg-navy-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 size={18} />
+                Zrobione!
+              </button>
+            )}
+            {isDone && hasNext && (
+              <button
+                onClick={onNext}
+                className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                Następne ćwiczenie
+                <ChevronRight size={18} />
+              </button>
+            )}
+            {isDone && !hasNext && (
+              <button
+                onClick={onClose}
+                className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 size={18} />
+                Koniec programu!
+              </button>
+            )}
+            {isDone && (
+              <button
+                onClick={onClose}
+                className="w-full h-10 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors"
+              >
+                Wróć do listy
+              </button>
+            )}
+          </div>
+
+          {/* Mobile phase info */}
+          {phaseInfo && (phaseInfo.goals || phaseInfo.patient_intro || phaseInfo.rules) && (
+            <div className="lg:hidden space-y-3 pt-2 border-t border-gray-100">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Info o fazie</p>
+              {phaseInfo.goals && (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Target size={12} className="text-navy-500" />
+                    <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele</p>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
+                </div>
+              )}
+              {phaseInfo.rules && (
+                <div className="bg-amber-50 rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <ShieldCheck size={12} className="text-amber-600" />
+                    <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
+                  </div>
+                  <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -403,12 +561,10 @@ function VasPainModal({ onSubmit }: VasModalProps) {
         <h3 className="font-semibold text-gray-900 text-center mb-1">Jak się czujesz?</h3>
         <p className="text-xs text-gray-500 text-center mb-5">Oceń poziom bólu po tym ćwiczeniu (0 = brak bólu, 10 = maksymalny)</p>
 
-        {/* Number display */}
         <div className="flex justify-center mb-4">
           <span className="text-5xl font-bold" style={{ color: COLORS[pain] }}>{pain}</span>
         </div>
 
-        {/* Slider */}
         <input
           type="range"
           min={0}
