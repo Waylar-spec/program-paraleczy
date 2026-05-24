@@ -21,7 +21,7 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
   const [{ data: template }, { data: patient }, { data: practitioner }] = await Promise.all([
     sb
       .from("program_templates")
-      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes)")
+      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes), program_template_content(content_id, order)")
       .eq("id", templateId)
       .single(),
     supabase
@@ -96,13 +96,16 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
     if (itemsError) throw new Error(itemsError.message)
   }
 
-  if (params.contentIds?.length) {
-    const contentRows = params.contentIds.map((contentId, i) => ({
-      program_id: program.id,
-      content_id: contentId,
-      order: i + 1,
-    }))
-    await supabase.from("patient_program_content").insert(contentRows)
+  // Copy template content + any extra contentIds passed explicitly
+  const templateContent: { content_id: string; order: number }[] = (template as any).program_template_content ?? []
+  const allContent = [
+    ...templateContent.map((c) => ({ contentId: c.content_id, order: c.order })),
+    ...(params.contentIds ?? []).map((id, i) => ({ contentId: id, order: templateContent.length + i + 1 })),
+  ]
+  if (allContent.length) {
+    await supabase.from("patient_program_content").insert(
+      allContent.map(({ contentId, order }) => ({ program_id: program.id, content_id: contentId, order }))
+    )
   }
 
   // Copy template surveys to patient_program_surveys
