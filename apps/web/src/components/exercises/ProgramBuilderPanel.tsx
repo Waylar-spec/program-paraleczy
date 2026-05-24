@@ -122,7 +122,7 @@ function BuilderCard({ item, onPreview }: { item: BuilderExercise; onPreview: (i
 // ── GIF preview modal ─────────────────────────────────────────────────────────
 
 function ExercisePreviewModal({ item, onClose }: { item: BuilderExercise; onClose: () => void }) {
-  const mediaSrc = item.thumbnailUrl ?? item.animatedGifUrl
+  const isVideo = item.animatedGifUrl?.endsWith(".mp4") || item.animatedGifUrl?.endsWith(".webm")
   return (
     <div
       className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
@@ -133,8 +133,16 @@ function ExercisePreviewModal({ item, onClose }: { item: BuilderExercise; onClos
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative bg-black aspect-video">
-          {mediaSrc ? (
-            <img src={mediaSrc} alt={item.name} className="w-full h-full object-contain" />
+          {isVideo ? (
+            <video
+              src={item.animatedGifUrl!}
+              className="w-full h-full object-contain"
+              autoPlay loop controls playsInline
+            />
+          ) : item.animatedGifUrl ? (
+            <img src={item.animatedGifUrl} alt={item.name} className="w-full h-full object-contain" />
+          ) : item.thumbnailUrl ? (
+            <img src={item.thumbnailUrl} alt={item.name} className="w-full h-full object-contain" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <Dumbbell size={40} className="text-gray-600" />
