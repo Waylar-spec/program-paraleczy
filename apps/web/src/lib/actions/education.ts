@@ -54,6 +54,8 @@ export async function deleteEducationalContent(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
+  const service = createServiceClient()
+
   const { data: item } = await supabase
     .from("educational_content")
     .select("file_url")
@@ -61,8 +63,15 @@ export async function deleteEducationalContent(id: string) {
     .eq("practitioner_id", user.id)
     .single()
 
-  if (item?.file_url?.includes("supabase")) {
-    const service = createServiceClient()
+  if (!item) throw new Error("Nie znaleziono materiału lub brak uprawnień")
+
+  // Remove FK references before deleting
+  await Promise.all([
+    service.from("patient_program_content").delete().eq("content_id", id),
+    service.from("program_template_content").delete().eq("content_id", id),
+  ])
+
+  if (item.file_url?.includes("supabase")) {
     const path = item.file_url.split("/storage/v1/object/public/education/")[1]
     if (path) await service.storage.from("education").remove([path])
   }
