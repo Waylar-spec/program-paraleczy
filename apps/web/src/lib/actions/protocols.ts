@@ -306,7 +306,7 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
     const sb = createServiceClient()
     const { data: template } = await sb
       .from("program_templates")
-      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes)")
+      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes), program_template_content(content_id, order)")
       .eq("id", firstPhase.template_id)
       .single()
 
@@ -329,18 +329,27 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
         .select("id")
         .single()
 
-      if (program && (template.program_template_items ?? []).length > 0) {
-        const items = (template.program_template_items as any[]).map((item) => ({
+      if (program) {
+        if ((template.program_template_items ?? []).length > 0) {
+          const items = (template.program_template_items as any[]).map((item) => ({
+            program_id: program.id,
+            exercise_id: item.exercise_id,
+            order: item.order,
+            sets: item.sets,
+            reps: item.reps,
+            duration_seconds: item.duration_seconds,
+            rest_seconds: item.rest_seconds,
+            notes: item.notes,
+          }))
+          await supabase.from("patient_program_items").insert(items)
+        }
+
+        const contentRows = (template.program_template_content ?? []).map((tc: { content_id: string; order: number }) => ({
           program_id: program.id,
-          exercise_id: item.exercise_id,
-          order: item.order,
-          sets: item.sets,
-          reps: item.reps,
-          duration_seconds: item.duration_seconds,
-          rest_seconds: item.rest_seconds,
-          notes: item.notes,
+          content_id: tc.content_id,
+          order: tc.order,
         }))
-        await supabase.from("patient_program_items").insert(items)
+        if (contentRows.length) await supabase.from("patient_program_content").insert(contentRows)
       }
     }
   }
