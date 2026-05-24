@@ -145,12 +145,30 @@ export async function deleteProtocol(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
+  const sb = createServiceClient()
+
+  // Verify ownership
+  const { data: proto } = await supabase
     .from("rehabilitation_protocols")
-    .delete()
+    .select("id")
     .eq("id", id)
     .eq("practitioner_id", user.id)
+    .single()
+  if (!proto) throw new Error("Protokół nie istnieje lub brak uprawnień")
 
+  // Cascade: patient_protocols → patient_programs linked via protocol phases
+  const { data: patientProtocols } = await sb
+    .from("patient_protocols")
+    .select("id")
+    .eq("protocol_id", id)
+  if (patientProtocols?.length) {
+    await sb.from("patient_protocols").delete().eq("protocol_id", id)
+  }
+
+  // Delete protocol phases (FK from phases to protocol)
+  await sb.from("protocol_phases").delete().eq("protocol_id", id)
+
+  const { error } = await sb.from("rehabilitation_protocols").delete().eq("id", id)
   if (error) throw new Error(error.message)
   revalidateTag("protocols", "max")
   revalidatePath("/biblioteka/protokoly")

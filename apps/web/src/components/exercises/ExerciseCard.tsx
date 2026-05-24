@@ -183,20 +183,18 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
                 <p className="text-xs text-gray-400 leading-tight mt-0.5 line-clamp-1">{exercise.name_en}</p>
               )}
             </div>
-            {isOwn && (
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className={`shrink-0 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${
-                  confirmDelete
-                    ? "bg-red-500 text-white opacity-100"
-                    : "hover:bg-red-50 text-gray-300 hover:text-red-500"
-                }`}
-                title={confirmDelete ? "Kliknij ponownie aby potwierdzić" : "Usuń ćwiczenie"}
-              >
-                <Trash2 size={13} />
-              </button>
-            )}
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className={`shrink-0 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${
+                confirmDelete
+                  ? "bg-red-500 text-white opacity-100"
+                  : "hover:bg-red-50 text-gray-300 hover:text-red-500"
+              }`}
+              title={confirmDelete ? "Kliknij ponownie aby potwierdzić" : "Usuń ćwiczenie"}
+            >
+              <Trash2 size={13} />
+            </button>
           </div>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             {exercise.body_part && (

@@ -156,12 +156,21 @@ export async function deleteExercise(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
-    .from("exercises")
-    .delete()
-    .eq("id", id)
-    .eq("practitioner_id", user.id)
+  const sb = createServiceClient()
 
+  // Verify the exercise exists and belongs to this user or is a public library exercise
+  const { data: ex } = await sb.from("exercises").select("practitioner_id").eq("id", id).single()
+  if (!ex) throw new Error("Ćwiczenie nie istnieje")
+  if (ex.practitioner_id !== null && ex.practitioner_id !== user.id) throw new Error("Brak uprawnień")
+
+  // Remove all FK references before deleting
+  await Promise.all([
+    sb.from("program_template_items").delete().eq("exercise_id", id),
+    sb.from("patient_program_items").delete().eq("exercise_id", id),
+    sb.from("patient_exercise_logs").delete().eq("exercise_id", id),
+  ])
+
+  const { error } = await sb.from("exercises").delete().eq("id", id)
   if (error) throw new Error(error.message)
   revalidateTag("exercises", "max")
   revalidatePath("/biblioteka")
