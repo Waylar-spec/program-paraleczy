@@ -459,7 +459,7 @@ function EditMode({ exercise, onClose, onSaved }: {
                   }
                 </button>
               )}
-              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" className="hidden" onChange={handleFileChange} />
             </>
           ) : (
             <div className="space-y-2">

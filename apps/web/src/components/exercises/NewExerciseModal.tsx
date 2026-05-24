@@ -257,12 +257,12 @@ export function NewExerciseModal() {
                           <ImageIcon size={28} />
                           <span className="text-sm text-gray-500">Kliknij, aby wybrać plik</span>
                           <span className="text-xs">lub wklej zrzut ekranu <kbd className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">Ctrl+V</kbd></span>
-                          <span className="text-[11px] text-gray-400">JPG / PNG / WebP — konwersja do WebP automatycznie</span>
+                          <span className="text-[11px] text-gray-400">JPG / PNG / WebP / AVIF / GIF — konwersja do WebP automatycznie</span>
                         </>
                     }
                   </button>
                 )}
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} />
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" className="hidden" onChange={handleFileChange} />
               </>
             ) : (
               <div className="space-y-2">
