@@ -53,7 +53,7 @@ export function ProtocolJourney({ protocols, kod }: Props) {
 }
 
 function ProtocolCard({ pp, kod }: { pp: PatientProtocol; kod: string }) {
-  const { protocol, phases, currentPhaseIdx, status } = pp
+  const { protocol, phases, currentPhaseIdx, linkedProgram, status } = pp
   if (!protocol) return null
 
   const totalPhases = phases.length
@@ -124,6 +124,8 @@ function ProtocolCard({ pp, kod }: { pp: PatientProtocol; kod: string }) {
               isCurrent={isCurrent}
               isDone={isDone}
               isLast={idx === phases.length - 1}
+              linkedProgram={isCurrent ? linkedProgram : null}
+              kod={kod}
             />
           )
         })}
@@ -137,16 +139,26 @@ function PhaseRow({
   isCurrent,
   isDone,
   isLast,
+  linkedProgram,
+  kod,
 }: {
   phase: Phase
   isCurrent: boolean
   isDone: boolean
   isLast: boolean
+  linkedProgram: LinkedProgram
+  kod: string
 }) {
-  return (
+  const inner = (
     <div
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl ${
-        isCurrent ? "bg-navy-50/50" : isDone ? "opacity-50" : "opacity-30"
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+        isCurrent
+          ? linkedProgram
+            ? "bg-navy-50 hover:bg-navy-100 cursor-pointer"
+            : "bg-navy-50/50"
+          : isDone
+          ? "opacity-50"
+          : "opacity-30"
       }`}
     >
       {/* Icon */}
@@ -179,11 +191,19 @@ function PhaseRow({
         </p>
       </div>
 
-      {isCurrent && (
+      {isCurrent && linkedProgram && (
+        <ChevronRight size={15} className="text-navy-400 shrink-0" />
+      )}
+      {isCurrent && !linkedProgram && (
         <span className="shrink-0 text-[10px] bg-navy-600 text-white font-medium px-1.5 py-0.5 rounded-full leading-none">
           Aktywna
         </span>
       )}
     </div>
   )
+
+  if (isCurrent && linkedProgram) {
+    return <Link href={`/p/${kod}/program/${linkedProgram.id}`}>{inner}</Link>
+  }
+  return inner
 }
