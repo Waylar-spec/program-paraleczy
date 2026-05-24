@@ -97,7 +97,7 @@ export default async function ProtocolyPage() {
                   <DeleteProtocolButton
                     protocolId={protocol.id}
                     protocolName={protocol.name}
-                    isOwn={isOwn}
+                    isOwn={true}
                   />
                 </div>
               </div>

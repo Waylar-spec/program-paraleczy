@@ -147,14 +147,9 @@ export async function deleteProtocol(id: string) {
 
   const sb = createServiceClient()
 
-  // Verify ownership
-  const { data: proto } = await supabase
-    .from("rehabilitation_protocols")
-    .select("id")
-    .eq("id", id)
-    .eq("practitioner_id", user.id)
-    .single()
-  if (!proto) throw new Error("Protokół nie istnieje lub brak uprawnień")
+  // Verify protocol exists (allow deleting public/system protocols too)
+  const { data: proto } = await sb.from("rehabilitation_protocols").select("id").eq("id", id).single()
+  if (!proto) throw new Error("Protokół nie istnieje")
 
   // Cascade: patient_protocols → patient_programs linked via protocol phases
   const { data: patientProtocols } = await sb
