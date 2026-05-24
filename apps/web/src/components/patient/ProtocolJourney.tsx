@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { CheckCircle2, Lock, Play, ChevronRight, Activity, BookOpen, ShieldCheck, Target, FileText } from "lucide-react"
+import { CheckCircle2, Lock, Play, ChevronRight, Activity } from "lucide-react"
 
 type Phase = {
   id: string
@@ -53,7 +53,7 @@ export function ProtocolJourney({ protocols, kod }: Props) {
 }
 
 function ProtocolCard({ pp, kod }: { pp: PatientProtocol; kod: string }) {
-  const { protocol, phases, currentPhaseIdx, linkedProgram, status } = pp
+  const { protocol, phases, currentPhaseIdx, status } = pp
   if (!protocol) return null
 
   const totalPhases = phases.length
@@ -62,7 +62,6 @@ function ProtocolCard({ pp, kod }: { pp: PatientProtocol; kod: string }) {
   const progress = totalPhases > 0
     ? isCompleted ? 100 : Math.round((completedCount / totalPhases) * 100)
     : 0
-  const currentPhase = phases[currentPhaseIdx] ?? null
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -111,87 +110,6 @@ function ProtocolCard({ pp, kod }: { pp: PatientProtocol; kod: string }) {
         )}
       </div>
 
-      {/* Protocol description */}
-      {protocol.description && (
-        <div className="px-5 py-4 border-b border-gray-100">
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{protocol.description}</p>
-        </div>
-      )}
-
-      {/* Current phase expanded card */}
-      {currentPhase && !isCompleted && (
-        <div className="px-4 pt-4 pb-2 space-y-3">
-          <div className="rounded-xl bg-navy-50 border border-navy-100 overflow-hidden">
-            {/* Phase header */}
-            <div className="px-4 py-3 bg-navy-100/60 flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-navy-600 flex items-center justify-center shrink-0">
-                <Play size={10} className="text-white fill-white ml-0.5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-navy-500 font-medium">Aktualna faza</p>
-                <p className="text-sm font-bold text-navy-800 leading-tight">{currentPhase.name}</p>
-              </div>
-              <span className="shrink-0 text-xs text-navy-500 font-medium">
-                {currentPhase.duration_weeks} {currentPhase.duration_weeks === 1 ? "tydzień" : currentPhase.duration_weeks < 5 ? "tygodnie" : "tygodni"}
-              </span>
-            </div>
-
-            <div className="px-4 py-3 space-y-3">
-              {/* Description */}
-              {currentPhase.description && (
-                <div className="flex gap-2.5">
-                  <FileText size={14} className="text-navy-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-navy-700 leading-relaxed whitespace-pre-line">{currentPhase.description}</p>
-                </div>
-              )}
-
-              {/* Goals */}
-              {currentPhase.goals && (
-                <div className="rounded-lg bg-white border border-navy-100 p-3">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Target size={13} className="text-navy-500 shrink-0" />
-                    <p className="text-xs font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
-                  </div>
-                  <p className="text-sm text-navy-800 leading-relaxed whitespace-pre-line">{currentPhase.goals}</p>
-                </div>
-              )}
-
-              {/* Patient intro */}
-              {currentPhase.patient_intro && (
-                <div className="rounded-lg bg-white border border-navy-100 p-3">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <BookOpen size={13} className="text-navy-500 shrink-0" />
-                    <p className="text-xs font-semibold text-navy-600 uppercase tracking-wide">Co cię czeka</p>
-                  </div>
-                  <p className="text-sm text-navy-800 leading-relaxed whitespace-pre-line">{currentPhase.patient_intro}</p>
-                </div>
-              )}
-
-              {/* Rules */}
-              {currentPhase.rules && (
-                <div className="rounded-lg bg-amber-50 border border-amber-100 p-3">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <ShieldCheck size={13} className="text-amber-600 shrink-0" />
-                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
-                  </div>
-                  <p className="text-sm text-amber-900 leading-relaxed whitespace-pre-line">{currentPhase.rules}</p>
-                </div>
-              )}
-
-              {/* CTA — go to exercises */}
-              {linkedProgram && (
-                <Link
-                  href={`/p/${kod}/program/${linkedProgram.id}`}
-                  className="flex items-center justify-between gap-3 bg-navy-600 hover:bg-navy-700 active:bg-navy-800 text-white rounded-lg px-4 py-3 transition-colors"
-                >
-                  <span className="text-sm font-semibold">Ćwiczenia tej fazy</span>
-                  <ChevronRight size={16} />
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Phase timeline */}
       <div className="px-4 py-3 space-y-1">
