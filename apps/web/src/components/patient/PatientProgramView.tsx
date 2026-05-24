@@ -555,32 +555,47 @@ interface VasModalProps {
 }
 
 function VasPainModal({ onSubmit }: VasModalProps) {
-  const [pain, setPain] = useState<number>(0)
+  const [pain, setPain] = useState<number | null>(null)
   const COLORS = ["#22c55e","#4ade80","#86efac","#bef264","#fde047","#fbbf24","#fb923c","#f97316","#ef4444","#dc2626","#991b1b"]
+  const LABELS = ["Brak bólu","","","Lekki","","","Umiarkowany","","","Silny","Maksymalny"]
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-xl px-5 pt-5 pb-8">
-        <h3 className="font-semibold text-gray-900 text-center mb-1">Jak się czujesz po treningu?</h3>
-        <p className="text-xs text-gray-500 text-center mb-5">Oceń ogólny poziom bólu po dzisiejszej sesji (0 = brak bólu, 10 = maksymalny)</p>
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-xl px-5 pt-6 pb-8">
+        <h3 className="font-bold text-gray-900 text-center text-base mb-1">Jak się czujesz po treningu?</h3>
+        <p className="text-xs text-gray-400 text-center mb-5">Oceń ogólny poziom bólu — 0 = brak, 10 = maksymalny</p>
 
-        <div className="flex justify-center mb-4">
-          <span className="text-5xl font-bold" style={{ color: COLORS[pain] }}>{pain}</span>
+        {/* Number grid */}
+        <div className="grid grid-cols-11 gap-1 mb-2">
+          {Array.from({ length: 11 }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setPain(i)}
+              className="aspect-square rounded-lg text-sm font-bold transition-all"
+              style={{
+                backgroundColor: pain === i ? COLORS[i] : `${COLORS[i]}33`,
+                color: pain === i ? "#fff" : COLORS[i],
+                transform: pain === i ? "scale(1.15)" : "scale(1)",
+                boxShadow: pain === i ? `0 2px 8px ${COLORS[i]}66` : "none",
+              }}
+            >
+              {i}
+            </button>
+          ))}
         </div>
-
-        <input
-          type="range"
-          min={0}
-          max={10}
-          value={pain}
-          onChange={e => setPain(Number(e.target.value))}
-          className="w-full h-2 rounded-full appearance-none cursor-pointer mb-3"
-          style={{ accentColor: COLORS[pain] }}
-        />
-        <div className="flex justify-between text-[10px] text-gray-400 mb-5 px-0.5">
+        <div className="flex justify-between text-[10px] text-gray-400 mb-5">
           <span>Brak bólu</span>
           <span>Maksymalny ból</span>
         </div>
+
+        {/* Selected label */}
+        {pain !== null && (
+          <div className="text-center mb-4">
+            <span className="text-sm font-semibold" style={{ color: COLORS[pain] }}>
+              {pain} — {LABELS[pain] || ""}
+            </span>
+          </div>
+        )}
 
         <div className="flex gap-3">
           <button
@@ -590,9 +605,10 @@ function VasPainModal({ onSubmit }: VasModalProps) {
             Pomiń
           </button>
           <button
-            onClick={() => onSubmit(pain)}
-            className="flex-1 h-11 rounded-xl text-white font-semibold text-sm transition-colors"
-            style={{ backgroundColor: COLORS[pain] }}
+            onClick={() => pain !== null && onSubmit(pain)}
+            disabled={pain === null}
+            className="flex-1 h-11 rounded-xl text-white font-semibold text-sm transition-all disabled:opacity-40"
+            style={{ backgroundColor: pain !== null ? COLORS[pain] : "#94a3b8" }}
           >
             Zapisz
           </button>
