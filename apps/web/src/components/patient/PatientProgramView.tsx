@@ -197,119 +197,127 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
             })}
           </div>
 
-          {/* Educational materials */}
-          {(program.patient_program_content?.length ?? 0) > 0 && (
-            <div className="mt-6">
-              <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Materiały edukacyjne</h2>
-              <div className="space-y-2">
-                {program.patient_program_content!
-                  .slice()
-                  .sort((a, b) => a.order - b.order)
-                  .map((pc) => {
-                    const content = Array.isArray(pc.educational_content)
-                      ? pc.educational_content[0]
-                      : pc.educational_content
-                    if (!content) return null
-                    const url = content.file_url ?? content.external_url
-                    return (
-                      <a
-                        key={pc.id}
-                        href={url ?? "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl p-3 hover:border-navy-300 transition-all"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center shrink-0">
-                          {content.type === "link" ? (
-                            <ExternalLink size={18} className="text-navy-500" />
-                          ) : (
-                            <FileText size={18} className="text-navy-500" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{content.name}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {content.type === "pdf" ? "PDF" : content.type === "link" ? "Link" : content.type}
-                          </p>
-                        </div>
-                        <ChevronRight size={16} className="text-gray-300 shrink-0" />
-                      </a>
-                    )
-                  })}
-              </div>
-            </div>
-          )}
+          {/* Mobile: phase info + educational materials */}
+          <div className="lg:hidden mt-5 space-y-3">
+            {phaseInfo && (phaseInfo.description || phaseInfo.goals || phaseInfo.patient_intro || phaseInfo.rules) && (
+              <PhaseInfoCard phaseInfo={phaseInfo} />
+            )}
+            <ContentList content={program.patient_program_content} />
+          </div>
         </div>
 
-        {/* ── Right: phase sidebar ── */}
-        {phaseInfo && (
-          <aside className="hidden lg:block space-y-3 sticky top-6">
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-              <div className="bg-navy-700 px-4 py-3">
-                <p className="text-[10px] font-semibold text-white/60 uppercase tracking-wide mb-0.5">{phaseInfo.protocolName}</p>
-                <p className="text-sm font-bold text-white leading-snug">{phaseInfo.name}</p>
-                <p className="text-xs text-white/60 mt-0.5">
-                  {phaseInfo.duration_weeks} {phaseInfo.duration_weeks === 1 ? "tydzień" : phaseInfo.duration_weeks < 5 ? "tygodnie" : "tygodni"}
-                </p>
+        {/* ── Right: sidebar (desktop) ── */}
+        <aside className="hidden lg:block space-y-3 sticky top-6">
+          {/* Progress */}
+          <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Postęp dzisiaj</p>
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-500 rounded-full transition-all"
+                  style={{ width: `${items.length > 0 ? Math.round((done.size / items.length) * 100) : 0}%` }}
+                />
               </div>
-
-              <div className="px-4 py-3 space-y-3">
-                {phaseInfo.description && (
-                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.description}</p>
-                )}
-
-                {phaseInfo.goals && (
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <Target size={12} className="text-navy-500" />
-                      <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
-                    </div>
-                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
-                  </div>
-                )}
-
-                {phaseInfo.patient_intro && (
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <BookOpen size={12} className="text-navy-500" />
-                      <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Co cię czeka</p>
-                    </div>
-                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.patient_intro}</p>
-                  </div>
-                )}
-
-                {phaseInfo.rules && (
-                  <div className="bg-amber-50 rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <ShieldCheck size={12} className="text-amber-600" />
-                      <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
-                    </div>
-                    <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
-                  </div>
-                )}
-              </div>
+              <span className="text-xs font-semibold text-gray-600">{done.size}/{items.length}</span>
             </div>
+            <p className="text-xs text-gray-400">
+              {done.size === items.length && items.length > 0
+                ? "Wszystkie ćwiczenia zrobione!"
+                : `Pozostało ${items.length - done.size} ćwiczeń`}
+            </p>
+          </div>
 
-            {/* Progress */}
-            <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Postęp dzisiaj</p>
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-500 rounded-full transition-all"
-                    style={{ width: `${items.length > 0 ? Math.round((done.size / items.length) * 100) : 0}%` }}
-                  />
-                </div>
-                <span className="text-xs font-semibold text-gray-600">{done.size}/{items.length}</span>
-              </div>
-              <p className="text-xs text-gray-400">
-                {done.size === items.length && items.length > 0
-                  ? "Wszystkie ćwiczenia zrobione!"
-                  : `Pozostało ${items.length - done.size} ćwiczeń`}
-              </p>
-            </div>
-          </aside>
+          {/* Phase info */}
+          {phaseInfo && <PhaseInfoCard phaseInfo={phaseInfo} />}
+
+          {/* Educational materials */}
+          <ContentList content={program.patient_program_content} />
+        </aside>
+      </div>
+    </div>
+  )
+}
+
+// ─── Shared sub-components ───────────────────────────────────────────────────
+
+function PhaseInfoCard({ phaseInfo }: { phaseInfo: NonNullable<PhaseInfo> }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+      <div className="bg-navy-700 px-4 py-3">
+        <p className="text-[10px] font-semibold text-white/60 uppercase tracking-wide mb-0.5">{phaseInfo.protocolName}</p>
+        <p className="text-sm font-bold text-white leading-snug">{phaseInfo.name}</p>
+        <p className="text-xs text-white/60 mt-0.5">
+          {phaseInfo.duration_weeks} {phaseInfo.duration_weeks === 1 ? "tydzień" : phaseInfo.duration_weeks < 5 ? "tygodnie" : "tygodni"}
+        </p>
+      </div>
+      <div className="px-4 py-3 space-y-3">
+        {phaseInfo.description && (
+          <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.description}</p>
         )}
+        {phaseInfo.goals && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Target size={12} className="text-navy-500" />
+              <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
+            </div>
+            <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
+          </div>
+        )}
+        {phaseInfo.patient_intro && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <BookOpen size={12} className="text-navy-500" />
+              <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Co cię czeka</p>
+            </div>
+            <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.patient_intro}</p>
+          </div>
+        )}
+        {phaseInfo.rules && (
+          <div className="bg-amber-50 rounded-xl p-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <ShieldCheck size={12} className="text-amber-600" />
+              <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
+            </div>
+            <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ContentList({ content }: { content?: ContentItem[] }) {
+  const items = (content ?? []).slice().sort((a, b) => a.order - b.order)
+  if (items.length === 0) return null
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-gray-100">
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Materiały edukacyjne</p>
+      </div>
+      <div className="divide-y divide-gray-50">
+        {items.map((pc) => {
+          const c = Array.isArray(pc.educational_content) ? pc.educational_content[0] : pc.educational_content
+          if (!c) return null
+          const url = c.file_url ?? c.external_url
+          return (
+            <a
+              key={pc.id}
+              href={url ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-navy-50 flex items-center justify-center shrink-0">
+                {c.type === "link" ? <ExternalLink size={14} className="text-navy-500" /> : <FileText size={14} className="text-navy-500" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-900 truncate">{c.name}</p>
+                <p className="text-[10px] text-gray-400">{c.type === "pdf" ? "PDF" : c.type === "link" ? "Link" : c.type}</p>
+              </div>
+              <ChevronRight size={14} className="text-gray-300 shrink-0" />
+            </a>
+          )
+        })}
       </div>
     </div>
   )
