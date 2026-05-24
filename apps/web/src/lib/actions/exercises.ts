@@ -50,12 +50,12 @@ export async function uploadExerciseImage(formData: FormData): Promise<string> {
   const storage = createServiceClient().storage
 
   const { error } = await storage
-    .from("exercises")
+    .from("exercise-media")
     .upload(path, file, { contentType: file.type || "image/webp", upsert: false })
 
   if (error) throw new Error(error.message)
 
-  const { data: { publicUrl } } = storage.from("exercises").getPublicUrl(path)
+  const { data: { publicUrl } } = storage.from("exercise-media").getPublicUrl(path)
   return publicUrl
 }
 
