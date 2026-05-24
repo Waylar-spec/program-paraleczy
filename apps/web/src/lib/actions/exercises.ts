@@ -70,6 +70,7 @@ export async function createExercise(formData: {
   defaultDuration?: number
   defaultRest?: number
   videoUrl?: string
+  animatedGifUrl?: string
   thumbnailUrl?: string
   stepImages?: string[]
 }) {
@@ -90,6 +91,7 @@ export async function createExercise(formData: {
       default_duration_seconds: formData.defaultDuration || null,
       default_rest_seconds: formData.defaultRest || null,
       video_url: formData.videoUrl || null,
+      animated_gif_url: formData.animatedGifUrl || null,
       thumbnail_url: formData.thumbnailUrl || null,
       step_images: formData.stepImages ?? [],
     })
@@ -113,6 +115,7 @@ export async function updateExercise(id: string, formData: {
   defaultDuration?: number
   defaultRest?: number
   videoUrl?: string
+  animatedGifUrl?: string
   thumbnailUrl?: string
   stepImages?: string[]
 }) {
@@ -133,6 +136,7 @@ export async function updateExercise(id: string, formData: {
       default_duration_seconds: formData.defaultDuration || null,
       default_rest_seconds: formData.defaultRest || null,
       video_url: formData.videoUrl || null,
+      animated_gif_url: formData.animatedGifUrl || null,
       thumbnail_url: formData.thumbnailUrl || null,
       step_images: formData.stepImages ?? [],
     })
