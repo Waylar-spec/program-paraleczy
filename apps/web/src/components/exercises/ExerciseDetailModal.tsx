@@ -107,7 +107,18 @@ function ViewMode({ exercise, favorite, onFavorite, onEdit, onClose, onAddRemove
             allowFullScreen
           />
         ) : exercise.animated_gif_url ? (
-          <img src={exercise.animated_gif_url} alt={exercise.name} className="w-full h-full object-contain bg-white" />
+          exercise.animated_gif_url.endsWith('.mp4') ? (
+            <video
+              src={exercise.animated_gif_url}
+              className="w-full h-full object-contain bg-white"
+              controls
+              autoPlay
+              loop
+              playsInline
+            />
+          ) : (
+            <img src={exercise.animated_gif_url} alt={exercise.name} className="w-full h-full object-contain bg-white" />
+          )
         ) : exercise.thumbnail_url ? (
           <img src={exercise.thumbnail_url} alt={exercise.name} className="w-full h-full object-cover" />
         ) : (

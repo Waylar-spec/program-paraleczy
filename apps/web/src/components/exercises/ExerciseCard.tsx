@@ -11,6 +11,7 @@ import { ExerciseDetailModal } from "./ExerciseDetailModal"
 type Exercise = {
   id: string
   name: string
+  name_en: string | null
   description: string | null
   body_part: string | null
   category: string | null
@@ -119,11 +120,22 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
               className="absolute inset-0 w-full h-full object-cover"
             />
           ) : hasGif ? (
-            <img
-              src={exercise.animated_gif_url!}
-              alt={exercise.name}
-              className="absolute inset-0 w-full h-full object-contain"
-            />
+            exercise.animated_gif_url!.endsWith('.mp4') ? (
+              <video
+                src={exercise.animated_gif_url!}
+                className="absolute inset-0 w-full h-full object-contain"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            ) : (
+              <img
+                src={exercise.animated_gif_url!}
+                alt={exercise.name}
+                className="absolute inset-0 w-full h-full object-contain"
+              />
+            )
           ) : (
             <Dumbbell size={32} className="text-gray-300" />
           )}
@@ -165,7 +177,12 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
         {/* Info */}
         <div className="p-3">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-sm font-medium text-gray-900 leading-tight line-clamp-2">{exercise.name}</p>
+            <div>
+              <p className="text-sm font-medium text-gray-900 leading-tight line-clamp-2">{exercise.name}</p>
+              {exercise.name_en && (
+                <p className="text-xs text-gray-400 leading-tight mt-0.5 line-clamp-1">{exercise.name_en}</p>
+              )}
+            </div>
             {isOwn && (
               <button
                 onClick={handleDelete}

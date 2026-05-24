@@ -69,7 +69,7 @@ export async function getProtocol(id: string) {
     .from("rehabilitation_protocols")
     .select(`
       id, name, description, indication, total_weeks, body_part, is_public, practitioner_id, created_at,
-      protocol_phases(id, protocol_id, order, name, description, goals, duration_weeks, template_id,
+      protocol_phases(id, protocol_id, order, name, description, goals, patient_intro, rules, duration_weeks, template_id,
         program_templates(id, name)
       )
     `)
@@ -160,6 +160,8 @@ export async function addPhase(protocolId: string, formData: {
   name: string
   description?: string
   goals?: string
+  patientIntro?: string
+  rules?: string
   durationWeeks: number
   templateId?: string
 }) {
@@ -181,6 +183,8 @@ export async function addPhase(protocolId: string, formData: {
       name: formData.name,
       description: formData.description || null,
       goals: formData.goals || null,
+      patient_intro: formData.patientIntro || null,
+      rules: formData.rules || null,
       duration_weeks: formData.durationWeeks,
       template_id: formData.templateId || null,
     })
@@ -194,6 +198,8 @@ export async function updatePhase(phaseId: string, protocolId: string, formData:
   name?: string
   description?: string
   goals?: string
+  patientIntro?: string
+  rules?: string
   durationWeeks?: number
   templateId?: string | null
 }) {
@@ -207,6 +213,8 @@ export async function updatePhase(phaseId: string, protocolId: string, formData:
       ...(formData.name && { name: formData.name }),
       ...(formData.description !== undefined && { description: formData.description || null }),
       ...(formData.goals !== undefined && { goals: formData.goals || null }),
+      ...(formData.patientIntro !== undefined && { patient_intro: formData.patientIntro || null }),
+      ...(formData.rules !== undefined && { rules: formData.rules || null }),
       ...(formData.durationWeeks && { duration_weeks: formData.durationWeeks }),
       ...(formData.templateId !== undefined && { template_id: formData.templateId || null }),
     })

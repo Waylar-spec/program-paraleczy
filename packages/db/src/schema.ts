@@ -75,6 +75,7 @@ export const exercises = pgTable("exercises", {
     onDelete: "cascade",
   }), // null = globalne/systemowe
   name: text("name").notNull(),
+  nameEn: text("name_en"),
   description: text("description"),
   videoUrl: text("video_url"),
   thumbnailUrl: text("thumbnail_url"),
@@ -293,7 +294,9 @@ export const protocolPhases = pgTable("protocol_phases", {
   order: smallint("order").notNull(),
   name: text("name").notNull(), // "Faza 1 — Wczesna rehabilitacja"
   description: text("description"),
-  goals: text("goals"), // cele fazy
+  goals: text("goals"),
+  patientIntro: text("patient_intro"),  // wstęp dla pacjenta widoczny w portalu
+  rules: text("rules"),                 // zasady fazy widoczne w portalu
   durationWeeks: smallint("duration_weeks").notNull(),
   templateId: uuid("template_id").references(() => programTemplates.id), // szablon ćwiczeń dla tej fazy
 })

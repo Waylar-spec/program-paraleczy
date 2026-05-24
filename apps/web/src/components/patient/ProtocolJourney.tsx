@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { CheckCircle2, Lock, Play, ChevronRight, Activity } from "lucide-react"
+import { CheckCircle2, Lock, Play, ChevronRight, Activity, BookOpen, ShieldCheck } from "lucide-react"
 
 type Phase = {
   id: string
@@ -9,6 +9,8 @@ type Phase = {
   name: string
   description: string | null
   goals: string | null
+  patient_intro: string | null
+  rules: string | null
   duration_weeks: number
   template_id: string | null
 }
@@ -129,6 +131,35 @@ function ProtocolCard({ pp, kod }: { pp: PatientProtocol; kod: string }) {
           )
         })}
       </div>
+
+      {/* Patient intro & rules for current phase */}
+      {(() => {
+        const currentPhase = phases[currentPhaseIdx]
+        if (!currentPhase || isCompleted) return null
+        if (!currentPhase.patient_intro && !currentPhase.rules) return null
+        return (
+          <div className="px-4 pb-4 space-y-3">
+            {currentPhase.patient_intro && (
+              <div className="rounded-xl bg-navy-50 border border-navy-100 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen size={14} className="text-navy-500 shrink-0" />
+                  <p className="text-xs font-semibold text-navy-600 uppercase tracking-wide">Co cię czeka w tej fazie</p>
+                </div>
+                <p className="text-sm text-navy-800 leading-relaxed whitespace-pre-line">{currentPhase.patient_intro}</p>
+              </div>
+            )}
+            {currentPhase.rules && (
+              <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck size={14} className="text-amber-600 shrink-0" />
+                  <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Zasady tej fazy</p>
+                </div>
+                <p className="text-sm text-amber-900 leading-relaxed whitespace-pre-line">{currentPhase.rules}</p>
+              </div>
+            )}
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -206,7 +237,7 @@ function PhaseRow({
           {phase.duration_weeks} {phase.duration_weeks === 1 ? "tydzień" : phase.duration_weeks < 5 ? "tygodnie" : "tygodni"}
         </p>
         {isCurrent && phase.goals && (
-          <p className="text-xs text-navy-600 mt-1 leading-snug line-clamp-2">{phase.goals}</p>
+          <p className="text-xs text-navy-600 mt-1 leading-snug">{phase.goals}</p>
         )}
       </div>
 

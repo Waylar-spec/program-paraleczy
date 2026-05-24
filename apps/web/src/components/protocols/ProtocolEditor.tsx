@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Trash2, ChevronDown, ChevronUp, Clock, Layers } from "lucide-react"
+import { Plus, Trash2, ChevronDown, ChevronUp, Clock, Layers, User } from "lucide-react"
 import { addPhase, updatePhase, deletePhase } from "@/lib/actions/protocols"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 
 type Template = {
@@ -21,6 +22,8 @@ type Phase = {
   name: string
   description: string | null
   goals: string | null
+  patient_intro: string | null
+  rules: string | null
   duration_weeks: number
   template_id: string | null
   program_templates?: { id: string; name: string } | { id: string; name: string }[] | null
@@ -111,6 +114,8 @@ function PhaseCard({
     name: phase.name,
     description: phase.description ?? "",
     goals: phase.goals ?? "",
+    patientIntro: phase.patient_intro ?? "",
+    rules: phase.rules ?? "",
     durationWeeks: String(phase.duration_weeks),
     templateId: phase.template_id ?? "",
   })
@@ -126,6 +131,8 @@ function PhaseCard({
         name: form.name,
         description: form.description,
         goals: form.goals,
+        patientIntro: form.patientIntro,
+        rules: form.rules,
         durationWeeks: Number(form.durationWeeks),
         templateId: form.templateId || null,
       })
@@ -198,16 +205,35 @@ function PhaseCard({
               {phase.goals && (
                 <div>
                   <p className="text-xs font-medium text-gray-500 mb-1">Cele fazy</p>
-                  <p className="text-sm text-gray-700">{phase.goals}</p>
+                  <p className="text-sm text-gray-700 whitespace-pre-line">{phase.goals}</p>
                 </div>
               )}
               {phase.description && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-1">Opis</p>
-                  <p className="text-sm text-gray-700">{phase.description}</p>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Opis wewnętrzny</p>
+                  <p className="text-sm text-gray-700 whitespace-pre-line">{phase.description}</p>
                 </div>
               )}
-              {!phase.goals && !phase.description && (
+              {(phase.patient_intro || phase.rules) && (
+                <div className="rounded-lg bg-navy-50 border border-navy-100 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-navy-600 flex items-center gap-1.5">
+                    <User size={11} /> Treść dla pacjenta
+                  </p>
+                  {phase.patient_intro && (
+                    <div>
+                      <p className="text-xs font-medium text-navy-500 mb-0.5">Wstęp fazy</p>
+                      <p className="text-sm text-navy-800 whitespace-pre-line">{phase.patient_intro}</p>
+                    </div>
+                  )}
+                  {phase.rules && (
+                    <div>
+                      <p className="text-xs font-medium text-navy-500 mb-0.5">Zasady</p>
+                      <p className="text-sm text-navy-800 whitespace-pre-line">{phase.rules}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {!phase.goals && !phase.description && !phase.patient_intro && !phase.rules && (
                 <p className="text-sm text-gray-400">Brak opisu fazy</p>
               )}
               <button
@@ -244,11 +270,34 @@ function PhaseCard({
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Cele fazy</Label>
-                <Input value={form.goals} onChange={(e) => update("goals", e.target.value)} placeholder="np. Redukcja bólu i obrzęku, pełen wyprost..." className="h-8 text-sm" />
+                <Textarea value={form.goals} onChange={(e) => update("goals", e.target.value)} placeholder="np. Redukcja bólu i obrzęku, pełen wyprost..." className="text-sm min-h-[60px] resize-none" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Opis</Label>
-                <Input value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Dodatkowe wskazówki..." className="h-8 text-sm" />
+                <Label className="text-xs">Opis wewnętrzny</Label>
+                <Textarea value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Notatki dla fizjoterapeuty..." className="text-sm min-h-[60px] resize-none" />
+              </div>
+              <div className="rounded-lg bg-navy-50 border border-navy-100 p-3 space-y-3">
+                <p className="text-xs font-semibold text-navy-600 flex items-center gap-1.5">
+                  <User size={11} /> Treść dla pacjenta (opcjonalne)
+                </p>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-navy-700">Wstęp fazy</Label>
+                  <Textarea
+                    value={form.patientIntro}
+                    onChange={(e) => update("patientIntro", e.target.value)}
+                    placeholder="Co pacjent może spodziewać się w tej fazie... np. 'W tej fazie skupiamy się na zmniejszeniu bólu i obrzęku. Ćwiczenia są łagodne – nie forsuj się.'"
+                    className="text-sm min-h-[80px] resize-none bg-white"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-navy-700">Zasady fazy</Label>
+                  <Textarea
+                    value={form.rules}
+                    onChange={(e) => update("rules", e.target.value)}
+                    placeholder="np. 'Nie zginaj kolana powyżej 90°. Ćwicz co drugi dzień. Zatrzymaj się gdy ból przekracza 4/10.'"
+                    className="text-sm min-h-[80px] resize-none bg-white"
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <button
@@ -292,6 +341,8 @@ function AddPhaseForm({
     name: `Faza ${phaseNumber}`,
     description: "",
     goals: "",
+    patientIntro: "",
+    rules: "",
     durationWeeks: "2",
     templateId: "",
   })
@@ -309,6 +360,8 @@ function AddPhaseForm({
         name: form.name.trim(),
         description: form.description || undefined,
         goals: form.goals || undefined,
+        patientIntro: form.patientIntro || undefined,
+        rules: form.rules || undefined,
         durationWeeks: Number(form.durationWeeks),
         templateId: form.templateId || undefined,
       })
@@ -351,7 +404,30 @@ function AddPhaseForm({
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs">Cele fazy</Label>
-          <Input value={form.goals} onChange={(e) => update("goals", e.target.value)} placeholder="np. Pełen zakres ruchu, chód bez kul..." className="h-8 text-sm" />
+          <Textarea value={form.goals} onChange={(e) => update("goals", e.target.value)} placeholder="np. Pełen zakres ruchu, chód bez kul..." className="text-sm min-h-[60px] resize-none" />
+        </div>
+        <div className="rounded-lg bg-navy-50 border border-navy-100 p-3 space-y-3">
+          <p className="text-xs font-semibold text-navy-600 flex items-center gap-1.5">
+            <User size={11} /> Treść dla pacjenta (opcjonalne)
+          </p>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-navy-700">Wstęp fazy</Label>
+            <Textarea
+              value={form.patientIntro}
+              onChange={(e) => update("patientIntro", e.target.value)}
+              placeholder="Co pacjent może spodziewać się w tej fazie..."
+              className="text-sm min-h-[70px] resize-none bg-white"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-navy-700">Zasady fazy</Label>
+            <Textarea
+              value={form.rules}
+              onChange={(e) => update("rules", e.target.value)}
+              placeholder="np. Ćwicz co drugi dzień. Zatrzymaj się gdy ból > 4/10."
+              className="text-sm min-h-[70px] resize-none bg-white"
+            />
+          </div>
         </div>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onCancel} className="h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">

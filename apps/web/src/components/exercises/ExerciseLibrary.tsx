@@ -7,6 +7,7 @@ import { ExerciseCard } from "./ExerciseCard"
 type Exercise = {
   id: string
   name: string
+  name_en: string | null
   description: string | null
   body_part: string | null
   category: string | null
@@ -75,7 +76,10 @@ export function ExerciseLibrary({ exercises }: Props) {
 
   const filtered = useMemo(() => {
     return exercises.filter((ex) => {
-      if (search && !ex.name.toLowerCase().includes(search.toLowerCase())) return false
+      if (search) {
+        const q = search.toLowerCase()
+        if (!ex.name.toLowerCase().includes(q) && !(ex.name_en?.toLowerCase().includes(q))) return false
+      }
       if (onlyOwn && !ex.practitioner_id) return false
       if (onlyPublic && ex.practitioner_id) return false
       if (onlyFavorites && !ex.is_favorite) return false
