@@ -9,7 +9,9 @@ export async function getEducationalContent() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data, error } = await supabase
+  // Service client bypasses RLS — needed to read rows with practitioner_id = null (shared library)
+  const sb = createServiceClient()
+  const { data, error } = await sb
     .from("educational_content")
     .select("id, name, type, file_url, external_url, body_part, is_favorite, created_at, practitioner_id")
     .or(`practitioner_id.eq.${user.id},practitioner_id.is.null`)
