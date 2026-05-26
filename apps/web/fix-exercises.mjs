@@ -66,6 +66,7 @@ const VIDEO_FIXES = [
   { name: 'Pallof Press z gumą',              uuid: '0054065b-b484-438c-919c-9b3dd5ef3169' },
   { name: 'Plank (przodem)',                  uuid: 'a4a9855b-96b7-4bee-90c3-b1f01a5006b7' },
   { name: 'Plank przodem',                    uuid: 'a4a9855b-96b7-4bee-90c3-b1f01a5006b7' },
+  { name: 'Wahadło Codmana (Codman Pendulum)', uuid: 'dceb2501-d90a-4235-ba9c-7dcd84e0074e' },
   // Dodawaj kolejne tutaj podczas sesji:
 ]
 
@@ -300,6 +301,231 @@ const NEW_EXERCISES = [
     is_public: true,
     practitioner_id: null,
   },
+  // Szyja / bark
+  {
+    name: 'Chin Tuck',
+    name_en: 'Chin Tuck',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Stabilizacja',
+    animated_gif_url: 'https://media.physitrack.com/exercises/800283a7-1bc0-44f5-a196-800712b9a012/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/800283a7-1bc0-44f5-a196-800712b9a012/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Mobilizacja rotacyjna szyi',
+    name_en: 'Cervical Rotation Mobilisation',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Mobilność',
+    animated_gif_url: 'https://media.physitrack.com/exercises/14ef2302-4683-4c7f-9a17-7670444c31e9/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/14ef2302-4683-4c7f-9a17-7670444c31e9/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Rozciąganie górnego trapezu i levator scapulae',
+    name_en: 'Upper Trapezius & Levator Scapulae Stretch',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Rozciąganie',
+    animated_gif_url: 'https://media.physitrack.com/exercises/ba60eb37-cc87-4b5d-9cba-7a9573469714/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/ba60eb37-cc87-4b5d-9cba-7a9573469714/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_duration_seconds: 30,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Mobilizacja piersiowa (Thoracic Extension)',
+    name_en: 'Thoracic Extension Mobilisation',
+    body_part: 'Kręgosłup piersiowy',
+    category: 'Mobilność',
+    animated_gif_url: 'https://media.physitrack.com/exercises/11c4eea1-4ccf-4ca9-9212-ff8d7bd06d2c/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/11c4eea1-4ccf-4ca9-9212-ff8d7bd06d2c/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Craniocervical Flexion (CCF) — protokół Jull',
+    name_en: 'Craniocervical Flexion (CCF) — Jull Protocol',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Stabilizacja',
+    animated_gif_url: 'https://media.physitrack.com/exercises/ee5c2e59-d939-4ab5-b4ae-330dcf4db115/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/ee5c2e59-d939-4ab5-b4ae-330dcf4db115/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_duration_seconds: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Chin Tuck Isometric',
+    name_en: 'Chin Tuck Isometric',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Stabilizacja',
+    animated_gif_url: 'https://media.physitrack.com/exercises/5420dc62-d1e0-4272-8265-9e2a14e1a8a9/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/5420dc62-d1e0-4272-8265-9e2a14e1a8a9/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_duration_seconds: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Cervical Retraction w leżeniu',
+    name_en: 'Cervical Retraction in Lying',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Mobilność',
+    animated_gif_url: 'https://media.physitrack.com/exercises/84501cae-ad84-45e0-9e43-4db76fe288f0/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/84501cae-ad84-45e0-9e43-4db76fe288f0/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Wzmocnienie prostowników szyi (izometryczne)',
+    name_en: 'Cervical Extensor Strengthening (Isometric)',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Stabilizacja',
+    animated_gif_url: 'https://media.physitrack.com/exercises/5070da05-940d-40a1-99e5-6fc3bc8868d6/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/5070da05-940d-40a1-99e5-6fc3bc8868d6/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_duration_seconds: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Oddech z ruchem ramion',
+    name_en: 'Breathing with Arm Movement',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Mobilność',
+    animated_gif_url: 'https://media.physitrack.com/exercises/fe395b59-c3dc-4355-8974-507cb08dc9d5/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/fe395b59-c3dc-4355-8974-507cb08dc9d5/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Wiosłowanie z gumą (Rowing)',
+    name_en: 'Seated Row with Band',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Siła',
+    animated_gif_url: 'https://media.physitrack.com/exercises/90c3393d-7464-40c8-8945-af2bfc7dcf64/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/90c3393d-7464-40c8-8945-af2bfc7dcf64/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 12,
+    default_rest_seconds: 60,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Wall Angels',
+    name_en: 'Wall Angels',
+    body_part: 'Kręgosłup piersiowy',
+    category: 'Mobilność',
+    animated_gif_url: 'https://media.physitrack.com/exercises/50d9e386-188a-4dee-a0af-64dee6638cc1/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/50d9e386-188a-4dee-a0af-64dee6638cc1/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Overhead Press',
+    name_en: 'Overhead Press',
+    body_part: 'Bark',
+    category: 'Siła',
+    animated_gif_url: 'https://media.physitrack.com/exercises/33101f28-b0a5-49fa-996c-4c2baa19f0f4/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/33101f28-b0a5-49fa-996c-4c2baa19f0f4/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 60,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Suboccipital Release (autorelaksacja podpotylicznych)',
+    name_en: 'Suboccipital Release',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Rozciąganie',
+    animated_gif_url: 'https://media.physitrack.com/exercises/02b2d8ec-a6d1-45cb-9980-f37ba338163b/pl/video_1280x720.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/02b2d8ec-a6d1-45cb-9980-f37ba338163b/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_duration_seconds: 60,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Trening propriocepcji szyi',
+    name_en: 'Cervical Proprioception Training',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Stabilizacja',
+    animated_gif_url: 'https://media.physitrack.com/exercises/0854c3e3-3c92-4746-878c-b0629e53e492/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/0854c3e3-3c92-4746-878c-b0629e53e492/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'Cervical Retraction + Extension',
+    name_en: 'Cervical Retraction + Extension',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Mobilność',
+    animated_gif_url: 'https://media.physitrack.com/exercises/1bac83e1-0890-4110-84dc-6e4344ef9066/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/1bac83e1-0890-4110-84dc-6e4344ef9066/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'ULNT1 Slider (nerw pośrodkowy)',
+    name_en: 'ULNT1 Slider (Median Nerve)',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Neurodynamika',
+    animated_gif_url: 'https://media.physitrack.com/exercises/cd638e85-5253-4bfe-bb29-0c92934f0882/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/cd638e85-5253-4bfe-bb29-0c92934f0882/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
+  {
+    name: 'ULNT Slider — nerw łokciowy',
+    name_en: 'ULNT Slider — Ulnar Nerve',
+    body_part: 'Kręgosłup szyjny',
+    category: 'Neurodynamika',
+    animated_gif_url: 'https://media.physitrack.com/exercises/a46186ef-06d0-4c96-b4bf-18ac24c1c700/pl/video_720p.mp4',
+    thumbnail_url: 'https://media.physitrack.com/exercises/a46186ef-06d0-4c96-b4bf-18ac24c1c700/pl/thumbnail_800x450.jpg',
+    default_sets: 3,
+    default_reps: 10,
+    default_rest_seconds: 30,
+    is_public: true,
+    practitioner_id: null,
+  },
   // Dodawaj kolejne tutaj
 ]
 
@@ -318,6 +544,27 @@ if (NEW_EXERCISES.length > 0) {
     else console.log(`  ✓ Dodano: ${ex.name}`)
   }
 }
+
+// ─── 3b. Napraw thumbnailem dla wszystkich /pl/video_720p.mp4 ─────────────────
+// Dla każdego ćwiczenia z Physitrack /pl/ URL upewnij się że thumbnail = ten sam UUID /pl/thumbnail
+
+console.log('\n▸ Synchronizuję thumbnailem dla wszystkich ćwiczeń z /pl/video_720p.mp4...')
+const { data: plVideos } = await sb
+  .from('exercises')
+  .select('id, name, animated_gif_url, thumbnail_url')
+  .ilike('animated_gif_url', '%physitrack%/pl/video_720p.mp4')
+
+let thumbOk = 0, thumbFixed = 0
+for (const ex of plVideos ?? []) {
+  const uuid = ex.animated_gif_url?.match(/exercises\/([0-9a-f-]{36})\//)?.[1]
+  if (!uuid) continue
+  const expectedThumb = `https://media.physitrack.com/exercises/${uuid}/pl/thumbnail_800x450.jpg`
+  if (ex.thumbnail_url === expectedThumb) { thumbOk++; continue }
+  const { error } = await sb.from('exercises').update({ thumbnail_url: expectedThumb }).eq('id', ex.id)
+  if (error) console.log(`  ✗ ${ex.name}: ${error.message}`)
+  else { console.log(`  ✓ thumb: ${ex.name}`); thumbFixed++ }
+}
+console.log(`  OK: ${thumbOk}, Naprawiono: ${thumbFixed}`)
 
 // ─── 4. Zbij cache Next.js ────────────────────────────────────────────────────
 
