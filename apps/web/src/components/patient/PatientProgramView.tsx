@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw } from "lucide-react"
+import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw, ChevronDown, ChevronUp, Info } from "lucide-react"
 import { logExercise } from "@/lib/actions/patient-portal"
 import { toast } from "sonner"
 
@@ -73,6 +73,8 @@ interface Props {
 export function PatientProgramView({ program, patientId, patientName, kod, doneTodayIds, phaseInfo }: Props) {
   const [done, setDone] = useState<Set<string>>(new Set(doneTodayIds))
   const [active, setActive] = useState<ExerciseItem | null>(null)
+  const [phaseOpen, setPhaseOpen] = useState(false)
+  const [contentOpen, setContentOpen] = useState(false)
 
   const items = program.patient_program_items
   const allDone = items.length > 0 && items.every((item) => done.has(item.id))
@@ -147,6 +149,85 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
             )}
           </div>
 
+          {/* Mobile: collapsible info banners — before exercises */}
+          <div className="lg:hidden space-y-2 mb-4">
+            {phaseInfo && (phaseInfo.description || phaseInfo.goals || phaseInfo.patient_intro || phaseInfo.rules) && (
+              <div className="rounded-xl border border-navy-100 overflow-hidden">
+                <button
+                  onClick={() => setPhaseOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 bg-navy-50 text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <Info size={13} className="text-navy-500" />
+                    <span className="text-xs font-semibold text-navy-700">
+                      {phaseInfo.name}
+                      {phaseInfo.protocolName && (
+                        <span className="font-normal text-navy-400"> · {phaseInfo.protocolName}</span>
+                      )}
+                    </span>
+                  </div>
+                  {phaseOpen
+                    ? <ChevronUp size={14} className="text-navy-400 shrink-0" />
+                    : <ChevronDown size={14} className="text-navy-400 shrink-0" />}
+                </button>
+                {phaseOpen && (
+                  <div className="bg-white px-4 py-3 space-y-3">
+                    {phaseInfo.description && (
+                      <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.description}</p>
+                    )}
+                    {phaseInfo.goals && (
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Target size={12} className="text-navy-500" />
+                          <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
+                        </div>
+                        <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
+                      </div>
+                    )}
+                    {phaseInfo.patient_intro && (
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <BookOpen size={12} className="text-navy-500" />
+                          <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Co cię czeka</p>
+                        </div>
+                        <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">{phaseInfo.patient_intro}</p>
+                      </div>
+                    )}
+                    {phaseInfo.rules && (
+                      <div className="bg-amber-50 rounded-xl p-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <ShieldCheck size={12} className="text-amber-600" />
+                          <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
+                        </div>
+                        <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {(program.patient_program_content ?? []).length > 0 && (
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setContentOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 bg-gray-50 text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <FileText size={13} className="text-gray-500" />
+                    <span className="text-xs font-semibold text-gray-700">
+                      Materiały edukacyjne
+                      <span className="font-normal text-gray-400"> · {program.patient_program_content!.length}</span>
+                    </span>
+                  </div>
+                  {contentOpen
+                    ? <ChevronUp size={14} className="text-gray-400 shrink-0" />
+                    : <ChevronDown size={14} className="text-gray-400 shrink-0" />}
+                </button>
+                {contentOpen && <ContentList content={program.patient_program_content} />}
+              </div>
+            )}
+          </div>
+
           {/* Exercise grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {items.map((item) => {
@@ -197,13 +278,6 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
             })}
           </div>
 
-          {/* Mobile: phase info + educational materials */}
-          <div className="lg:hidden mt-5 space-y-3">
-            {phaseInfo && (phaseInfo.description || phaseInfo.goals || phaseInfo.patient_intro || phaseInfo.rules) && (
-              <PhaseInfoCard phaseInfo={phaseInfo} />
-            )}
-            <ContentList content={program.patient_program_content} />
-          </div>
         </div>
 
         {/* ── Right: sidebar (desktop) ── */}

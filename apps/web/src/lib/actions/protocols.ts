@@ -123,7 +123,9 @@ export async function updateProtocol(id: string, formData: {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
+  // Use service client so system protocols (practitioner_id = null) can also be edited
+  const sb = createServiceClient()
+  const { error } = await sb
     .from("rehabilitation_protocols")
     .update({
       ...(formData.name && { name: formData.name }),
@@ -133,11 +135,11 @@ export async function updateProtocol(id: string, formData: {
       ...(formData.totalWeeks !== undefined && { total_weeks: formData.totalWeeks || null }),
     })
     .eq("id", id)
-    .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
   revalidateTag("protocols", "max")
   revalidatePath(`/biblioteka/protokoly/${id}`)
+  revalidatePath("/biblioteka/protokoly")
 }
 
 export async function deleteProtocol(id: string) {

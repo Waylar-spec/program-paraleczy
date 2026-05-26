@@ -5,6 +5,7 @@ import { NewProtocolModal } from "@/components/protocols/NewProtocolModal"
 import { LibraryTabs } from "@/components/library/LibraryTabs"
 import { AssignProtocolFromLibraryButton } from "@/components/protocols/AssignProtocolFromLibraryButton"
 import { DeleteProtocolButton } from "@/components/protocols/DeleteProtocolButton"
+import { EditProtocolModal } from "@/components/protocols/EditProtocolModal"
 
 export default async function ProtocolyPage() {
   const protocols = await getProtocols()
@@ -94,6 +95,7 @@ export default async function ProtocolyPage() {
                   >
                     Edytuj fazy <ChevronRight size={11} />
                   </Link>
+                  <EditProtocolModal protocol={protocol} />
                   <DeleteProtocolButton
                     protocolId={protocol.id}
                     protocolName={protocol.name}

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react"
 import { getProtocol } from "@/lib/actions/protocols"
 import { getTemplates } from "@/lib/actions/templates"
 import { ProtocolEditor } from "@/components/protocols/ProtocolEditor"
+import { ProtocolHeaderEditor } from "@/components/protocols/ProtocolHeaderEditor"
 
 export default async function ProtocolPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -25,22 +26,14 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
         Protokoły
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">{protocol.name}</h1>
-        <div className="flex items-center gap-3 mt-1 flex-wrap">
-          {protocol.indication && (
-            <p className="text-sm text-gray-500">{protocol.indication}</p>
-          )}
-          {protocol.body_part && (
-            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-              {protocol.body_part}
-            </span>
-          )}
-          {protocol.total_weeks && (
-            <span className="text-xs text-gray-500">{protocol.total_weeks} tygodni łącznie</span>
-          )}
-        </div>
-      </div>
+      <ProtocolHeaderEditor
+        protocolId={id}
+        name={protocol.name}
+        indication={protocol.indication ?? null}
+        bodyPart={protocol.body_part ?? null}
+        totalWeeks={protocol.total_weeks ?? null}
+        description={protocol.description ?? null}
+      />
 
       <ProtocolEditor protocolId={id} phases={phases} templates={templates} />
     </div>
