@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { LayoutTemplate, X, Dumbbell, Search, Check, Pencil, ExternalLink, Trash2 } from "lucide-react"
@@ -120,6 +120,8 @@ function EditModal({ template, onClose, onSaved }: EditModalProps) {
   )
 }
 
+const PAGE_SIZE = 24
+
 export function TemplateSelector({ templates: initialTemplates }: { templates: Template[] }) {
   const [templates, setTemplates] = useState(initialTemplates)
   const [search, setSearch] = useState("")
@@ -127,7 +129,24 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [loadedId, setLoadedId] = useState<string | null>(null)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef<HTMLDivElement>(null)
   const { clearAll, addExercise, setProgramName } = useProgramBuilder()
+
+  // Reset visible count when search changes
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [search])
+
+  // Infinite scroll sentinel
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisibleCount(c => c + PAGE_SIZE) },
+      { rootMargin: "200px" }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
 
   async function handleDelete(templateId: string) {
     setDeleting(true)
@@ -210,7 +229,7 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
             Brak szablonów pasujących do „{search}"
           </div>
         )}
-        {filtered.map((template) => {
+        {filtered.slice(0, visibleCount).map((template) => {
           const selected = loadedId === template.id
           const itemCount = template.program_template_items?.length ?? 0
           const thumbs = (template.program_template_items ?? []).slice(0, 4).map((item) => {
@@ -324,6 +343,13 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
           )
         })}
       </div>
+
+      {/* Infinite scroll sentinel */}
+      {visibleCount < filtered.length && (
+        <div ref={sentinelRef} className="col-span-3 py-4 text-center text-xs text-gray-400">
+          Ładowanie... ({visibleCount} / {filtered.length})
+        </div>
+      )}
 
       {editing && (
         <EditModal

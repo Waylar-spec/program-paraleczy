@@ -2,11 +2,12 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Search, ExternalLink, ShoppingCart, CheckSquare, Square, X, Plus } from "lucide-react"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { useProgramBuilder } from "@/store/programBuilder"
 import type { Supplement } from "@/lib/actions/supplements"
 
 const AFFILIATE_SUFFIX = "?sca_ref=11220768.wIBh3GWahK"
+const PAGE_SIZE = 40
 
 interface Props {
   supplements: Supplement[]
@@ -21,7 +22,24 @@ export function SupplementsGrid({ supplements, types, currentType, currentSearch
   const searchParams = useSearchParams()
 
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef<HTMLDivElement>(null)
   const { addSupplements, hasSupplement, open } = useProgramBuilder()
+
+  // Reset when filters change (new supplements prop)
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [currentType, currentSearch])
+
+  // Infinite scroll
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisibleCount(c => c + PAGE_SIZE) },
+      { rootMargin: "200px" }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
 
   const updateParams = useCallback(
     (updates: Record<string, string | undefined>) => {
@@ -116,16 +134,23 @@ export function SupplementsGrid({ supplements, types, currentType, currentSearch
           <p className="text-sm text-gray-500">Brak suplementów spełniających kryteria</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {supplements.map((s) => (
-            <SupplementCard
-              key={s.id}
-              supplement={s}
-              checked={checkedIds.has(s.id)}
-              onToggle={() => toggleCheck(s.id)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {supplements.slice(0, visibleCount).map((s) => (
+              <SupplementCard
+                key={s.id}
+                supplement={s}
+                checked={checkedIds.has(s.id)}
+                onToggle={() => toggleCheck(s.id)}
+              />
+            ))}
+          </div>
+          {visibleCount < supplements.length && (
+            <div ref={sentinelRef} className="py-4 text-center text-xs text-gray-400">
+              Ładowanie... ({visibleCount} / {supplements.length})
+            </div>
+          )}
+        </>
       )}
     </div>
   )
