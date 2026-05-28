@@ -291,7 +291,7 @@ export async function deletePhase(phaseId: string, protocolId: string) {
 
 // ─── Patient protocol assignment ──────────────────────────────────────────────
 
-export async function assignProtocolToPatient(patientId: string, protocolId: string, startDate: string, startWeek?: number) {
+export async function assignProtocolToPatient(patientId: string, protocolId: string, startDate: string, startWeek?: number, customName?: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
@@ -358,6 +358,7 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
       current_phase_id: firstPhase?.id || null,
       start_date: startDate,
       status: "active",
+      ...(customName?.trim() ? { custom_name: customName.trim() } : {}),
     })
 
   if (error) throw new Error(error.message)
@@ -578,7 +579,7 @@ export async function getPatientProtocols(patientId: string) {
   const { data, error } = await supabase
     .from("patient_protocols")
     .select(`
-      id, status, start_date, current_phase_id, created_at,
+      id, status, start_date, current_phase_id, created_at, custom_name,
       rehabilitation_protocols(id, name, body_part, total_weeks,
         protocol_phases(id, order, name, duration_weeks)
       )

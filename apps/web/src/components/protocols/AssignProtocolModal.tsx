@@ -43,6 +43,7 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
   const [selectedProtocol, setSelectedProtocol] = useState("")
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0])
   const [startWeek, setStartWeek] = useState("")
+  const [customName, setCustomName] = useState("")
   const [search, setSearch] = useState("")
 
   const filtered = useMemo(() => {
@@ -61,11 +62,13 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
     if (!selectedProtocol || !startDate) return
     setLoading(true)
     try {
-      await assignProtocolToPatient(patientId, selectedProtocol, startDate, startWeek ? Number(startWeek) : undefined)
+      await assignProtocolToPatient(patientId, selectedProtocol, startDate, startWeek ? Number(startWeek) : undefined, customName || undefined)
       const proto = protocols.find((p) => p.id === selectedProtocol)
-      toast.success(`Protokół "${proto?.name}" przypisany`)
+      const displayName = customName.trim() || proto?.name
+      toast.success(`Protokół "${displayName}" przypisany`)
       setOpen(false)
       setSelectedProtocol("")
+      setCustomName("")
       setSearch("")
       router.refresh()
     } catch {
@@ -161,6 +164,18 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
                   )
                 })}
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="ap-custom-name">Nazwa dla pacjenta</Label>
+              <Input
+                id="ap-custom-name"
+                type="text"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder={protocols.find(p => p.id === selectedProtocol)?.name ?? "Zostaw puste aby użyć nazwy protokołu"}
+              />
+              <p className="text-xs text-gray-400">Pacjent zobaczy tę nazwę zamiast domyślnej nazwy protokołu</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

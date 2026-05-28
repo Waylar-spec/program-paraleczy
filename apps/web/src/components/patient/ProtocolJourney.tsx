@@ -24,6 +24,7 @@ type PatientProtocol = {
   id: string
   status: string
   start_date: string
+  custom_name?: string | null
   protocol: {
     name: string
     description: string | null
@@ -75,7 +76,7 @@ function ProtocolCard({ pp, kod }: { pp: PatientProtocol; kod: string }) {
             <p className="text-xs text-white/70 font-medium uppercase tracking-wide mb-0.5">
               Protokół rehabilitacyjny
             </p>
-            <h2 className="text-base font-bold text-white leading-tight">{protocol.name}</h2>
+            <h2 className="text-base font-bold text-white leading-tight">{pp.custom_name || protocol.name}</h2>
             {protocol.body_part && (
               <p className="text-xs text-white/75 mt-0.5">{protocol.body_part}</p>
             )}

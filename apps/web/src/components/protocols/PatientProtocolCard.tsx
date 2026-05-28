@@ -10,6 +10,7 @@ type PatientProtocol = {
   id: string
   status: string
   start_date: string
+  custom_name?: string | null
   rehabilitation_protocols: {
     id: string
     name: string
@@ -106,7 +107,7 @@ export function PatientProtocolCard({ patientProtocol: pp, patientId }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between p-3 bg-gray-50/50 rounded-t-lg">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900 truncate">{protocol.name}</p>
+          <p className="text-sm font-semibold text-gray-900 truncate">{pp.custom_name || protocol.name}</p>
           <div className="flex items-center gap-2 mt-0.5">
             {protocol.body_part && (
               <span className="text-xs text-gray-500">{protocol.body_part}</span>

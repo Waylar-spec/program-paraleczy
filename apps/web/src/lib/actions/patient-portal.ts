@@ -78,7 +78,7 @@ export async function getPatientProtocolsForPortal(patientId: string) {
   const { data, error } = await supabase
     .from("patient_protocols")
     .select(`
-      id, status, start_date, current_phase_id,
+      id, status, start_date, current_phase_id, custom_name,
       rehabilitation_protocols(
         id, name, description, total_weeks, body_part,
         protocol_phases(id, order, name, description, goals, patient_intro, rules, duration_weeks, template_id)
@@ -116,6 +116,7 @@ export async function getPatientProtocolsForPortal(patientId: string) {
       status: pp.status,
       start_date: pp.start_date,
       current_phase_id: pp.current_phase_id,
+      custom_name: (pp as any).custom_name ?? null,
       protocol: proto as any,
       phases: phases as any[],
       currentPhaseIdx,
