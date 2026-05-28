@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw, ChevronDown, ChevronUp, Info, Wind } from "lucide-react"
 import { logExercise } from "@/lib/actions/patient-portal"
 import { toast } from "sonner"
+import { useVimeoThumbnail } from "@/lib/hooks/useVimeoThumbnail"
 import { BreathingPlayer } from "./BreathingPlayer"
 import { TimedSessionCard } from "./TimedSessionCard"
 
@@ -73,26 +74,6 @@ interface Props {
   kod: string
   doneTodayIds: string[]
   phaseInfo?: PhaseInfo
-}
-
-// ── Vimeo thumbnail hook (module-level cache) ─────────────────────────────
-const vimeoThumbCache = new Map<string, string>()
-
-function useVimeoThumbnail(videoUrl: string | null): string | null {
-  const [thumb, setThumb] = useState<string | null>(() =>
-    videoUrl ? (vimeoThumbCache.get(videoUrl) ?? null) : null
-  )
-  useEffect(() => {
-    if (!videoUrl || !videoUrl.includes("vimeo")) return
-    if (vimeoThumbCache.has(videoUrl)) { setThumb(vimeoThumbCache.get(videoUrl)!); return }
-    const match = videoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/)
-    if (!match) return
-    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}&width=640`)
-      .then(r => r.json())
-      .then(data => { if (data?.thumbnail_url) { vimeoThumbCache.set(videoUrl, data.thumbnail_url); setThumb(data.thumbnail_url) } })
-      .catch(() => {})
-  }, [videoUrl])
-  return thumb
 }
 
 // Small component so each card can independently fetch its Vimeo thumb
@@ -508,7 +489,15 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   const [timeLeft, setTimeLeft] = useState(item.duration_seconds ?? 0)
   const [timerDone, setTimerDone] = useState(false)
   const [showVas, setShowVas] = useState(false)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
+
+  // Cleanup timer on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current !== null) clearInterval(intervalRef.current)
+    }
+  }, [])
 
   // Breathing exercise — render full-screen player instead
   if (ex?.exercise_type === "breathing") {
@@ -561,13 +550,15 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   }
 
   function startTimer() {
+    if (intervalRef.current !== null) clearInterval(intervalRef.current)
     setTimerActive(true)
     setTimerDone(false)
     setTimeLeft(item.duration_seconds ?? 0)
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
-          clearInterval(interval)
+          if (intervalRef.current !== null) clearInterval(intervalRef.current)
+          intervalRef.current = null
           setTimerActive(false)
           setTimerDone(true)
           return 0

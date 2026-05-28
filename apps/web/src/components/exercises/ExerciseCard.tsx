@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Star, Dumbbell, Trash2 } from "lucide-react"
 import { toggleFavorite, deleteExercise } from "@/lib/actions/exercises"
 import { toast } from "sonner"
 import { useProgramBuilder } from "@/store/programBuilder"
 import { ExerciseDetailModal } from "./ExerciseDetailModal"
+import { useVimeoThumbnail } from "@/lib/hooks/useVimeoThumbnail"
 
 type Exercise = {
   id: string
@@ -27,35 +28,6 @@ type Exercise = {
   practitioner_id: string | null
 }
 
-// Module-level cache so we don't re-fetch on re-renders
-const vimeoThumbCache = new Map<string, string>()
-
-function useVimeoThumbnail(videoUrl: string | null): string | null {
-  const [thumb, setThumb] = useState<string | null>(() => {
-    if (!videoUrl) return null
-    return vimeoThumbCache.get(videoUrl) ?? null
-  })
-
-  useEffect(() => {
-    if (!videoUrl || !videoUrl.includes("vimeo")) return
-    if (vimeoThumbCache.has(videoUrl)) { setThumb(vimeoThumbCache.get(videoUrl)!); return }
-
-    const match = videoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/)
-    if (!match) return
-
-    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}&width=640`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.thumbnail_url) {
-          vimeoThumbCache.set(videoUrl, data.thumbnail_url)
-          setThumb(data.thumbnail_url)
-        }
-      })
-      .catch(() => {})
-  }, [videoUrl])
-
-  return thumb
-}
 
 const DIFFICULTY_COLOR: Record<number, string> = {
   1: "text-green-600 bg-green-50",

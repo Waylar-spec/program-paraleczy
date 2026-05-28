@@ -101,6 +101,7 @@ export async function addSupplementToProtocol(protocolId: string, supplementId: 
     .from("protocol_supplements")
     .insert({ protocol_id: protocolId, supplement_id: supplementId, notes: notes || null })
   if (error) throw new Error(error.message)
+  revalidateTag("protocols", "max")
   revalidatePath(`/biblioteka/protokoly/${protocolId}`)
 }
 
@@ -112,6 +113,7 @@ export async function removeSupplementFromProtocol(protocolId: string, supplemen
     .eq("protocol_id", protocolId)
     .eq("supplement_id", supplementId)
   if (error) throw new Error(error.message)
+  revalidateTag("protocols", "max")
   revalidatePath(`/biblioteka/protokoly/${protocolId}`)
 }
 
@@ -289,6 +291,66 @@ export async function deletePhase(phaseId: string, protocolId: string) {
   revalidatePath(`/biblioteka/protokoly/${protocolId}`)
 }
 
+// ─── Internal helper ──────────────────────────────────────────────────────────
+// Creates a patient_program from a phase template. Used by both
+// assignProtocolToPatient and advancePhase to avoid duplication.
+
+async function _createPatientProgramFromPhase(
+  phase: { template_id: string; duration_weeks: number; name?: string },
+  params: { patientId: string; practitionerId: string; startDate: string },
+  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>
+) {
+  const sb = createServiceClient()
+  const { data: template } = await sb
+    .from("program_templates")
+    .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes), program_template_content(content_id, order)")
+    .eq("id", phase.template_id)
+    .single()
+
+  if (!template) return null
+
+  const endDate = new Date(
+    new Date(params.startDate).getTime() + phase.duration_weeks * 7 * 24 * 60 * 60 * 1000
+  ).toISOString().split("T")[0]
+
+  const { data: program } = await supabase
+    .from("patient_programs")
+    .insert({
+      patient_id: params.patientId,
+      practitioner_id: params.practitionerId,
+      template_id: phase.template_id,
+      name: template.name,
+      status: "active",
+      start_date: params.startDate,
+      end_date: endDate,
+    })
+    .select("id")
+    .single()
+
+  if (!program) return null
+
+  const items = (template.program_template_items as any[] ?? []).map((item) => ({
+    program_id: program.id,
+    exercise_id: item.exercise_id,
+    order: item.order,
+    sets: item.sets,
+    reps: item.reps,
+    duration_seconds: item.duration_seconds,
+    rest_seconds: item.rest_seconds,
+    notes: item.notes,
+  }))
+  if (items.length) await supabase.from("patient_program_items").insert(items)
+
+  const contentRows = (template.program_template_content as { content_id: string; order: number }[] ?? []).map((tc) => ({
+    program_id: program.id,
+    content_id: tc.content_id,
+    order: tc.order,
+  }))
+  if (contentRows.length) await supabase.from("patient_program_content").insert(contentRows)
+
+  return program
+}
+
 // ─── Patient protocol assignment ──────────────────────────────────────────────
 
 export async function assignProtocolToPatient(patientId: string, protocolId: string, startDate: string, startWeek?: number, customName?: string) {
@@ -365,55 +427,11 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
 
   // Auto-create a patient_program for the starting phase so the patient can access exercises immediately
   if (firstPhase?.template_id) {
-    const sb = createServiceClient()
-    const { data: template } = await sb
-      .from("program_templates")
-      .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes), program_template_content(content_id, order)")
-      .eq("id", firstPhase.template_id)
-      .single()
-
-    if (template) {
-      const endDate = new Date(
-        new Date(startDate).getTime() + (firstPhase.duration_weeks ?? 4) * 7 * 24 * 60 * 60 * 1000
-      ).toISOString().split("T")[0]
-
-      const { data: program } = await supabase
-        .from("patient_programs")
-        .insert({
-          patient_id: patientId,
-          practitioner_id: user.id,
-          template_id: firstPhase.template_id,
-          name: template.name,
-          status: "active",
-          start_date: startDate,
-          end_date: endDate,
-        })
-        .select("id")
-        .single()
-
-      if (program) {
-        if ((template.program_template_items ?? []).length > 0) {
-          const items = (template.program_template_items as any[]).map((item) => ({
-            program_id: program.id,
-            exercise_id: item.exercise_id,
-            order: item.order,
-            sets: item.sets,
-            reps: item.reps,
-            duration_seconds: item.duration_seconds,
-            rest_seconds: item.rest_seconds,
-            notes: item.notes,
-          }))
-          await supabase.from("patient_program_items").insert(items)
-        }
-
-        const contentRows = (template.program_template_content ?? []).map((tc: { content_id: string; order: number }) => ({
-          program_id: program.id,
-          content_id: tc.content_id,
-          order: tc.order,
-        }))
-        if (contentRows.length) await supabase.from("patient_program_content").insert(contentRows)
-      }
-    }
+    await _createPatientProgramFromPhase(
+      { template_id: firstPhase.template_id, duration_weeks: firstPhase.duration_weeks ?? 4 },
+      { patientId, practitionerId: user.id, startDate },
+      supabase
+    )
   }
 
   // Auto-prescribe protocol-level supplements
@@ -486,54 +504,12 @@ export async function advancePhase(patientProtocolId: string, patientId: string)
 
     // Auto-assign the phase's exercise template to the patient
     if (nextPhase.template_id) {
-      const { data: template } = await supabase
-        .from("program_templates")
-        .select("name, program_template_items(id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, notes), program_template_content(content_id)")
-        .eq("id", nextPhase.template_id)
-        .single()
-
-      if (template) {
-        const startDate = new Date().toISOString().split("T")[0]
-        const endDate = new Date(Date.now() + nextPhase.duration_weeks * 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
-
-        const { data: program } = await supabase
-          .from("patient_programs")
-          .insert({
-            patient_id: patientId,
-            practitioner_id: user.id,
-            template_id: nextPhase.template_id,
-            name: template.name,
-            status: "active",
-            start_date: startDate,
-            end_date: endDate,
-          })
-          .select("id")
-          .single()
-
-        if (program) {
-          const items = (template.program_template_items ?? []).map((item: {
-            exercise_id: string; order: number; sets: number | null
-            reps: number | null; duration_seconds: number | null; rest_seconds: number | null; notes: string | null
-          }) => ({
-            program_id: program.id,
-            exercise_id: item.exercise_id,
-            order: item.order,
-            sets: item.sets,
-            reps: item.reps,
-            duration_seconds: item.duration_seconds,
-            rest_seconds: item.rest_seconds,
-            notes: item.notes,
-          }))
-          if (items.length) await supabase.from("patient_program_items").insert(items)
-
-          const contentRows = (template.program_template_content ?? []).map((tc: { content_id: string }, i: number) => ({
-            program_id: program.id,
-            content_id: tc.content_id,
-            order: i + 1,
-          }))
-          if (contentRows.length) await supabase.from("patient_program_content").insert(contentRows)
-        }
-      }
+      const advanceDate = new Date().toISOString().split("T")[0]
+      await _createPatientProgramFromPhase(
+        { template_id: nextPhase.template_id, duration_weeks: nextPhase.duration_weeks },
+        { patientId, practitionerId: user.id, startDate: advanceDate },
+        supabase
+      )
     }
   }
 
