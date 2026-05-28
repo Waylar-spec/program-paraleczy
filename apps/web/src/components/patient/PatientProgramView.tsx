@@ -299,6 +299,8 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
                       </div>
                     ) : ex?.thumbnail_url ? (
                       <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
+                    ) : ex?.animated_gif_url ? (
+                      <img src={ex.animated_gif_url} alt={ex.name} className="w-full h-full object-contain" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Dumbbell size={20} className="text-gray-300" />
@@ -556,6 +558,8 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   }
 
   const embedUrl = ex?.video_url ? getEmbedUrl(ex.video_url) : null
+  const isDirectMp4 = !!ex?.video_url && !embedUrl &&
+    (ex.video_url.endsWith(".mp4") || ex.video_url.includes(".mp4"))
   const isVideoFile = ex?.animated_gif_url && /\.(mp4|webm)(\?|$)/i.test(ex.animated_gif_url)
 
   return (
@@ -576,6 +580,8 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
           <div className="w-full aspect-video bg-black">
             {embedUrl ? (
               <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
+            ) : isDirectMp4 ? (
+              <video src={ex!.video_url!} className="w-full h-full object-contain" controls playsInline autoPlay loop />
             ) : isVideoFile ? (
               <video src={ex!.animated_gif_url!} className="w-full h-full object-contain" controls playsInline autoPlay />
             ) : ex?.animated_gif_url ? (
