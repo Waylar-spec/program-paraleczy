@@ -301,6 +301,14 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
                       <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
                     ) : ex?.animated_gif_url ? (
                       <img src={ex.animated_gif_url} alt={ex.name} className="w-full h-full object-contain" />
+                    ) : ex?.video_url ? (
+                      <video
+                        src={ex.video_url}
+                        className="w-full h-full object-contain"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Dumbbell size={20} className="text-gray-300" />
