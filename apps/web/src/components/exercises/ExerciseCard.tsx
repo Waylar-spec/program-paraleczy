@@ -73,11 +73,10 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
   const inProgram = hasExercise(exercise.id)
   const isOwn = !!exercise.practitioner_id
 
-  const hasGif = !!exercise.animated_gif_url
   const hasThumb = !!exercise.thumbnail_url
-  // Direct mp4 (e.g. Physitrack) can be shown as video in the card — always correct
+  // Direct mp4 (e.g. Physitrack) — shown as looping demo video
   const isDirectMp4 = !!exercise.video_url && !exercise.video_url.includes("vimeo") && !exercise.video_url.includes("youtube") && !exercise.video_url.includes("youtu.be") && (exercise.video_url.endsWith(".mp4") || exercise.video_url.includes(".mp4"))
-  // Vimeo thumbnail — fetched lazily, takes priority over potentially wrong static thumbnail
+  // Vimeo thumbnail — fetched lazily
   const isVimeo = !!exercise.video_url && exercise.video_url.includes("vimeo")
   const vimeoThumb = useVimeoThumbnail(isVimeo ? exercise.video_url : null)
 
@@ -146,8 +145,8 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
         } ${builderOpen ? "cursor-default" : "cursor-pointer hover:shadow-sm hover:border-navy-200"}`}
       >
         {/* Thumbnail / GIF area */}
-        <div className="relative aspect-video bg-white flex items-center justify-center overflow-hidden">
-            {/* Priority: direct mp4 > vimeo thumb > animated mp4 gif > static thumbnail > gif > placeholder */}
+        <div className="relative aspect-video bg-gray-50 flex items-center justify-center overflow-hidden">
+          {/* Priority: direct mp4 (Physitrack) > vimeo thumb > static thumbnail > placeholder */}
           {isDirectMp4 ? (
             <video
               src={exercise.video_url!}
@@ -164,28 +163,12 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
             />
-          ) : hasGif && exercise.animated_gif_url!.endsWith('.mp4') ? (
-            <video
-              src={exercise.animated_gif_url!}
-              className="absolute inset-0 w-full h-full object-contain"
-              autoPlay
-              muted
-              loop
-              playsInline
-            />
           ) : hasThumb ? (
             <img
               src={exercise.thumbnail_url!}
               alt={exercise.name}
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : hasGif ? (
-            <img
-              src={exercise.animated_gif_url!}
-              alt={exercise.name}
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-contain"
             />
           ) : (
             <Dumbbell size={32} className="text-gray-300" />
