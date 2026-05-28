@@ -11,9 +11,6 @@ type Patient = {
   first_name: string
   last_name: string
   email: string | null
-  phone: string | null
-  birth_year: number | null
-  gender: string | null
   notes: string | null
 }
 
@@ -29,9 +26,6 @@ export function EditPatientModal({ patient }: Props) {
     firstName: patient.first_name,
     lastName: patient.last_name,
     email: patient.email ?? "",
-    phone: patient.phone ?? "",
-    birthYear: patient.birth_year?.toString() ?? "",
-    gender: patient.gender ?? "",
     notes: patient.notes ?? "",
   })
 
@@ -48,9 +42,6 @@ export function EditPatientModal({ patient }: Props) {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email || undefined,
-        phone: form.phone || undefined,
-        birthYear: form.birthYear ? Number(form.birthYear) : undefined,
-        gender: form.gender as "male" | "female" | "other" | undefined || undefined,
         notes: form.notes || undefined,
       })
       toast.success("Dane zaktualizowane")
@@ -106,31 +97,6 @@ export function EditPatientModal({ patient }: Props) {
             <label className="text-xs font-medium text-gray-700">E-mail</label>
             <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
               className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-700">Telefon</label>
-              <input value={form.phone} onChange={(e) => set("phone", e.target.value)}
-                className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-700">Rok urodzenia</label>
-              <input type="number" value={form.birthYear} onChange={(e) => set("birthYear", e.target.value)}
-                placeholder="np. 1985"
-                className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400" />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-700">Płeć</label>
-            <select value={form.gender} onChange={(e) => set("gender", e.target.value)}
-              className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-400">
-              <option value="">Nie podano</option>
-              <option value="male">Mężczyzna</option>
-              <option value="female">Kobieta</option>
-              <option value="other">Inne</option>
-            </select>
           </div>
 
           <div className="space-y-1">

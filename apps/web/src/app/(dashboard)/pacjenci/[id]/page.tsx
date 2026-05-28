@@ -6,6 +6,7 @@ import { getTemplates } from "@/lib/actions/templates"
 import { getProtocols, getPatientProtocols } from "@/lib/actions/protocols"
 import { getPatientAdherence, getPatientVasData } from "@/lib/actions/adherence"
 import { getSurveys, getPatientSurveys, getPatientSurveyResponses } from "@/lib/actions/surveys"
+import { getPatientSupplements, getSupplements } from "@/lib/actions/supplements"
 import { AssignProgramModal } from "@/components/patients/AssignProgramModal"
 import { AssignProtocolModal } from "@/components/protocols/AssignProtocolModal"
 import { PatientProtocolCard } from "@/components/protocols/PatientProtocolCard"
@@ -17,10 +18,12 @@ import { EditPatientModal } from "@/components/patients/EditPatientModal"
 import { CopyPatientLink } from "@/components/patients/CopyPatientLink"
 import { AssignSurveyModal } from "@/components/surveys/AssignSurveyModal"
 import { PatientSurveysSection } from "@/components/surveys/PatientSurveysSection"
+import { PatientSupplementsSection } from "@/components/supplements/PatientSupplementsSection"
+import { PrescribeSupplementModal } from "@/components/supplements/PrescribeSupplementModal"
 
 export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [patient, templates, protocols, patientProtocols, adherence, surveys, patientSurveys, surveyResponses, vasData] = await Promise.all([
+  const [patient, templates, protocols, patientProtocols, adherence, surveys, patientSurveys, surveyResponses, vasData, patientSupplements, allSupplements] = await Promise.all([
     getPatient(id),
     getTemplates(),
     getProtocols(),
@@ -30,6 +33,8 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
     getPatientSurveys(id),
     getPatientSurveyResponses(id),
     getPatientVasData(id),
+    getPatientSupplements(id),
+    getSupplements(),
   ])
 
   if (!patient) notFound()
@@ -133,6 +138,25 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
             <PatientSurveysSection
               assignments={patientSurveys}
               responses={surveyResponses}
+            />
+          </div>
+
+          {/* Suplementy */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="font-semibold text-gray-900">Suplementacja</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Przepisane suplementy z linkami Formeds</p>
+              </div>
+              <PrescribeSupplementModal
+                patientId={id}
+                supplements={allSupplements}
+                prescribedIds={patientSupplements.map((ps) => ps.supplement_id)}
+              />
+            </div>
+            <PatientSupplementsSection
+              supplements={patientSupplements}
+              patientId={id}
             />
           </div>
         </div>

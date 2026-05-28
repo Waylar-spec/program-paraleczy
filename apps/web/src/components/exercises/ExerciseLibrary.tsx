@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { Search, Filter, X, ChevronDown, ChevronUp } from "lucide-react"
 import { ExerciseCard } from "./ExerciseCard"
 
@@ -35,6 +35,7 @@ const DIFFICULTY_COLORS: Record<number, string> = {
 }
 
 const BODY_PART_SHOW_INITIAL = 10
+const PAGE_SIZE = 40
 
 export function ExerciseLibrary({ exercises }: Props) {
   const [search, setSearch] = useState("")
@@ -46,6 +47,8 @@ export function ExerciseLibrary({ exercises }: Props) {
   const [selectedDifficulties, setSelectedDifficulties] = useState<Set<number>>(new Set())
   const [showAllBodyParts, setShowAllBodyParts] = useState(false)
   const [bodyPartSearch, setBodyPartSearch] = useState("")
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const bodyPartCounts = useMemo(() => {
     const map = new Map<string, number>()
@@ -73,6 +76,27 @@ export function ExerciseLibrary({ exercises }: Props) {
 
   const ownCount = exercises.filter((e) => !!e.practitioner_id).length
   const publicCount = exercises.filter((e) => !e.practitioner_id).length
+
+  // Reset visible window whenever filters/search change
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [search, onlyOwn, onlyPublic, onlyFavorites, selectedBodyParts, selectedCategories, selectedDifficulties])
+
+  // Infinite scroll sentinel
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((c) => c + PAGE_SIZE)
+        }
+      },
+      { rootMargin: "200px" }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const filtered = useMemo(() => {
     return exercises.filter((ex) => {
@@ -345,11 +369,20 @@ export function ExerciseLibrary({ exercises }: Props) {
 
         {/* Grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filtered.map((exercise) => (
-              <ExerciseCard key={exercise.id} exercise={exercise} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {filtered.slice(0, visibleCount).map((exercise) => (
+                <ExerciseCard key={exercise.id} exercise={exercise} />
+              ))}
+            </div>
+            {/* Sentinel — triggers next page load */}
+            <div ref={sentinelRef} className="h-4" />
+            {visibleCount < filtered.length && (
+              <p className="text-center text-xs text-gray-400 pb-4">
+                {filtered.slice(0, visibleCount).length} z {filtered.length} ćwiczeń
+              </p>
+            )}
+          </>
         ) : (
           <div className="text-center py-16 text-gray-400">
             <p className="text-sm">Brak ćwiczeń spełniających kryteria</p>

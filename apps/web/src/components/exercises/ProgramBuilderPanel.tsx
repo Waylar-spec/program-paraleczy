@@ -1,18 +1,19 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import {
   X, Trash2, Dumbbell, ChevronDown, ChevronUp, Send, FileText, ExternalLink,
   BookOpen, Search, Plus, ClipboardList, ArrowLeft, Save, Printer, Eye,
-  UserPlus, Loader2, Pencil,
+  UserPlus, Loader2, Pencil, ShoppingCart, AlertTriangle,
 } from "lucide-react"
 import { useProgramBuilder, type BuilderExercise } from "@/store/programBuilder"
-import { createTemplate, addExerciseToTemplate, addSurveyToTemplate } from "@/lib/actions/templates"
+import { createTemplate, addExerciseToTemplate, addSurveyToTemplate, addSupplementToTemplate } from "@/lib/actions/templates"
 import { createQuickProgram } from "@/lib/actions/patient-programs"
 import { assignSurveyToProgram, getSurveys, type Survey, type SurveySchedule } from "@/lib/actions/surveys"
-import { getPatientsList, createPatient } from "@/lib/actions/patients"
+import { getPatientsList, createPatient, findPatientByEmail } from "@/lib/actions/patients"
 import { getEducationalContent } from "@/lib/actions/education"
+import { getSupplements, type Supplement } from "@/lib/actions/supplements"
 import { toast } from "sonner"
 
 type Patient = { id: string; first_name: string; last_name: string }
@@ -177,6 +178,7 @@ export function ProgramBuilderPanel() {
     isOpen, close,
     exercises, contentItems, addContent, removeContent, hasContent,
     surveyItems, addSurvey, removeSurvey, hasSurvey,
+    supplementItems, addSupplement, removeSupplement, hasSupplement,
     programName, setProgramName, clearAll,
   } = useProgramBuilder()
 
@@ -194,6 +196,9 @@ export function ProgramBuilderPanel() {
   const [showNewPatient, setShowNewPatient] = useState(false)
   const [newFirst, setNewFirst] = useState("")
   const [newLast, setNewLast] = useState("")
+  const [newEmail, setNewEmail] = useState("")
+  const [emailDuplicate, setEmailDuplicate] = useState<{ id: string; first_name: string; last_name: string } | null>(null)
+  const emailCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [creatingPatient, setCreatingPatient] = useState(false)
 
   // Date / duration
@@ -212,6 +217,11 @@ export function ProgramBuilderPanel() {
   const [surveySearch, setSurveySearch] = useState("")
   const [surveySchedules, setSurveySchedules] = useState<Record<string, string>>({})
 
+  // Supplement picker
+  const [allSupplements, setAllSupplements] = useState<Supplement[]>([])
+  const [suppPickerOpen, setSuppPickerOpen] = useState(false)
+  const [suppSearch, setSuppSearch] = useState("")
+
   // Exercise list in assign view
   const [showExerciseList, setShowExerciseList] = useState(false)
 
@@ -224,6 +234,11 @@ export function ProgramBuilderPanel() {
     const q = surveySearch.toLowerCase()
     return q ? allSurveys.filter((s) => s.name.toLowerCase().includes(q)) : allSurveys
   }, [allSurveys, surveySearch])
+
+  const filteredSupplements = useMemo(() => {
+    const q = suppSearch.toLowerCase()
+    return q ? allSupplements.filter((s) => s.name.toLowerCase().includes(q) || (s.product_type ?? "").toLowerCase().includes(q)) : allSupplements
+  }, [allSupplements, suppSearch])
 
   const filteredPatients = useMemo(() => {
     const q = patientSearch.toLowerCase()
@@ -248,12 +263,13 @@ export function ProgramBuilderPanel() {
       if (patients.length === 0) getPatientsList().then(setPatients)
       if (allContent.length === 0) getEducationalContent().then((data) => setAllContent(data as ContentItem[]))
       if (allSurveys.length === 0) getSurveys().then(setAllSurveys)
+      if (allSupplements.length === 0) getSupplements().then(setAllSupplements)
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
-  const hasItems = exercises.length > 0 || contentItems.length > 0 || surveyItems.length > 0
+  const hasItems = exercises.length > 0 || contentItems.length > 0 || surveyItems.length > 0 || supplementItems.length > 0
   const selectedPatientObj = patients.find((p) => p.id === selectedPatient)
 
   async function handleAssign() {
@@ -267,6 +283,7 @@ export function ProgramBuilderPanel() {
         endDate: calcEndDate(startDate, durationWeeks),
         saveAsTemplate,
         contentIds: contentItems.map((c) => c.contentId),
+        supplementIds: supplementItems.map((s) => s.supplementId),
         exercises: exercises.map((ex, i) => ({
           exerciseId: ex.exerciseId,
           order: i + 1,
@@ -332,6 +349,9 @@ export function ProgramBuilderPanel() {
       for (const s of surveyItems) {
         await addSurveyToTemplate(template.id, s.surveyId, s.schedule)
       }
+      for (const s of supplementItems) {
+        await addSupplementToTemplate(template.id, s.supplementId)
+      }
       toast.success(`Szablon "${programName}" zapisany`)
       clearAll()
       close()
@@ -347,13 +367,14 @@ export function ProgramBuilderPanel() {
     if (!newFirst.trim() || !newLast.trim()) return
     setCreatingPatient(true)
     try {
-      const patient = await createPatient({ firstName: newFirst.trim(), lastName: newLast.trim() })
+      const patient = await createPatient({ firstName: newFirst.trim(), lastName: newLast.trim(), email: newEmail.trim() || undefined })
       const entry = { id: patient.id, first_name: patient.first_name, last_name: patient.last_name }
       setPatients((prev) => [...prev, entry].sort((a, b) => a.last_name.localeCompare(b.last_name, "pl")))
       setSelectedPatient(patient.id)
       setShowNewPatient(false)
       setNewFirst("")
       setNewLast("")
+      setNewEmail("")
       toast.success(`Pacjent ${patient.first_name} ${patient.last_name} dodany`)
     } catch {
       toast.error("Nie udało się dodać pacjenta")
@@ -511,6 +532,87 @@ export function ProgramBuilderPanel() {
                       )}
                     </div>
 
+                    {/* Supplements */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <ShoppingCart size={12} className="text-gray-400" />
+                          <span className="text-xs font-medium text-gray-500">
+                            Suplementy {supplementItems.length > 0 && `(${supplementItems.length})`}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setSuppPickerOpen(!suppPickerOpen)}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${suppPickerOpen ? "bg-navy-100 text-navy-700" : "text-navy-500 hover:bg-navy-50"}`}
+                        >
+                          <Plus size={11} /> Dodaj suplement
+                        </button>
+                      </div>
+
+                      {supplementItems.length > 0 && (
+                        <div className="space-y-1 mb-2">
+                          {supplementItems.map((s) => (
+                            <div key={s.supplementId} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-3 py-2">
+                              <div className="w-7 h-7 rounded-lg overflow-hidden bg-gray-100 shrink-0 flex items-center justify-center">
+                                {s.imageUrl
+                                  ? <img src={s.imageUrl} alt={s.name} className="w-full h-full object-cover" />
+                                  : <ShoppingCart size={13} className="text-gray-300" />}
+                              </div>
+                              <span className="text-xs text-gray-800 flex-1 truncate">{s.name}</span>
+                              {s.price !== null && <span className="text-xs text-gray-400 shrink-0">{s.price} zł</span>}
+                              <button onClick={() => removeSupplement(s.supplementId)} className="p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors">
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {suppPickerOpen && (
+                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                          <div className="p-2 border-b border-gray-100">
+                            <div className="relative">
+                              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                              <input
+                                value={suppSearch}
+                                onChange={(e) => setSuppSearch(e.target.value)}
+                                placeholder="Szukaj suplementów..."
+                                className="w-full h-7 pl-7 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
+                                autoFocus
+                              />
+                            </div>
+                          </div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {filteredSupplements.length === 0 ? (
+                              <p className="text-xs text-gray-400 text-center py-4">Brak wyników</p>
+                            ) : filteredSupplements.map((s) => {
+                              const selected = hasSupplement(s.id)
+                              return (
+                                <button
+                                  key={s.id}
+                                  onClick={() => selected
+                                    ? removeSupplement(s.id)
+                                    : addSupplement({ supplementId: s.id, name: s.name, imageUrl: s.image_url, price: s.price, formedsHandle: s.formeds_handle, notes: "" })}
+                                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left border-b border-gray-50 last:border-0 transition-colors ${selected ? "bg-navy-50" : "hover:bg-gray-50"}`}
+                                >
+                                  <div className="w-7 h-7 rounded-lg overflow-hidden bg-gray-100 shrink-0 flex items-center justify-center">
+                                    {s.image_url
+                                      ? <img src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
+                                      : <ShoppingCart size={11} className="text-gray-300" />}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-xs text-gray-800 truncate block">{s.name}</span>
+                                    {s.price !== null && <span className="text-xs text-gray-400">{s.price} zł</span>}
+                                  </div>
+                                  {selected ? <span className="text-xs text-navy-500 shrink-0">✓</span> : <Plus size={11} className="text-gray-400 shrink-0" />}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Surveys */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
@@ -618,6 +720,7 @@ export function ProgramBuilderPanel() {
                     {exercises.length} {exercises.length === 1 ? "ćwiczenie" : exercises.length < 5 ? "ćwiczenia" : "ćwiczeń"}
                     {contentItems.length > 0 && ` · ${contentItems.length} materiałów`}
                     {surveyItems.length > 0 && ` · ${surveyItems.length} kwestionariuszy`}
+                    {supplementItems.length > 0 && ` · ${supplementItems.length} suplementów`}
                   </p>
                   <button
                     onClick={() => setView("assign")}
@@ -728,13 +831,48 @@ export function ProgramBuilderPanel() {
                           value={newLast}
                           onChange={(e) => setNewLast(e.target.value)}
                           placeholder="Nazwisko *"
-                          onKeyDown={(e) => e.key === "Enter" && handleCreatePatient()}
                           className="h-9 px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-teal-400"
                         />
                       </div>
+                      <input
+                        type="email"
+                        value={newEmail}
+                        onChange={(e) => {
+                          setNewEmail(e.target.value)
+                          setEmailDuplicate(null)
+                          if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current)
+                          if (e.target.value.includes("@")) {
+                            emailCheckTimer.current = setTimeout(async () => {
+                              const found = await findPatientByEmail(e.target.value)
+                              setEmailDuplicate(found)
+                            }, 500)
+                          }
+                        }}
+                        placeholder="E-mail (do powiadomienia o programie)"
+                        onKeyDown={(e) => e.key === "Enter" && handleCreatePatient()}
+                        className={`w-full h-9 px-3 text-sm border rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-teal-400 ${emailDuplicate ? "border-amber-400" : "border-gray-200"}`}
+                      />
+                      {emailDuplicate && (
+                        <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-amber-50 border border-amber-200">
+                          <AlertTriangle size={13} className="text-amber-500 shrink-0" />
+                          <span className="text-xs text-amber-800">Już istnieje: </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPatient(emailDuplicate.id)
+                              setShowNewPatient(false)
+                              setNewFirst(""); setNewLast(""); setNewEmail("")
+                              setEmailDuplicate(null)
+                            }}
+                            className="text-xs font-semibold text-amber-700 hover:underline"
+                          >
+                            {emailDuplicate.first_name} {emailDuplicate.last_name} — wybierz
+                          </button>
+                        </div>
+                      )}
                       <div className="flex gap-2">
                         <button
-                          onClick={() => { setShowNewPatient(false); setNewFirst(""); setNewLast("") }}
+                          onClick={() => { setShowNewPatient(false); setNewFirst(""); setNewLast(""); setNewEmail("") }}
                           className="flex-1 h-8 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                           Anuluj
@@ -795,6 +933,7 @@ export function ProgramBuilderPanel() {
                         {exercises.length} {exercises.length === 1 ? "ćwiczenie" : exercises.length < 5 ? "ćwiczenia" : "ćwiczeń"}
                         {contentItems.length > 0 && ` · ${contentItems.length} materiałów`}
                         {surveyItems.length > 0 && ` · ${surveyItems.length} kwestionariuszy`}
+                        {supplementItems.length > 0 && ` · ${supplementItems.length} suplementów`}
                       </p>
                     </div>
                     {exercises.length > 0 && (

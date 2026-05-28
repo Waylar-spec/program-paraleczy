@@ -50,6 +50,16 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
     // table doesn't exist yet — skip
   }
 
+  // Fetch template supplements
+  let templateSupplements: { supplement_id: string; notes: string | null }[] = []
+  try {
+    const { data: suppData } = await sb
+      .from("program_template_supplements")
+      .select("supplement_id, notes")
+      .eq("template_id", templateId)
+    templateSupplements = suppData ?? []
+  } catch { /* skip */ }
+
   // Create patient_program
   const { data: program, error: programError } = await supabase
     .from("patient_programs")
@@ -118,6 +128,20 @@ export async function assignTemplateToPatient(patientId: string, templateId: str
     await supabase.from("patient_program_surveys").insert(surveyRows)
   }
 
+  // Auto-prescribe template supplements to patient
+  if (templateSupplements.length > 0) {
+    try {
+      const suppRows = templateSupplements.map((ts) => ({
+        patient_id: patientId,
+        supplement_id: ts.supplement_id,
+        practitioner_id: user.id,
+        notes: ts.notes,
+      }))
+      // Use service client to bypass RLS; ignore duplicates
+      await sb.from("patient_supplements").upsert(suppRows, { onConflict: "patient_id,supplement_id", ignoreDuplicates: true })
+    } catch { /* skip if duplicates or table issues */ }
+  }
+
   if (patient?.email && patient.access_code) {
     const practitionerName = practitioner
       ? `${practitioner.first_name} ${practitioner.last_name}`.trim()
@@ -150,10 +174,13 @@ export async function createQuickProgram(params: {
   }[]
   contentIds?: string[]
   saveAsTemplate?: boolean
+  supplementIds?: string[]
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
+
+  const sb = createServiceClient()
 
   const [{ data: patient }, { data: practitioner }] = await Promise.all([
     supabase
@@ -229,6 +256,19 @@ export async function createQuickProgram(params: {
     await supabase.from("patient_program_content").insert(contentRows)
   }
 
+  // Auto-prescribe supplements selected in program builder
+  if (params.supplementIds?.length) {
+    try {
+      const suppRows = params.supplementIds.map((id) => ({
+        patient_id: params.patientId,
+        supplement_id: id,
+        practitioner_id: user.id,
+        notes: null,
+      }))
+      await sb.from("patient_supplements").upsert(suppRows, { onConflict: "patient_id,supplement_id", ignoreDuplicates: true })
+    } catch { /* skip if duplicates */ }
+  }
+
   if (patient?.email && patient.access_code) {
     const practitionerName = practitioner
       ? `${practitioner.first_name} ${practitioner.last_name}`.trim()
@@ -260,7 +300,7 @@ export async function getPatientProgramWithItems(programId: string) {
       id, name, status, start_date, end_date,
       patient_program_items(
         id, order, sets, reps, duration_seconds, rest_seconds, notes,
-        exercises(id, name, thumbnail_url, body_part, default_sets, default_reps, default_duration_seconds)
+        exercises(id, name, thumbnail_url, body_part, default_sets, default_reps, default_duration_seconds, exercise_type, breathing_config, running_config)
       ),
       patient_program_content(
         id, order, content_id,
@@ -377,7 +417,7 @@ export async function getPatientProgramForPrint(programId: string) {
       patients(first_name, last_name),
       patient_program_items(
         id, order, sets, reps, duration_seconds, rest_seconds, notes,
-        exercises(id, name, description, thumbnail_url, step_images, body_part, default_sets, default_reps, default_duration_seconds, default_rest_seconds)
+        exercises(id, name, description, thumbnail_url, step_images, body_part, default_sets, default_reps, default_duration_seconds, default_rest_seconds, exercise_type, breathing_config, running_config)
       ),
       patient_program_content(
         id, order, content_id,

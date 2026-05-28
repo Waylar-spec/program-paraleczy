@@ -5,11 +5,12 @@ import { getTemplate } from "@/lib/actions/templates"
 import { getExercises } from "@/lib/actions/exercises"
 import { getEducationalContent } from "@/lib/actions/education"
 import { getSurveys } from "@/lib/actions/surveys"
+import { getSupplements } from "@/lib/actions/supplements"
 import { TemplateEditor } from "@/components/templates/TemplateEditor"
 
 export default async function SzablonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [template, exercises, allContent, allSurveys] = await Promise.all([getTemplate(id), getExercises(), getEducationalContent(), getSurveys()])
+  const [template, exercises, allContent, allSurveys, allSupplements] = await Promise.all([getTemplate(id), getExercises(), getEducationalContent(), getSurveys(), getSupplements()])
 
   if (!template) notFound()
 
@@ -24,6 +25,8 @@ export default async function SzablonPage({ params }: { params: Promise<{ id: st
   const templateSurveys = [...((template as any).program_template_surveys ?? [])].sort(
     (a: { order: number }, b: { order: number }) => a.order - b.order
   )
+
+  const templateSupplements = (template as any).program_template_supplements ?? []
 
   return (
     <div className="space-y-6">
@@ -57,7 +60,7 @@ export default async function SzablonPage({ params }: { params: Promise<{ id: st
         )}
       </div>
 
-      <TemplateEditor templateId={id} items={items} exercises={exercises} allContent={allContent} templateContent={templateContent} allSurveys={allSurveys} templateSurveys={templateSurveys} />
+      <TemplateEditor templateId={id} items={items} exercises={exercises} allContent={allContent} templateContent={templateContent} allSurveys={allSurveys} templateSurveys={templateSurveys} allSupplements={allSupplements} templateSupplements={templateSupplements} />
     </div>
   )
 }

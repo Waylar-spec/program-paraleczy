@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw, ChevronDown, ChevronUp, Info } from "lucide-react"
+import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw, ChevronDown, ChevronUp, Info, Wind } from "lucide-react"
 import { logExercise } from "@/lib/actions/patient-portal"
 import { toast } from "sonner"
+import { BreathingPlayer } from "./BreathingPlayer"
+import { TimedSessionCard } from "./TimedSessionCard"
 
 type ExerciseData = {
   id: string
@@ -14,6 +16,9 @@ type ExerciseData = {
   animated_gif_url?: string | null
   video_url: string | null
   body_part: string | null
+  exercise_type?: string | null
+  breathing_config?: any
+  running_config?: any
 }
 
 type ExerciseItem = {
@@ -233,6 +238,28 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
             {items.map((item) => {
               const isDone = done.has(item.id)
               const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
+              const isBreathing = ex?.exercise_type === "breathing"
+              const isRunning = ex?.exercise_type === "running_intervals"
+              const isAerobic = ex?.exercise_type === "aerobic_session"
+              const isSpecial = isBreathing || isRunning || isAerobic
+              const breathingColor = ex?.breathing_config?.color ?? "emerald"
+
+              const breathingBg: Record<string, string> = {
+                emerald: "bg-gradient-to-br from-emerald-900 to-emerald-950",
+                navy: "bg-gradient-to-br from-blue-900 to-blue-950",
+                purple: "bg-gradient-to-br from-purple-900 to-purple-950",
+                amber: "bg-gradient-to-br from-amber-900 to-amber-950",
+              }
+              const breathingGlow: Record<string, string> = {
+                emerald: "#10b981",
+                navy: "#3b5bdb",
+                purple: "#8b5cf6",
+                amber: "#f59e0b",
+              }
+              const runningBg = isRunning
+                ? "bg-gradient-to-br from-emerald-900 to-teal-950"
+                : "bg-gradient-to-br from-sky-900 to-cyan-950"
+              const runningGlow = isRunning ? "#10b981" : "#0ea5e9"
 
               return (
                 <button
@@ -242,8 +269,35 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
                     isDone ? "border-green-400" : "border-transparent hover:border-navy-200"
                   }`}
                 >
-                  <div className="w-full aspect-[4/3] bg-gray-100 relative">
-                    {ex?.thumbnail_url ? (
+                  <div className={`w-full aspect-[4/3] relative ${isBreathing ? (breathingBg[breathingColor] ?? breathingBg.emerald) : (isRunning || isAerobic) ? runningBg : "bg-gray-100"}`}>
+                    {isBreathing ? (
+                      <>
+                        {/* Breathing card — glowing circle icon */}
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div
+                            className="w-14 h-14 rounded-full flex items-center justify-center"
+                            style={{
+                              background: `radial-gradient(circle, ${breathingGlow[breathingColor] ?? "#10b981"}55, ${breathingGlow[breathingColor] ?? "#10b981"}22)`,
+                              boxShadow: `0 0 24px 6px ${breathingGlow[breathingColor] ?? "#10b981"}44`,
+                            }}
+                          >
+                            <Wind size={24} style={{ color: breathingGlow[breathingColor] ?? "#10b981" }} />
+                          </div>
+                        </div>
+                      </>
+                    ) : (isRunning || isAerobic) ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div
+                          className="w-14 h-14 rounded-full flex items-center justify-center text-3xl"
+                          style={{
+                            background: `radial-gradient(circle, ${runningGlow}55, ${runningGlow}22)`,
+                            boxShadow: `0 0 24px 6px ${runningGlow}44`,
+                          }}
+                        >
+                          {isRunning ? "🏃" : "⚡"}
+                        </div>
+                      </div>
+                    ) : ex?.thumbnail_url ? (
                       <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -266,11 +320,19 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
                       {ex?.name ?? "Ćwiczenie"}
                     </p>
                     <p className="text-[11px] text-gray-400 mt-0.5">
-                      {[
-                        item.reps && `${item.reps} powt.`,
-                        item.sets && `${item.sets} serii`,
-                        item.duration_seconds && `${item.duration_seconds}s`,
-                      ].filter(Boolean).join(" · ")}
+                      {isBreathing
+                        ? (ex?.breathing_config?.sessionDuration
+                            ? `${Math.round(ex.breathing_config.sessionDuration / 60)} min`
+                            : ex?.breathing_config?.sessionCycles
+                              ? `${ex.breathing_config.sessionCycles} cykle`
+                              : "Oddychanie")
+                        : (isRunning || isAerobic)
+                          ? (ex?.running_config?.totalMinutes ? `${ex.running_config.totalMinutes} min` : isRunning ? "Bieganie" : "Cardio")
+                        : [
+                            item.reps && `${item.reps} powt.`,
+                            item.sets && `${item.sets} serii`,
+                            item.duration_seconds && `${item.duration_seconds}s`,
+                          ].filter(Boolean).join(" · ")}
                     </p>
                   </div>
                 </button>
@@ -417,6 +479,56 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   const [timerDone, setTimerDone] = useState(false)
   const [showVas, setShowVas] = useState(false)
   const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
+
+  // Breathing exercise — render full-screen player instead
+  if (ex?.exercise_type === "breathing") {
+    return (
+      <BreathingPlayer
+        item={item}
+        exercise={ex}
+        isDone={isDone}
+        onMark={() => onMark(null)}
+        onClose={onClose}
+        onNext={onNext}
+        hasNext={hasNext}
+      />
+    )
+  }
+
+  // Running/aerobic timed session — simple card
+  const isTimedSession = ex?.exercise_type === "running_intervals" || ex?.exercise_type === "aerobic_session"
+  if (isTimedSession && ex?.running_config) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <button onClick={onClose} className="inline-flex items-center gap-1.5 text-sm text-gray-500 px-4 pt-5 pb-3">
+          <ArrowLeft size={14} />
+          Wróć do listy
+        </button>
+        <div className="px-4 pb-8 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{ex.name}</h2>
+            {ex.description && (
+              <p className="text-sm text-gray-500 mt-1 leading-relaxed">{ex.description}</p>
+            )}
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <TimedSessionCard
+              config={ex.running_config}
+              onMark={() => onMark(null)}
+            />
+          </div>
+          {hasNext && (
+            <button
+              onClick={onNext}
+              className="w-full h-11 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Następne ćwiczenie →
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   function startTimer() {
     setTimerActive(true)

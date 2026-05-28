@@ -209,32 +209,59 @@ export async function getUnreadCounts(practitionerId: string) {
   return counts
 }
 
-export async function getAllConversations() {
+export async function getAllConversations(archived = false) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // Get latest message per patient
-  const { data: patients } = await supabase
-    .from("patients")
-    .select("id, first_name, last_name")
+  // Get archived patient IDs
+  const { data: archiveRows } = await supabase
+    .from("conversation_archives")
+    .select("patient_id")
     .eq("practitioner_id", user.id)
-    .order("last_name")
 
-  if (!patients?.length) return []
+  const archivedIds = new Set((archiveRows ?? []).map((r: { patient_id: string }) => r.patient_id))
 
+  // Only patients who have at least one message, sorted by most recent
   const { data: lastMessages } = await supabase
     .from("messages")
     .select("patient_id, content, sender_type, created_at, read_at")
     .eq("practitioner_id", user.id)
     .order("created_at", { ascending: false })
 
+  if (!lastMessages?.length) return []
+
+  // Deduplicate — one latest message per patient
   type MsgRow = NonNullable<typeof lastMessages>[number]
   const byPatient = new Map<string, MsgRow>()
-  for (const msg of lastMessages ?? []) {
+  for (const msg of lastMessages) {
     if (!byPatient.has(msg.patient_id)) byPatient.set(msg.patient_id, msg)
   }
 
+  // IDs of patients who actually have messages, in order of last message
+  const patientIdsWithMessages = [...byPatient.keys()]
+
+  // Filter by archive state
+  const filteredIds = patientIdsWithMessages.filter((pid) =>
+    archived ? archivedIds.has(pid) : !archivedIds.has(pid)
+  )
+
+  if (!filteredIds.length) return []
+
+  // Fetch patient info only for those who have messages
+  const { data: patients } = await supabase
+    .from("patients")
+    .select("id, first_name, last_name")
+    .eq("practitioner_id", user.id)
+    .is("archived_at", null)
+    .in("id", filteredIds)
+
+  if (!patients?.length) return []
+
+  // Build a lookup map for fast access
+  const patientMap = new Map(patients.map((p) => [p.id, p]))
+
+  // Unread counts
   const { data: unread } = await supabase
     .from("messages")
     .select("patient_id")
@@ -247,9 +274,66 @@ export async function getAllConversations() {
     unreadCounts.set(row.patient_id, (unreadCounts.get(row.patient_id) ?? 0) + 1)
   }
 
-  return patients.map((p) => ({
-    patient: p,
-    lastMessage: byPatient.get(p.id) ?? null,
-    unreadCount: unreadCounts.get(p.id) ?? 0,
-  }))
+  // Return in order of most recent message
+  return filteredIds
+    .map((pid) => {
+      const patient = patientMap.get(pid)
+      if (!patient) return null
+      return {
+        patient,
+        lastMessage: byPatient.get(pid) ?? null,
+        unreadCount: unreadCounts.get(pid) ?? 0,
+      }
+    })
+    .filter(Boolean) as { patient: { id: string; first_name: string; last_name: string }; lastMessage: MsgRow | null; unreadCount: number }[]
+}
+
+export async function archiveConversation(patientId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  await supabase
+    .from("conversation_archives")
+    .upsert({ practitioner_id: user.id, patient_id: patientId }, { onConflict: "practitioner_id,patient_id", ignoreDuplicates: true })
+
+  const { revalidatePath } = await import("next/cache")
+  revalidatePath("/komunikacja")
+}
+
+export async function unarchiveConversation(patientId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  await supabase
+    .from("conversation_archives")
+    .delete()
+    .eq("practitioner_id", user.id)
+    .eq("patient_id", patientId)
+
+  const { revalidatePath } = await import("next/cache")
+  revalidatePath("/komunikacja")
+}
+
+export async function deleteConversation(patientId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  await supabase
+    .from("messages")
+    .delete()
+    .eq("patient_id", patientId)
+    .eq("practitioner_id", user.id)
+
+  // Also remove from archives
+  await supabase
+    .from("conversation_archives")
+    .delete()
+    .eq("practitioner_id", user.id)
+    .eq("patient_id", patientId)
+
+  const { revalidatePath } = await import("next/cache")
+  revalidatePath("/komunikacja")
 }

@@ -1,17 +1,21 @@
 import Link from "next/link"
 import { Users } from "lucide-react"
-import { getPatients } from "@/lib/actions/patients"
+import { getPatients, PATIENTS_PAGE_SIZE } from "@/lib/actions/patients"
 import { NewPatientModal } from "@/components/patients/NewPatientModal"
 import { PatientsList } from "@/components/patients/PatientsList"
 
 export default async function PacjenciPage({
   searchParams,
 }: {
-  searchParams: Promise<{ archiwum?: string }>
+  searchParams: Promise<{ archiwum?: string; q?: string; strona?: string }>
 }) {
-  const { archiwum } = await searchParams
+  const { archiwum, q, strona } = await searchParams
   const archived = archiwum === "1"
-  const patients = await getPatients(archived)
+  const page = Math.max(0, parseInt(strona ?? "0") || 0)
+  const search = q ?? ""
+
+  const { data: patients, count } = await getPatients({ archived, page, search })
+  const totalPages = Math.ceil(count / PATIENTS_PAGE_SIZE)
 
   return (
     <div className="space-y-6">
@@ -20,8 +24,8 @@ export default async function PacjenciPage({
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Pacjenci</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {patients.length > 0
-              ? `${patients.length} ${patients.length === 1 ? "pacjent" : "pacjentów"}`
+            {count > 0
+              ? `${count} ${count === 1 ? "pacjent" : "pacjentów"}`
               : "Zarządzaj swoimi pacjentami i ich programami"}
           </p>
         </div>
@@ -53,8 +57,15 @@ export default async function PacjenciPage({
       </div>
 
       {/* List or empty state */}
-      {patients.length > 0 ? (
-        <PatientsList patients={patients} isArchived={archived} />
+      {patients.length > 0 || search ? (
+        <PatientsList
+          patients={patients}
+          isArchived={archived}
+          search={search}
+          page={page}
+          totalPages={totalPages}
+          count={count}
+        />
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-full bg-navy-50 flex items-center justify-center mb-4">

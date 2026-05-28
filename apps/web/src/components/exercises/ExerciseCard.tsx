@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Star, Dumbbell, Trash2 } from "lucide-react"
 import { toggleFavorite, deleteExercise } from "@/lib/actions/exercises"
@@ -27,6 +27,36 @@ type Exercise = {
   practitioner_id: string | null
 }
 
+// Module-level cache so we don't re-fetch on re-renders
+const vimeoThumbCache = new Map<string, string>()
+
+function useVimeoThumbnail(videoUrl: string | null): string | null {
+  const [thumb, setThumb] = useState<string | null>(() => {
+    if (!videoUrl) return null
+    return vimeoThumbCache.get(videoUrl) ?? null
+  })
+
+  useEffect(() => {
+    if (!videoUrl || !videoUrl.includes("vimeo")) return
+    if (vimeoThumbCache.has(videoUrl)) { setThumb(vimeoThumbCache.get(videoUrl)!); return }
+
+    const match = videoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+    if (!match) return
+
+    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}&width=640`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.thumbnail_url) {
+          vimeoThumbCache.set(videoUrl, data.thumbnail_url)
+          setThumb(data.thumbnail_url)
+        }
+      })
+      .catch(() => {})
+  }, [videoUrl])
+
+  return thumb
+}
+
 const DIFFICULTY_COLOR: Record<number, string> = {
   1: "text-green-600 bg-green-50",
   2: "text-yellow-600 bg-yellow-50",
@@ -45,6 +75,11 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
 
   const hasGif = !!exercise.animated_gif_url
   const hasThumb = !!exercise.thumbnail_url
+  // Direct mp4 (e.g. Physitrack) can be shown as video in the card — always correct
+  const isDirectMp4 = !!exercise.video_url && !exercise.video_url.includes("vimeo") && !exercise.video_url.includes("youtube") && !exercise.video_url.includes("youtu.be") && (exercise.video_url.endsWith(".mp4") || exercise.video_url.includes(".mp4"))
+  // Vimeo thumbnail — fetched lazily, takes priority over potentially wrong static thumbnail
+  const isVimeo = !!exercise.video_url && exercise.video_url.includes("vimeo")
+  const vimeoThumb = useVimeoThumbnail(isVimeo ? exercise.video_url : null)
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
@@ -112,30 +147,46 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
       >
         {/* Thumbnail / GIF area */}
         <div className="relative aspect-video bg-white flex items-center justify-center overflow-hidden">
-            {/* Static thumbnail always — GIF only in detail modal */}
-          {hasThumb ? (
+            {/* Priority: direct mp4 > vimeo thumb > animated mp4 gif > static thumbnail > gif > placeholder */}
+          {isDirectMp4 ? (
+            <video
+              src={exercise.video_url!}
+              className="absolute inset-0 w-full h-full object-contain"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : vimeoThumb ? (
+            <img
+              src={vimeoThumb}
+              alt={exercise.name}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : hasGif && exercise.animated_gif_url!.endsWith('.mp4') ? (
+            <video
+              src={exercise.animated_gif_url!}
+              className="absolute inset-0 w-full h-full object-contain"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : hasThumb ? (
             <img
               src={exercise.thumbnail_url!}
               alt={exercise.name}
+              loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
             />
           ) : hasGif ? (
-            exercise.animated_gif_url!.endsWith('.mp4') ? (
-              <video
-                src={exercise.animated_gif_url!}
-                className="absolute inset-0 w-full h-full object-contain"
-                autoPlay
-                muted
-                loop
-                playsInline
-              />
-            ) : (
-              <img
-                src={exercise.animated_gif_url!}
-                alt={exercise.name}
-                className="absolute inset-0 w-full h-full object-contain"
-              />
-            )
+            <img
+              src={exercise.animated_gif_url!}
+              alt={exercise.name}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-contain"
+            />
           ) : (
             <Dumbbell size={32} className="text-gray-300" />
           )}

@@ -65,6 +65,8 @@ export async function getProtocol(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  const sb = createServiceClient()
+
   const { data, error } = await supabase
     .from("rehabilitation_protocols")
     .select(`
@@ -78,7 +80,39 @@ export async function getProtocol(id: string) {
     .single()
 
   if (error) return null
-  return data
+
+  // Fetch protocol supplements
+  let protocolSupplements: any[] = []
+  try {
+    const { data: suppData } = await sb
+      .from("protocol_supplements")
+      .select("id, supplement_id, notes, supplements(id, formeds_handle, name, product_type, image_url, price)")
+      .eq("protocol_id", id)
+      .order("created_at", { ascending: true })
+    protocolSupplements = suppData ?? []
+  } catch { /* skip */ }
+
+  return { ...data, protocol_supplements: protocolSupplements }
+}
+
+export async function addSupplementToProtocol(protocolId: string, supplementId: string, notes?: string) {
+  const sb = createServiceClient()
+  const { error } = await sb
+    .from("protocol_supplements")
+    .insert({ protocol_id: protocolId, supplement_id: supplementId, notes: notes || null })
+  if (error) throw new Error(error.message)
+  revalidatePath(`/biblioteka/protokoly/${protocolId}`)
+}
+
+export async function removeSupplementFromProtocol(protocolId: string, supplementId: string) {
+  const sb = createServiceClient()
+  const { error } = await sb
+    .from("protocol_supplements")
+    .delete()
+    .eq("protocol_id", protocolId)
+    .eq("supplement_id", supplementId)
+  if (error) throw new Error(error.message)
+  revalidatePath(`/biblioteka/protokoly/${protocolId}`)
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
@@ -262,6 +296,8 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
+  const sb2 = createServiceClient()
+
   const [{ data: allPhases }, { data: patient }, { data: practitioner }, { data: protocol }] = await Promise.all([
     supabase
       .from("protocol_phases")
@@ -284,6 +320,16 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
       .eq("id", protocolId)
       .single(),
   ])
+
+  // Fetch protocol-level supplements
+  let protocolSupplements: { supplement_id: string; notes: string | null }[] = []
+  try {
+    const { data: suppData } = await sb2
+      .from("protocol_supplements")
+      .select("supplement_id, notes")
+      .eq("protocol_id", protocolId)
+    protocolSupplements = suppData ?? []
+  } catch { /* skip */ }
 
   const phases = allPhases ?? []
 
@@ -367,6 +413,19 @@ export async function assignProtocolToPatient(patientId: string, protocolId: str
         if (contentRows.length) await supabase.from("patient_program_content").insert(contentRows)
       }
     }
+  }
+
+  // Auto-prescribe protocol-level supplements
+  if (protocolSupplements.length > 0) {
+    try {
+      const suppRows = protocolSupplements.map((ps) => ({
+        patient_id: patientId,
+        supplement_id: ps.supplement_id,
+        practitioner_id: user.id,
+        notes: ps.notes,
+      }))
+      await sb2.from("patient_supplements").upsert(suppRows, { onConflict: "patient_id,supplement_id", ignoreDuplicates: true })
+    } catch { /* skip */ }
   }
 
   if (patient?.email && patient.access_code && protocol?.name) {

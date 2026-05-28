@@ -26,12 +26,22 @@ export type BuilderSurvey = {
   schedule: string  // "on_start" | "on_end" | "weekly"
 }
 
+export type BuilderSupplement = {
+  supplementId: string
+  name: string
+  imageUrl: string | null
+  price: number | null
+  formedsHandle: string
+  notes: string
+}
+
 type ProgramBuilderState = {
   isOpen: boolean
   programName: string
   exercises: BuilderExercise[]
   contentItems: BuilderContent[]
   surveyItems: BuilderSurvey[]
+  supplementItems: BuilderSupplement[]
   open: () => void
   close: () => void
   setOpen: (v: boolean) => void
@@ -46,6 +56,10 @@ type ProgramBuilderState = {
   addSurvey: (s: BuilderSurvey) => void
   removeSurvey: (surveyId: string) => void
   hasSurvey: (surveyId: string) => boolean
+  addSupplement: (s: BuilderSupplement) => void
+  addSupplements: (items: BuilderSupplement[]) => void
+  removeSupplement: (supplementId: string) => void
+  hasSupplement: (supplementId: string) => boolean
   clearAll: () => void
 }
 
@@ -55,6 +69,7 @@ export const useProgramBuilder = create<ProgramBuilderState>((set, get) => ({
   exercises: [],
   contentItems: [],
   surveyItems: [],
+  supplementItems: [],
   open: () => set({ isOpen: true }),
   close: () => set({ isOpen: false }),
   setOpen: (v) => set({ isOpen: v }),
@@ -88,5 +103,22 @@ export const useProgramBuilder = create<ProgramBuilderState>((set, get) => ({
   removeSurvey: (surveyId) =>
     set((s) => ({ surveyItems: s.surveyItems.filter((x) => x.surveyId !== surveyId) })),
   hasSurvey: (surveyId) => get().surveyItems.some((s) => s.surveyId === surveyId),
-  clearAll: () => set({ exercises: [], contentItems: [], surveyItems: [], programName: "Program" }),
+  addSupplement: (s) =>
+    set((state) => ({
+      supplementItems: state.supplementItems.some((x) => x.supplementId === s.supplementId)
+        ? state.supplementItems
+        : [...state.supplementItems, s],
+    })),
+  addSupplements: (items) =>
+    set((state) => {
+      const existing = new Set(state.supplementItems.map((x) => x.supplementId))
+      const newItems = items.filter((s) => !existing.has(s.supplementId))
+      return newItems.length === 0
+        ? state
+        : { supplementItems: [...state.supplementItems, ...newItems] }
+    }),
+  removeSupplement: (supplementId) =>
+    set((s) => ({ supplementItems: s.supplementItems.filter((x) => x.supplementId !== supplementId) })),
+  hasSupplement: (supplementId) => get().supplementItems.some((s) => s.supplementId === supplementId),
+  clearAll: () => set({ exercises: [], contentItems: [], surveyItems: [], supplementItems: [], programName: "Program" }),
 }))

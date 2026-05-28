@@ -1,9 +1,11 @@
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const FROM = "Para Leczy <noreply@paraleczy.pl>"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://program.paraleczy.pl"
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export async function sendProgramAssignedEmail(params: {
   toEmail: string
@@ -14,7 +16,7 @@ export async function sendProgramAssignedEmail(params: {
 }) {
   const link = `${APP_URL}/p/${params.accessCode}`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: params.toEmail,
     subject: `Nowy program ćwiczeń: ${params.programName}`,

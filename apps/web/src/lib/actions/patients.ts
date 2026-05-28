@@ -45,14 +45,21 @@ export async function createPatient(formData: {
   return data
 }
 
-export async function getPatients(archived = false) {
+export const PATIENTS_PAGE_SIZE = 25
+
+export async function getPatients({
+  archived = false,
+  page = 0,
+  search = "",
+}: { archived?: boolean; page?: number; search?: string } = {}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  if (!user) return { data: [], count: 0 }
 
   let query = supabase
     .from("patients")
-    .select(`
+    .select(
+      `
       id,
       first_name,
       last_name,
@@ -68,15 +75,24 @@ export async function getPatients(archived = false) {
         start_date,
         end_date
       )
-    `)
+    `,
+      { count: "exact" }
+    )
     .eq("practitioner_id", user.id)
     .order("created_at", { ascending: false })
+    .range(page * PATIENTS_PAGE_SIZE, (page + 1) * PATIENTS_PAGE_SIZE - 1)
 
   query = archived ? query.not("archived_at", "is", null) : query.is("archived_at", null)
 
-  const { data, error } = await query
-  if (error) return []
-  return data
+  if (search.trim()) {
+    query = query.or(
+      `first_name.ilike.%${search.trim()}%,last_name.ilike.%${search.trim()}%`
+    )
+  }
+
+  const { data, error, count } = await query
+  if (error) return { data: [], count: 0 }
+  return { data: data ?? [], count: count ?? 0 }
 }
 
 export async function getPatient(id: string) {
@@ -102,6 +118,21 @@ export async function getPatient(id: string) {
 
   if (error) return null
   return data
+}
+
+export async function findPatientByEmail(email: string): Promise<{ id: string; first_name: string; last_name: string } | null> {
+  if (!email.trim()) return null
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data } = await supabase
+    .from("patients")
+    .select("id, first_name, last_name")
+    .eq("practitioner_id", user.id)
+    .eq("email", email.trim().toLowerCase())
+    .is("archived_at", null)
+    .maybeSingle()
+  return data ?? null
 }
 
 export async function getPatientsList() {

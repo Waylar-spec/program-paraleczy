@@ -115,7 +115,18 @@ export async function getTemplate(id: string) {
     templateSurveys = surveysData ?? []
   } catch { /* table may not exist yet */ }
 
-  return { ...data, program_template_content: templateContent, program_template_surveys: templateSurveys }
+  // Fetch template supplements
+  let templateSupplements: any[] = []
+  try {
+    const { data: suppData } = await sb
+      .from("program_template_supplements")
+      .select("id, supplement_id, notes, supplements ( id, formeds_handle, name, product_type, image_url, price )")
+      .eq("template_id", id)
+      .order("created_at", { ascending: true })
+    templateSupplements = suppData ?? []
+  } catch { /* table may not exist yet */ }
+
+  return { ...data, program_template_content: templateContent, program_template_surveys: templateSurveys, program_template_supplements: templateSupplements }
 }
 
 export async function createTemplate(formData: {
@@ -316,6 +327,32 @@ export async function updateTemplateItem(itemId: string, templateId: string, par
 
   if (error) throw new Error(error.message)
   revalidateTag("templates", "max")
+  revalidatePath(`/biblioteka/szablony/${templateId}`)
+}
+
+export async function addSupplementToTemplate(templateId: string, supplementId: string, notes?: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const sb = createServiceClient()
+  const { error } = await sb
+    .from("program_template_supplements")
+    .insert({ template_id: templateId, supplement_id: supplementId, notes: notes || null })
+
+  if (error) throw new Error(error.message)
+  revalidatePath(`/biblioteka/szablony/${templateId}`)
+}
+
+export async function removeSupplementFromTemplate(templateId: string, supplementId: string) {
+  const sb = createServiceClient()
+  const { error } = await sb
+    .from("program_template_supplements")
+    .delete()
+    .eq("template_id", templateId)
+    .eq("supplement_id", supplementId)
+
+  if (error) throw new Error(error.message)
   revalidatePath(`/biblioteka/szablony/${templateId}`)
 }
 

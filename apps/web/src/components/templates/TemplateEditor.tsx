@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { X, GripVertical, Dumbbell, Plus, Search, ChevronDown, ChevronUp, FileText, ExternalLink, BookOpen, Trash2, ClipboardList } from "lucide-react"
-import { addExerciseToTemplate, removeExerciseFromTemplate, updateTemplateItem, addContentToTemplate, removeContentFromTemplate, addSurveyToTemplate, removeSurveyFromTemplate } from "@/lib/actions/templates"
+import { X, GripVertical, Dumbbell, Plus, Search, ChevronDown, ChevronUp, FileText, ExternalLink, BookOpen, Trash2, ClipboardList, ShoppingCart } from "lucide-react"
+import { addExerciseToTemplate, removeExerciseFromTemplate, updateTemplateItem, addContentToTemplate, removeContentFromTemplate, addSurveyToTemplate, removeSurveyFromTemplate, addSupplementToTemplate, removeSupplementFromTemplate } from "@/lib/actions/templates"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import type { Survey } from "@/lib/actions/surveys"
@@ -55,6 +55,22 @@ type TemplateSurvey = {
   surveys: { id: string; name: string; description: string | null; is_public: boolean } | null
 }
 
+type TemplateSupplement = {
+  id: string
+  supplement_id: string
+  notes: string | null
+  supplements: { id: string; formeds_handle: string; name: string; product_type: string | null; image_url: string | null; price: number | null } | null
+}
+
+type SupplementOption = {
+  id: string
+  formeds_handle: string
+  name: string
+  product_type: string | null
+  image_url: string | null
+  price: number | null
+}
+
 interface Props {
   templateId: string
   items: TemplateItem[]
@@ -63,9 +79,11 @@ interface Props {
   templateContent: TemplateContent[]
   allSurveys?: Survey[]
   templateSurveys?: TemplateSurvey[]
+  allSupplements?: SupplementOption[]
+  templateSupplements?: TemplateSupplement[]
 }
 
-export function TemplateEditor({ templateId, items, exercises, allContent, templateContent, allSurveys = [], templateSurveys = [] }: Props) {
+export function TemplateEditor({ templateId, items, exercises, allContent, templateContent, allSurveys = [], templateSurveys = [], allSupplements = [], templateSupplements = [] }: Props) {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const [contentSearch, setContentSearch] = useState("")
@@ -78,6 +96,9 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
   const [surveySearch, setSurveySearch] = useState("")
   const [addingSurvey, setAddingSurvey] = useState<string | null>(null)
   const [surveySchedules, setSurveySchedules] = useState<Record<string, string>>({})
+  const [suppPickerOpen, setSuppPickerOpen] = useState(false)
+  const [suppSearch, setSuppSearch] = useState("")
+  const [addingSupp, setAddingSupp] = useState<string | null>(null)
 
   const filteredExercises = exercises.filter((ex) =>
     ex.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -96,8 +117,17 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
     return allSurveys.filter((s) => s.name.toLowerCase().includes(q))
   }, [allSurveys, surveySearch])
 
+  const filteredSupplements = useMemo(() => {
+    if (!suppSearch.trim()) return allSupplements
+    const q = suppSearch.toLowerCase()
+    return allSupplements.filter((s) =>
+      s.name.toLowerCase().includes(q) || (s.product_type ?? "").toLowerCase().includes(q)
+    )
+  }, [allSupplements, suppSearch])
+
   const addedContentIds = new Set(templateContent.map((tc) => tc.content_id))
   const addedSurveyIds = new Set(templateSurveys.map((ts) => ts.survey_id))
+  const addedSuppIds = new Set(templateSupplements.map((ts) => ts.supplement_id))
 
   async function handleAdd(exercise: Exercise) {
     if (adding) return
@@ -173,6 +203,27 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
       router.refresh()
     } catch {
       toast.error("Nie udało się usunąć kwestionariusza")
+    }
+  }
+
+  async function handleAddSupplement(supplementId: string) {
+    setAddingSupp(supplementId)
+    try {
+      await addSupplementToTemplate(templateId, supplementId)
+      router.refresh()
+    } catch {
+      toast.error("Nie udało się dodać suplementu")
+    } finally {
+      setAddingSupp(null)
+    }
+  }
+
+  async function handleRemoveSupplement(supplementId: string) {
+    try {
+      await removeSupplementFromTemplate(templateId, supplementId)
+      router.refresh()
+    } catch {
+      toast.error("Nie udało się usunąć suplementu")
     }
   }
 
@@ -415,6 +466,83 @@ export function TemplateEditor({ templateId, items, exercises, allContent, templ
                         </div>
                       )}
                     </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Supplements */}
+        <div className="pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+              <ShoppingCart size={14} className="text-gray-400" />
+              Suplementy
+            </h3>
+            <button
+              onClick={() => setSuppPickerOpen(!suppPickerOpen)}
+              className="text-xs text-navy-500 hover:text-navy-700 flex items-center gap-1"
+            >
+              <Plus size={12} /> Dodaj
+            </button>
+          </div>
+
+          {/* Added supplements */}
+          {templateSupplements.length > 0 && (
+            <div className="space-y-1 mb-2">
+              {templateSupplements.map((ts) => {
+                const s = Array.isArray(ts.supplements) ? ts.supplements[0] : ts.supplements
+                if (!s) return null
+                return (
+                  <div key={ts.id} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-100">
+                    <div className="w-6 h-6 rounded overflow-hidden bg-white border border-gray-100 shrink-0">
+                      {s.image_url
+                        ? <img src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
+                        : <ShoppingCart size={10} className="text-gray-300 m-auto" />}
+                    </div>
+                    <span className="text-xs text-gray-700 flex-1 truncate">{s.name}</span>
+                    {s.price !== null && <span className="text-xs text-gray-400 shrink-0">{s.price} zł</span>}
+                    <button onClick={() => handleRemoveSupplement(ts.supplement_id)} className="p-0.5 hover:text-red-500 text-gray-300 transition-colors shrink-0">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Supplement picker */}
+          {suppPickerOpen && (
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <div className="p-2 border-b border-gray-100">
+                <div className="relative">
+                  <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input value={suppSearch} onChange={(e) => setSuppSearch(e.target.value)}
+                    placeholder="Szukaj suplementu..." autoFocus
+                    className="w-full h-7 pl-6 pr-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400" />
+                </div>
+              </div>
+              <div className="max-h-52 overflow-y-auto">
+                {filteredSupplements.length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-3">Brak wyników</p>
+                ) : filteredSupplements.map((s) => {
+                  const isAdded = addedSuppIds.has(s.id)
+                  return (
+                    <button key={s.id} onClick={() => !isAdded && handleAddSupplement(s.id)}
+                      disabled={isAdded || addingSupp === s.id}
+                      className={`w-full flex items-center gap-2 px-2.5 py-2 text-left border-b border-gray-50 last:border-0 transition-colors ${isAdded ? "bg-navy-50 cursor-default" : "hover:bg-gray-50"}`}>
+                      <div className="w-7 h-7 rounded overflow-hidden bg-gray-100 shrink-0">
+                        {s.image_url
+                          ? <img src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
+                          : <ShoppingCart size={10} className="text-gray-300 m-auto" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-800 truncate">{s.name}</p>
+                        {s.price !== null && <p className="text-xs text-gray-400">{s.price} zł</p>}
+                      </div>
+                      {isAdded ? <span className="text-xs text-navy-500 shrink-0">✓</span> : <Plus size={11} className="text-gray-400 shrink-0" />}
+                    </button>
                   )
                 })}
               </div>
