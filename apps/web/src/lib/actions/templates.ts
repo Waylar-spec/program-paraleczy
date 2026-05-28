@@ -167,7 +167,8 @@ export async function addExerciseToTemplate(templateId: string, exerciseId: stri
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
+  const sb = createServiceClient()
+  const { error } = await sb
     .from("program_template_items")
     .insert({
       template_id: templateId,
@@ -190,7 +191,8 @@ export async function removeExerciseFromTemplate(itemId: string, templateId: str
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
+  const sb = createServiceClient()
+  const { error } = await sb
     .from("program_template_items")
     .delete()
     .eq("id", itemId)
@@ -205,7 +207,8 @@ export async function addContentToTemplate(templateId: string, contentId: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { data: existing } = await supabase
+  const sb = createServiceClient()
+  const { data: existing } = await sb
     .from("program_template_content")
     .select("order")
     .eq("template_id", templateId)
@@ -214,7 +217,7 @@ export async function addContentToTemplate(templateId: string, contentId: string
 
   const nextOrder = ((existing?.[0]?.order as number | undefined) ?? 0) + 1
 
-  const { error } = await supabase
+  const { error } = await sb
     .from("program_template_content")
     .insert({ template_id: templateId, content_id: contentId, order: nextOrder })
 
@@ -228,7 +231,8 @@ export async function removeContentFromTemplate(templateId: string, contentId: s
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
+  const sb = createServiceClient()
+  const { error } = await sb
     .from("program_template_content")
     .delete()
     .eq("template_id", templateId)
@@ -269,7 +273,8 @@ export async function addSurveyToTemplate(templateId: string, surveyId: string, 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { data: existing } = await (supabase as any)
+  const sb = createServiceClient()
+  const { data: existing } = await (sb as any)
     .from("program_template_surveys")
     .select("order")
     .eq("template_id", templateId)
@@ -278,7 +283,7 @@ export async function addSurveyToTemplate(templateId: string, surveyId: string, 
 
   const nextOrder = ((existing?.[0]?.order as number | undefined) ?? 0) + 1
 
-  const { error } = await (supabase as any)
+  const { error } = await (sb as any)
     .from("program_template_surveys")
     .insert({ template_id: templateId, survey_id: surveyId, schedule, order: nextOrder })
 
@@ -292,7 +297,8 @@ export async function removeSurveyFromTemplate(templateId: string, surveyId: str
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await (supabase as any)
+  const sb = createServiceClient()
+  const { error } = await (sb as any)
     .from("program_template_surveys")
     .delete()
     .eq("template_id", templateId)
@@ -314,7 +320,8 @@ export async function updateTemplateItem(itemId: string, templateId: string, par
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
+  const sb = createServiceClient()
+  const { error } = await sb
     .from("program_template_items")
     .update({
       sets: params.sets,
