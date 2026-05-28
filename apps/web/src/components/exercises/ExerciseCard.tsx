@@ -146,14 +146,13 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
       >
         {/* Thumbnail / GIF area */}
         <div className="relative aspect-video bg-gray-50 flex items-center justify-center overflow-hidden">
-          {/* Priority: direct mp4 (Physitrack) > vimeo thumb > static thumbnail > placeholder */}
-          {isDirectMp4 ? (
-            <video
-              src={exercise.video_url!}
-              className="absolute inset-0 w-full h-full object-contain"
-              muted
-              playsInline
-              preload="metadata"
+          {/* Priority: static thumbnail > vimeo thumb > mp4 gif > direct mp4 first-frame > placeholder */}
+          {hasThumb ? (
+            <img
+              src={exercise.thumbnail_url!}
+              alt={exercise.name}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           ) : vimeoThumb ? (
             <img
@@ -162,17 +161,17 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
             />
-          ) : hasThumb ? (
-            <img
-              src={exercise.thumbnail_url!}
-              alt={exercise.name}
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
           ) : exercise.animated_gif_url?.endsWith('.mp4') ? (
-            // mp4 gif — bez autoPlay pokazuje pierwszy kadr jako statyczny obraz
             <video
               src={exercise.animated_gif_url}
+              className="absolute inset-0 w-full h-full object-contain"
+              muted
+              playsInline
+              preload="metadata"
+            />
+          ) : isDirectMp4 ? (
+            <video
+              src={exercise.video_url!}
               className="absolute inset-0 w-full h-full object-contain"
               muted
               playsInline
