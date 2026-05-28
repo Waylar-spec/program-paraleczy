@@ -146,17 +146,17 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
       >
         {/* Thumbnail / GIF area */}
         <div className="relative aspect-video bg-gray-50 flex items-center justify-center overflow-hidden">
-          {/* Priority: static thumbnail > vimeo thumb > mp4 gif > direct mp4 first-frame > placeholder */}
-          {hasThumb ? (
+          {/* Priority: vimeo thumb > static thumbnail > mp4 gif > direct mp4 first-frame > placeholder */}
+          {vimeoThumb ? (
             <img
-              src={exercise.thumbnail_url!}
+              src={vimeoThumb}
               alt={exercise.name}
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
             />
-          ) : vimeoThumb ? (
+          ) : hasThumb ? (
             <img
-              src={vimeoThumb}
+              src={exercise.thumbnail_url!}
               alt={exercise.name}
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
