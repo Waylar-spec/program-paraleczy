@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { Users } from "lucide-react"
-import { getPatients, PATIENTS_PAGE_SIZE } from "@/lib/actions/patients"
+import { getPatients } from "@/lib/actions/patients"
+
+const PATIENTS_PAGE_SIZE = 25
 import { NewPatientModal } from "@/components/patients/NewPatientModal"
 import { PatientsList } from "@/components/patients/PatientsList"
 

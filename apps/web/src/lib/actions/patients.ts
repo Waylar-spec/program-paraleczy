@@ -45,7 +45,7 @@ export async function createPatient(formData: {
   return data
 }
 
-export const PATIENTS_PAGE_SIZE = 25
+const PATIENTS_PAGE_SIZE = 25
 
 export async function getPatients({
   archived = false,
