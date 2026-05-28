@@ -109,6 +109,8 @@ function ViewMode({ exercise, favorite, onFavorite, onEdit, onClose, onAddRemove
   inProgram: boolean
 }) {
   const embedUrl = exercise.video_url ? getEmbedUrl(exercise.video_url) : null
+  const isDirectMp4 = !!exercise.video_url && !embedUrl &&
+    (exercise.video_url.endsWith(".mp4") || exercise.video_url.includes(".mp4"))
   const isOwn = !!exercise.practitioner_id
 
   return (
@@ -121,6 +123,15 @@ function ViewMode({ exercise, favorite, onFavorite, onEdit, onClose, onAddRemove
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+          />
+        ) : isDirectMp4 ? (
+          <video
+            src={exercise.video_url!}
+            className="w-full h-full object-contain"
+            controls
+            autoPlay
+            loop
+            playsInline
           />
         ) : exercise.animated_gif_url ? (
           exercise.animated_gif_url.endsWith('.mp4') ? (
