@@ -170,12 +170,14 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
             />
-          ) : exercise.animated_gif_url ? (
-            <img
+          ) : exercise.animated_gif_url?.endsWith('.mp4') ? (
+            // mp4 gif — bez autoPlay pokazuje pierwszy kadr jako statyczny obraz
+            <video
               src={exercise.animated_gif_url}
-              alt={exercise.name}
-              loading="lazy"
               className="absolute inset-0 w-full h-full object-contain"
+              muted
+              playsInline
+              preload="metadata"
             />
           ) : (
             <Dumbbell size={32} className="text-gray-300" />
