@@ -151,10 +151,9 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
             <video
               src={exercise.video_url!}
               className="absolute inset-0 w-full h-full object-contain"
-              autoPlay
               muted
-              loop
               playsInline
+              preload="metadata"
             />
           ) : vimeoThumb ? (
             <img
