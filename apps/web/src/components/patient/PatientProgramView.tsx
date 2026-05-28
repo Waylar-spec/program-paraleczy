@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw, ChevronDown, ChevronUp, Info, Wind } from "lucide-react"
 import { logExercise } from "@/lib/actions/patient-portal"
@@ -73,6 +73,40 @@ interface Props {
   kod: string
   doneTodayIds: string[]
   phaseInfo?: PhaseInfo
+}
+
+// ── Vimeo thumbnail hook (module-level cache) ─────────────────────────────
+const vimeoThumbCache = new Map<string, string>()
+
+function useVimeoThumbnail(videoUrl: string | null): string | null {
+  const [thumb, setThumb] = useState<string | null>(() =>
+    videoUrl ? (vimeoThumbCache.get(videoUrl) ?? null) : null
+  )
+  useEffect(() => {
+    if (!videoUrl || !videoUrl.includes("vimeo")) return
+    if (vimeoThumbCache.has(videoUrl)) { setThumb(vimeoThumbCache.get(videoUrl)!); return }
+    const match = videoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+    if (!match) return
+    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}&width=640`)
+      .then(r => r.json())
+      .then(data => { if (data?.thumbnail_url) { vimeoThumbCache.set(videoUrl, data.thumbnail_url); setThumb(data.thumbnail_url) } })
+      .catch(() => {})
+  }, [videoUrl])
+  return thumb
+}
+
+// Small component so each card can independently fetch its Vimeo thumb
+function ExerciseThumb({ ex, className }: { ex: ExerciseData | null; className?: string }) {
+  const isVimeo = !!ex?.video_url && ex.video_url.includes("vimeo")
+  const vimeoThumb = useVimeoThumbnail(isVimeo ? ex!.video_url : null)
+  const isDirectMp4 = !!ex?.video_url && !isVimeo &&
+    (ex.video_url.endsWith(".mp4") || ex.video_url.includes(".mp4"))
+
+  if (vimeoThumb) return <img src={vimeoThumb} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-cover"} />
+  if (ex?.thumbnail_url) return <img src={ex.thumbnail_url} alt={ex.name} className={className ?? "w-full h-full object-cover"} />
+  if (ex?.animated_gif_url) return <img src={ex.animated_gif_url} alt={ex.name} className={className ?? "w-full h-full object-contain"} />
+  if (isDirectMp4) return <video src={ex!.video_url!} className={className ?? "w-full h-full object-contain"} muted playsInline preload="metadata" />
+  return <div className="w-full h-full flex items-center justify-center"><Dumbbell size={20} className="text-gray-300" /></div>
 }
 
 export function PatientProgramView({ program, patientId, patientName, kod, doneTodayIds, phaseInfo }: Props) {
@@ -297,22 +331,8 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
                           {isRunning ? "🏃" : "⚡"}
                         </div>
                       </div>
-                    ) : ex?.thumbnail_url ? (
-                      <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
-                    ) : ex?.animated_gif_url ? (
-                      <img src={ex.animated_gif_url} alt={ex.name} className="w-full h-full object-contain" />
-                    ) : ex?.video_url ? (
-                      <video
-                        src={ex.video_url}
-                        className="w-full h-full object-contain"
-                        muted
-                        playsInline
-                        preload="metadata"
-                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Dumbbell size={20} className="text-gray-300" />
-                      </div>
+                      <ExerciseThumb ex={ex} />
                     )}
                     {isDone && (
                       <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
