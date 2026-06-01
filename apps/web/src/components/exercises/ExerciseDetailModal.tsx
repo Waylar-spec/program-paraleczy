@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { X, Dumbbell, Star, Plus, Check, Pencil, Loader2, ImageIcon, Film } from "lucide-react"
+import { X, Dumbbell, Star, Plus, Check, Pencil, Loader2, ImageIcon, Film, Info, LayoutTemplate } from "lucide-react"
 import { useProgramBuilder } from "@/store/programBuilder"
-import { toggleFavorite, updateExercise } from "@/lib/actions/exercises"
+import { toggleFavorite, updateExercise, getExerciseTemplateUsage } from "@/lib/actions/exercises"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -113,6 +113,24 @@ function ViewMode({ exercise, favorite, onFavorite, onEdit, onClose, onAddRemove
     (exercise.video_url.endsWith(".mp4") || exercise.video_url.includes(".mp4"))
   const isOwn = !!exercise.practitioner_id
 
+  // Template usage — lazy fetched on first click
+  const [usageOpen, setUsageOpen] = useState(false)
+  const [usageLoading, setUsageLoading] = useState(false)
+  const [usageTemplates, setUsageTemplates] = useState<{ id: string; name: string }[] | null>(null)
+
+  async function handleToggleUsage() {
+    if (usageOpen) { setUsageOpen(false); return }
+    setUsageOpen(true)
+    if (usageTemplates !== null) return   // already fetched
+    setUsageLoading(true)
+    try {
+      const templates = await getExerciseTemplateUsage(exercise.id)
+      setUsageTemplates(templates)
+    } finally {
+      setUsageLoading(false)
+    }
+  }
+
   return (
     <>
       {/* Video / thumbnail */}
@@ -189,11 +207,49 @@ function ViewMode({ exercise, favorite, onFavorite, onEdit, onClose, onAddRemove
                 <Pencil size={15} className="text-gray-400" />
               </button>
             )}
+            <button
+              onClick={handleToggleUsage}
+              title="Pokaż szablony używające tego ćwiczenia"
+              className={`p-1.5 rounded-lg transition-colors ${usageOpen ? "bg-navy-50 text-navy-500" : "hover:bg-gray-100 text-gray-400"}`}
+            >
+              <Info size={17} />
+            </button>
             <button onClick={onFavorite} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <Star size={17} className={favorite ? "text-yellow-400 fill-yellow-400" : "text-gray-400"} />
             </button>
           </div>
         </div>
+
+        {/* Template usage panel */}
+        {usageOpen && (
+          <div className="mx-5 mb-1 rounded-xl border border-navy-100 bg-navy-50/60 px-4 py-3">
+            {usageLoading ? (
+              <div className="flex items-center gap-2 text-xs text-navy-500">
+                <Loader2 size={12} className="animate-spin" />
+                Sprawdzam szablony…
+              </div>
+            ) : usageTemplates && usageTemplates.length > 0 ? (
+              <>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <LayoutTemplate size={12} className="text-navy-500" />
+                  <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">
+                    Używane w {usageTemplates.length === 1 ? "1 szablonie" : `${usageTemplates.length} szablonach`}
+                  </p>
+                </div>
+                <ul className="space-y-1">
+                  {usageTemplates.map((t) => (
+                    <li key={t.id} className="text-xs text-navy-700 flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-navy-400 shrink-0" />
+                      {t.name}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="text-xs text-gray-400">To ćwiczenie nie jest jeszcze przypisane do żadnego szablonu.</p>
+            )}
+          </div>
+        )}
 
         {(exercise.default_sets || exercise.default_reps || exercise.default_duration_seconds) && (
           <div className="flex gap-3 px-5 pb-3">

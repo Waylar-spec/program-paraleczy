@@ -191,6 +191,25 @@ export async function toggleFavorite(id: string, isFavorite: boolean) {
   revalidatePath("/biblioteka")
 }
 
+export async function getExerciseTemplateUsage(exerciseId: string): Promise<{ id: string; name: string }[]> {
+  const sb = createServiceClient()
+  const { data } = await sb
+    .from("program_template_items")
+    .select("program_templates(id, name)")
+    .eq("exercise_id", exerciseId)
+  if (!data) return []
+  const seen = new Set<string>()
+  const result: { id: string; name: string }[] = []
+  for (const row of data) {
+    const t = Array.isArray(row.program_templates) ? row.program_templates[0] : row.program_templates
+    if (t && !seen.has(t.id)) {
+      seen.add(t.id)
+      result.push({ id: t.id, name: t.name })
+    }
+  }
+  return result.sort((a, b) => a.name.localeCompare(b.name, "pl"))
+}
+
 export async function getExercisesByIds(ids: string[]) {
   if (!ids.length) return []
   const sb = createServiceClient()
