@@ -680,18 +680,20 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
             )}
           </div>
 
-          {/* Description */}
-          {ex?.description && (
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-600 leading-relaxed">{ex.description}</p>
-            </div>
-          )}
-
-          {/* Note from physio */}
-          {item.notes && (
-            <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3">
-              <p className="text-xs font-semibold text-yellow-700 mb-1">Wskazówka od fizjoterapeuty</p>
-              <p className="text-sm text-yellow-800 leading-relaxed">{item.notes}</p>
+          {/* Description + Notes — unified info block */}
+          {(ex?.description || item.notes) && (
+            <div className="rounded-xl overflow-hidden border border-gray-100">
+              {ex?.description && (
+                <div className="bg-gray-50 px-4 py-3">
+                  <p className="text-sm text-gray-600 leading-relaxed">{ex.description}</p>
+                </div>
+              )}
+              {item.notes && (
+                <div className={`bg-amber-50 px-4 py-3${ex?.description ? " border-t border-amber-100" : ""}`}>
+                  <p className="text-xs font-semibold text-amber-700 mb-1">Wskazówka od fizjoterapeuty</p>
+                  <p className="text-sm text-amber-800 leading-relaxed">{item.notes}</p>
+                </div>
+              )}
             </div>
           )}
 

@@ -45,17 +45,25 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
   const [startWeek, setStartWeek] = useState("")
   const [customName, setCustomName] = useState("")
   const [search, setSearch] = useState("")
+  const [bodyPart, setBodyPart] = useState<string | null>(null)
+
+  const bodyParts = useMemo(() => {
+    const parts = protocols.map((p) => p.body_part).filter(Boolean) as string[]
+    return Array.from(new Set(parts)).sort((a, b) => a.localeCompare(b, "pl"))
+  }, [protocols])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return protocols
-    return protocols.filter(
-      (p) =>
+    return protocols.filter((p) => {
+      const matchesSearch =
+        !q ||
         p.name.toLowerCase().includes(q) ||
         (p.indication ?? "").toLowerCase().includes(q) ||
         (p.body_part ?? "").toLowerCase().includes(q)
-    )
-  }, [protocols, search])
+      const matchesBodyPart = !bodyPart || p.body_part === bodyPart
+      return matchesSearch && matchesBodyPart
+    })
+  }, [protocols, search, bodyPart])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -70,6 +78,7 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
       setSelectedProtocol("")
       setCustomName("")
       setSearch("")
+      setBodyPart(null)
       router.refresh()
     } catch {
       toast.error("Nie udało się przypisać protokołu")
@@ -101,7 +110,7 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
         <Activity size={13} />
         Przypisz protokół
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Przypisz protokół rehabilitacyjny</DialogTitle>
         </DialogHeader>
@@ -129,7 +138,36 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
                   className="w-full h-9 pl-8 pr-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 bg-white"
                 />
               </div>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              {bodyParts.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setBodyPart(null)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                      bodyPart === null
+                        ? "bg-navy-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    Wszystkie
+                  </button>
+                  {bodyParts.map((part) => (
+                    <button
+                      key={part}
+                      type="button"
+                      onClick={() => setBodyPart(bodyPart === part ? null : part)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                        bodyPart === part
+                          ? "bg-navy-500 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {part}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                 {filtered.length === 0 && (
                   <p className="text-sm text-gray-400 py-2 text-center">Brak wyników</p>
                 )}
