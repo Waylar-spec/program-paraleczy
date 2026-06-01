@@ -141,6 +141,13 @@ export function ExerciseCard({ exercise }: { exercise: Exercise }) {
               playsInline
               preload="metadata"
             />
+          ) : exercise.animated_gif_url ? (
+            <img
+              src={exercise.animated_gif_url}
+              alt={exercise.name}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-contain"
+            />
           ) : isDirectMp4 ? (
             <video
               src={exercise.video_url!}

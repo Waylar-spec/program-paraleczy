@@ -76,16 +76,23 @@ interface Props {
   phaseInfo?: PhaseInfo
 }
 
-// Small component so each card can independently fetch its Vimeo thumb
+// Small component so each card can independently fetch its Vimeo thumb.
+// Priority in patient view: vimeo thumb > gif animation > mp4 animation > static thumb > direct mp4 > placeholder
+// (GIF/animation shown before static thumb so patients see the live demo, not just a still.)
 function ExerciseThumb({ ex, className }: { ex: ExerciseData | null; className?: string }) {
   const isVimeo = !!ex?.video_url && ex.video_url.includes("vimeo")
   const vimeoThumb = useVimeoThumbnail(isVimeo ? ex!.video_url : null)
+  const gifUrl = ex?.animated_gif_url ?? null
+  const isGifMp4 = !!gifUrl && (gifUrl.endsWith(".mp4") || gifUrl.includes(".mp4"))
   const isDirectMp4 = !!ex?.video_url && !isVimeo &&
     (ex.video_url.endsWith(".mp4") || ex.video_url.includes(".mp4"))
 
   if (vimeoThumb) return <img src={vimeoThumb} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-cover"} />
-  if (ex?.thumbnail_url) return <img src={ex.thumbnail_url} alt={ex.name} className={className ?? "w-full h-full object-cover"} />
-  if (ex?.animated_gif_url) return <img src={ex.animated_gif_url} alt={ex.name} className={className ?? "w-full h-full object-contain"} />
+  // Animated GIF — preferred over static thumbnail in patient view
+  if (gifUrl && !isGifMp4) return <img src={gifUrl} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-contain"} />
+  // MP4 used as looping demo animation
+  if (gifUrl && isGifMp4) return <video src={gifUrl} className={className ?? "w-full h-full object-contain"} muted playsInline autoPlay loop />
+  if (ex?.thumbnail_url) return <img src={ex.thumbnail_url} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-cover"} />
   if (isDirectMp4) return <video src={ex!.video_url!} className={className ?? "w-full h-full object-contain"} muted playsInline preload="metadata" />
   return <div className="w-full h-full flex items-center justify-center"><Dumbbell size={20} className="text-gray-300" /></div>
 }
