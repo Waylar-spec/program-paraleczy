@@ -64,15 +64,21 @@ export function AssignProgramModal({ patientId, templates }: Props) {
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0])
   const [durationWeeks, setDurationWeeks] = useState("4")
   const [search, setSearch] = useState("")
+  const [bodyPart, setBodyPart] = useState<string | null>(null)
+
+  const bodyParts = useMemo(() => {
+    const parts = templates.map((t) => t.body_part).filter(Boolean) as string[]
+    return Array.from(new Set(parts)).sort((a, b) => a.localeCompare(b, "pl"))
+  }, [templates])
 
   const filteredTemplates = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return templates
-    return templates.filter(t =>
-      t.name.toLowerCase().includes(q) ||
-      (t.body_part ?? "").toLowerCase().includes(q)
-    )
-  }, [templates, search])
+    return templates.filter((t) => {
+      const matchSearch = !q || t.name.toLowerCase().includes(q) || (t.body_part ?? "").toLowerCase().includes(q)
+      const matchPart = !bodyPart || t.body_part === bodyPart
+      return matchSearch && matchPart
+    })
+  }, [templates, search, bodyPart])
 
   // Auto-fill program name when template is selected
   useEffect(() => {
@@ -105,6 +111,7 @@ export function AssignProgramModal({ patientId, templates }: Props) {
     setEditingName(false)
     setDurationWeeks("4")
     setSearch("")
+    setBodyPart(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -164,6 +171,32 @@ export function AssignProgramModal({ patientId, templates }: Props) {
                     className="w-full h-9 pl-8 pr-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 bg-white"
                   />
                 </div>
+
+                {bodyParts.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setBodyPart(null)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                        bodyPart === null ? "bg-navy-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Wszystkie
+                    </button>
+                    {bodyParts.map((part) => (
+                      <button
+                        key={part}
+                        type="button"
+                        onClick={() => setBodyPart(bodyPart === part ? null : part)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                          bodyPart === part ? "bg-navy-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {part}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="space-y-1.5 max-h-52 overflow-y-auto pr-0.5">
                   {filteredTemplates.length === 0 && (

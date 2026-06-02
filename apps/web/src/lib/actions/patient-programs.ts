@@ -508,3 +508,41 @@ export async function endPatientProgram(programId: string, patientId: string) {
   if (error) throw new Error(error.message)
   revalidatePath(`/pacjenci/${patientId}`)
 }
+
+export async function updatePatientProgramItem(
+  itemId: string,
+  patientId: string,
+  data: { sets?: number | null; reps?: number | null; durationSeconds?: number | null; notes?: string | null }
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const { error } = await supabase
+    .from("patient_program_items")
+    .update({
+      ...(data.sets !== undefined && { sets: data.sets }),
+      ...(data.reps !== undefined && { reps: data.reps }),
+      ...(data.durationSeconds !== undefined && { duration_seconds: data.durationSeconds }),
+      ...(data.notes !== undefined && { notes: data.notes || null }),
+    })
+    .eq("id", itemId)
+
+  if (error) throw new Error(error.message)
+  revalidatePath(`/pacjenci/${patientId}`)
+}
+
+export async function updatePatientProgramName(programId: string, patientId: string, name: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const { error } = await supabase
+    .from("patient_programs")
+    .update({ name })
+    .eq("id", programId)
+    .eq("practitioner_id", user.id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath(`/pacjenci/${patientId}`)
+}

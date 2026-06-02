@@ -2,8 +2,8 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronRight, Clock, CheckCircle2, Circle, MoreVertical, Trash2 } from "lucide-react"
-import { advancePhase, setPatientPhase, removePatientProtocol } from "@/lib/actions/protocols"
+import { ChevronRight, Clock, CheckCircle2, Circle, MoreVertical, Trash2, Pencil, Check, X } from "lucide-react"
+import { advancePhase, setPatientPhase, removePatientProtocol, updatePatientProtocol } from "@/lib/actions/protocols"
 import { toast } from "sonner"
 
 type PatientProtocol = {
@@ -33,6 +33,12 @@ export function PatientProtocolCard({ patientProtocol: pp, patientId }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  // ── Custom name editing ───────────────────────────────────────────────────
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState(pp.custom_name ?? pp.rehabilitation_protocols?.name ?? "")
+  const [displayCustomName, setDisplayCustomName] = useState(pp.custom_name ?? null)
+  const [savingName, setSavingName] = useState(false)
 
   const protocol = pp.rehabilitation_protocols
   if (!protocol) return null
@@ -82,6 +88,20 @@ export function PatientProtocolCard({ patientProtocol: pp, patientId }: Props) {
     }
   }
 
+  async function handleSaveName() {
+    setSavingName(true)
+    try {
+      await updatePatientProtocol(pp.id, patientId, { customName: nameValue.trim() || null })
+      setDisplayCustomName(nameValue.trim() || null)
+      setEditingName(false)
+      toast.success("Nazwa zaktualizowana")
+    } catch {
+      toast.error("Nie udało się zmienić nazwy")
+    } finally {
+      setSavingName(false)
+    }
+  }
+
   async function handleDelete() {
     if (!confirmDelete) {
       setConfirmDelete(true)
@@ -106,8 +126,27 @@ export function PatientProtocolCard({ patientProtocol: pp, patientId }: Props) {
     <div className="rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
       {/* Header */}
       <div className="flex items-center justify-between p-3 bg-gray-50/50 rounded-t-lg">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900 truncate">{pp.custom_name || protocol.name}</p>
+        <div className="min-w-0 flex-1">
+          {editingName ? (
+            <div className="flex items-center gap-1.5">
+              <input
+                autoFocus
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setEditingName(false) }}
+                placeholder={protocol.name}
+                className="flex-1 h-6 px-1.5 text-sm font-semibold border border-navy-300 rounded focus:outline-none focus:ring-1 focus:ring-navy-400 min-w-0"
+              />
+              <button onClick={handleSaveName} disabled={savingName} className="w-5 h-5 flex items-center justify-center rounded bg-navy-500 text-white disabled:opacity-50">
+                <Check size={10} />
+              </button>
+              <button onClick={() => setEditingName(false)} className="w-5 h-5 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:bg-gray-50">
+                <X size={10} />
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm font-semibold text-gray-900 truncate">{displayCustomName || protocol.name}</p>
+          )}
           <div className="flex items-center gap-2 mt-0.5">
             {protocol.body_part && (
               <span className="text-xs text-gray-500">{protocol.body_part}</span>
@@ -195,6 +234,13 @@ export function PatientProtocolCard({ patientProtocol: pp, patientId }: Props) {
                     </>
                   )}
 
+                  <button
+                    onClick={() => { setMenuOpen(false); setEditingName(true); setNameValue(displayCustomName ?? "") }}
+                    className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Pencil size={12} />
+                    Zmień nazwę
+                  </button>
                   <button
                     onClick={handleDelete}
                     className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors"

@@ -2,11 +2,16 @@
 
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { X, Trash2, Plus, Search, Dumbbell, Loader2, AlertCircle, BookOpen, FileText, ExternalLink } from "lucide-react"
+import {
+  X, Trash2, Plus, Search, Dumbbell, Loader2, AlertCircle,
+  BookOpen, FileText, ExternalLink, Pencil, Check,
+} from "lucide-react"
 import {
   getPatientProgramWithItems,
   addExerciseToPatientProgram,
   removePatientProgramItem,
+  updatePatientProgramItem,
+  updatePatientProgramName,
   endPatientProgram,
   addContentToPatientProgram,
   removeContentFromPatientProgram,
@@ -83,16 +88,28 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
   const [addingContent, setAddingContent] = useState<string | null>(null)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // ── Name editing ──────────────────────────────────────────────────────────
+  const [displayName, setDisplayName] = useState(programName)
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState(programName)
+  const [savingName, setSavingName] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
+
+  // ── Item editing ──────────────────────────────────────────────────────────
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState({ sets: "", reps: "", duration: "", notes: "" })
+  const [savingItem, setSavingItem] = useState(false)
+
+  const isDirty = editingName || editingItemId !== null
+
   useEffect(() => {
     Promise.all([
       getPatientProgramWithItems(programId),
       getEducationalContent(),
     ]).then(([data, content]) => {
       if (data) {
-        const sorted = [...(data.patient_program_items ?? [])].sort((a, b) => a.order - b.order)
-        setItems(sorted as ProgramItem[])
-        const sortedContent = [...(data.patient_program_content ?? [])].sort((a, b) => a.order - b.order)
-        setProgramContent(sortedContent as ProgramContent[])
+        setItems([...(data.patient_program_items ?? [])].sort((a, b) => a.order - b.order) as ProgramItem[])
+        setProgramContent([...(data.patient_program_content ?? [])].sort((a, b) => a.order - b.order) as ProgramContent[])
       }
       setAllContent(content as ContentItem[])
       setLoading(false)
@@ -119,6 +136,71 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
     return allContent.filter((c) => c.name.toLowerCase().includes(q))
   }, [allContent, contentSearch])
 
+  // ── Name handlers ─────────────────────────────────────────────────────────
+  function startEditName() {
+    setNameValue(displayName)
+    setEditingName(true)
+    setTimeout(() => nameInputRef.current?.focus(), 0)
+  }
+
+  async function handleSaveName() {
+    if (!nameValue.trim()) return
+    setSavingName(true)
+    try {
+      await updatePatientProgramName(programId, patientId, nameValue.trim())
+      setDisplayName(nameValue.trim())
+      setEditingName(false)
+      toast.success("Nazwa zaktualizowana")
+    } catch {
+      toast.error("Nie udało się zmienić nazwy")
+    } finally {
+      setSavingName(false)
+    }
+  }
+
+  // ── Item param handlers ───────────────────────────────────────────────────
+  function startEditItem(item: ProgramItem) {
+    setEditingItemId(item.id)
+    setEditDraft({
+      sets: item.sets?.toString() ?? "",
+      reps: item.reps?.toString() ?? "",
+      duration: item.duration_seconds?.toString() ?? "",
+      notes: item.notes ?? "",
+    })
+  }
+
+  function cancelEditItem() {
+    setEditingItemId(null)
+  }
+
+  async function saveEditItem() {
+    if (!editingItemId) return
+    setSavingItem(true)
+    const payload = {
+      sets: editDraft.sets !== "" ? Number(editDraft.sets) : null,
+      reps: editDraft.reps !== "" ? Number(editDraft.reps) : null,
+      durationSeconds: editDraft.duration !== "" ? Number(editDraft.duration) : null,
+      notes: editDraft.notes || null,
+    }
+    try {
+      await updatePatientProgramItem(editingItemId, patientId, payload)
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === editingItemId
+            ? { ...i, sets: payload.sets, reps: payload.reps, duration_seconds: payload.durationSeconds, notes: payload.notes }
+            : i
+        )
+      )
+      setEditingItemId(null)
+      toast.success("Zapisano zmiany")
+    } catch {
+      toast.error("Nie udało się zapisać")
+    } finally {
+      setSavingItem(false)
+    }
+  }
+
+  // ── Exercise add/remove ───────────────────────────────────────────────────
   async function handleAdd(ex: Exercise) {
     try {
       const newItem = await addExerciseToPatientProgram(programId, patientId, {
@@ -131,7 +213,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
       setItems((prev) => [...prev, newItem as unknown as ProgramItem])
       setSearch("")
       setSearchResults([])
-      toast.success(`Dodano "${ex.name}"`)
+      toast.success(`Dodano „${ex.name}"`)
     } catch {
       toast.error("Nie udało się dodać ćwiczenia")
     }
@@ -149,6 +231,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
     }
   }
 
+  // ── Content add/remove ────────────────────────────────────────────────────
   async function handleAddContent(contentId: string) {
     if (addingContent) return
     setAddingContent(contentId)
@@ -157,10 +240,8 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
       const content = allContent.find((c) => c.id === contentId)
       if (content) {
         setProgramContent((prev) => [...prev, {
-          id: crypto.randomUUID(),
-          order: prev.length + 1,
-          content_id: contentId,
-          educational_content: content,
+          id: crypto.randomUUID(), order: prev.length + 1,
+          content_id: contentId, educational_content: content,
         }])
       }
     } catch {
@@ -182,6 +263,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
     }
   }
 
+  // ── End program ───────────────────────────────────────────────────────────
   async function handleEnd() {
     if (!confirmEnd) {
       setConfirmEnd(true)
@@ -201,18 +283,64 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
     }
   }
 
+  // ── Close with dirty guard ─────────────────────────────────────────────────
+  function tryClose() {
+    if (isDirty) {
+      toast.warning("Masz niezapisane zmiany — zapisz lub anuluj edycję przed zamknięciem")
+      return
+    }
+    onClose()
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      onClick={(e) => { if (e.target === e.currentTarget) tryClose() }}
     >
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col max-h-[85vh]">
+
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
-          <div className="min-w-0">
-            <h2 className="font-semibold text-gray-900 truncate">{programName}</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0 gap-3">
+          <div className="flex-1 min-w-0">
+            {editingName ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  ref={nameInputRef}
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveName()
+                    if (e.key === "Escape") setEditingName(false)
+                  }}
+                  className="flex-1 h-7 px-2 text-sm font-semibold border border-navy-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 min-w-0"
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={savingName || !nameValue.trim()}
+                  className="w-6 h-6 flex items-center justify-center rounded bg-navy-500 text-white disabled:opacity-50"
+                >
+                  {savingName ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+                </button>
+                <button
+                  onClick={() => setEditingName(false)}
+                  className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:bg-gray-50"
+                >
+                  <X size={11} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={startEditName}
+                className="group flex items-center gap-1.5 max-w-full text-left"
+                title="Kliknij aby zmienić nazwę"
+              >
+                <h2 className="font-semibold text-gray-900 truncate text-sm">{displayName}</h2>
+                <Pencil size={12} className="text-gray-300 group-hover:text-navy-500 shrink-0 transition-colors" />
+              </button>
+            )}
             <p className="text-xs text-gray-400 mt-0.5">{items.length} ćwiczeń · {programContent.length} materiałów</p>
           </div>
+
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleEnd}
@@ -226,7 +354,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
               {ending ? <Loader2 size={12} className="animate-spin" /> : <AlertCircle size={12} />}
               {confirmEnd ? "Potwierdź zakończenie" : "Zakończ program"}
             </button>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <button onClick={tryClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <X size={16} className="text-gray-500" />
             </button>
           </div>
@@ -240,7 +368,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
             </div>
           ) : (
             <>
-              {/* Exercises */}
+              {/* Exercise items */}
               {items.length === 0 ? (
                 <div className="text-center py-6 text-gray-400 text-sm">
                   Brak ćwiczeń. Dodaj z biblioteki poniżej.
@@ -248,42 +376,137 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
               ) : (
                 items.map((item) => {
                   const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
+                  const isEditing = editingItemId === item.id
+
                   return (
-                    <div key={item.id} className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                      <div className="w-12 h-10 rounded-lg bg-gray-200 shrink-0 overflow-hidden flex items-center justify-center">
-                        {ex?.thumbnail_url ? (
-                          <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Dumbbell size={14} className="text-gray-400" />
-                        )}
+                    <div
+                      key={item.id}
+                      className={`rounded-xl p-3 transition-colors ${
+                        isEditing ? "bg-navy-50/60 border border-navy-100" : "bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Thumbnail */}
+                        <div className="w-12 h-10 rounded-lg bg-gray-200 shrink-0 overflow-hidden flex items-center justify-center">
+                          {ex?.thumbnail_url ? (
+                            <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Dumbbell size={14} className="text-gray-400" />
+                          )}
+                        </div>
+
+                        {/* Name + params (non-edit) */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{ex?.name ?? "Ćwiczenie"}</p>
+                          {!isEditing && (
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {[
+                                item.sets != null && `${item.sets} serii`,
+                                item.reps != null && `${item.reps} powt.`,
+                                item.duration_seconds != null && `${item.duration_seconds}s`,
+                              ].filter(Boolean).join(" · ") || "Brak parametrów"}
+                              {item.notes && (
+                                <span className="ml-1.5 italic text-gray-400">· {item.notes}</span>
+                              )}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          {!isEditing && (
+                            <button
+                              onClick={() => startEditItem(item)}
+                              title="Edytuj parametry"
+                              className="p-1.5 rounded-lg hover:bg-navy-100 text-gray-300 hover:text-navy-600 transition-colors"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleRemove(item.id)}
+                            disabled={isEditing}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors disabled:opacity-30"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{ex?.name ?? "Ćwiczenie"}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {[
-                            item.sets && `${item.sets} serii`,
-                            item.reps && `${item.reps} powt.`,
-                            item.duration_seconds && `${item.duration_seconds}s`,
-                          ].filter(Boolean).join(" · ") || "Brak parametrów"}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleRemove(item.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors shrink-0"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+
+                      {/* Inline edit form */}
+                      {isEditing && (
+                        <div className="mt-3 space-y-2">
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Serie</label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={editDraft.sets}
+                                onChange={(e) => setEditDraft((d) => ({ ...d, sets: e.target.value }))}
+                                placeholder="–"
+                                className="mt-0.5 w-full h-8 px-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Powt.</label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={editDraft.reps}
+                                onChange={(e) => setEditDraft((d) => ({ ...d, reps: e.target.value }))}
+                                placeholder="–"
+                                className="mt-0.5 w-full h-8 px-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Czas (s)</label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={editDraft.duration}
+                                onChange={(e) => setEditDraft((d) => ({ ...d, duration: e.target.value }))}
+                                placeholder="–"
+                                className="mt-0.5 w-full h-8 px-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 bg-white"
+                              />
+                            </div>
+                          </div>
+                          <input
+                            type="text"
+                            value={editDraft.notes}
+                            onChange={(e) => setEditDraft((d) => ({ ...d, notes: e.target.value }))}
+                            placeholder="Notatka dla pacjenta…"
+                            className="w-full h-8 px-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400 bg-white"
+                          />
+                          <div className="flex gap-1.5 pt-0.5">
+                            <button
+                              onClick={saveEditItem}
+                              disabled={savingItem}
+                              className="h-7 px-3 rounded-lg bg-navy-500 hover:bg-navy-600 text-white text-xs font-medium flex items-center gap-1 disabled:opacity-50"
+                            >
+                              {savingItem ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+                              Zapisz
+                            </button>
+                            <button
+                              onClick={cancelEditItem}
+                              disabled={savingItem}
+                              className="h-7 px-3 rounded-lg border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50"
+                            >
+                              Anuluj
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 })
               )}
 
-              {/* Educational content section */}
+              {/* Educational content */}
               <div className="pt-3 mt-1 border-t border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-semibold text-gray-500 flex items-center gap-1.5 uppercase tracking-wide">
-                    <BookOpen size={12} />
-                    Materiały edukacyjne
+                    <BookOpen size={12} /> Materiały edukacyjne
                   </h3>
                   <button
                     onClick={() => { setContentPickerOpen(!contentPickerOpen); setContentSearch("") }}
@@ -306,10 +529,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
                         {ec.type === "pdf" ? <FileText size={11} className="text-red-500" /> : <ExternalLink size={11} className="text-blue-500" />}
                       </div>
                       <span className="text-xs text-gray-700 flex-1 truncate">{ec.name}</span>
-                      <button
-                        onClick={() => handleRemoveContent(pc.content_id)}
-                        className="p-0.5 hover:text-red-500 text-gray-300 transition-colors shrink-0"
-                      >
+                      <button onClick={() => handleRemoveContent(pc.content_id)} className="p-0.5 hover:text-red-500 text-gray-300 transition-colors shrink-0">
                         <Trash2 size={12} />
                       </button>
                     </div>
@@ -347,13 +567,9 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
                                 {c.type === "pdf" ? <FileText size={10} className="text-red-500" /> : <ExternalLink size={10} className="text-blue-500" />}
                               </div>
                               <span className="text-xs text-gray-800 flex-1 truncate">{c.name}</span>
-                              {isAdded ? (
-                                <span className="text-xs text-navy-500">✓</span>
-                              ) : addingContent === c.id ? (
-                                <Loader2 size={11} className="text-gray-400 animate-spin shrink-0" />
-                              ) : (
-                                <Plus size={11} className="text-gray-400 shrink-0" />
-                              )}
+                              {isAdded ? <span className="text-xs text-navy-500">✓</span>
+                                : addingContent === c.id ? <Loader2 size={11} className="text-gray-400 animate-spin shrink-0" />
+                                : <Plus size={11} className="text-gray-400 shrink-0" />}
                             </button>
                           )
                         })
@@ -366,7 +582,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
           )}
         </div>
 
-        {/* Add exercise search */}
+        {/* Footer — add exercise */}
         <div className="px-4 pb-4 pt-2 border-t border-gray-100 shrink-0 space-y-2">
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -376,9 +592,7 @@ export function PatientProgramEditModal({ programId, programName, patientId, onC
               placeholder="Szukaj ćwiczenia do dodania..."
               className="w-full h-9 pl-8 pr-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-navy-400"
             />
-            {searching && (
-              <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
-            )}
+            {searching && <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />}
           </div>
 
           {searchResults.length > 0 && (

@@ -532,6 +532,31 @@ export async function setPatientPhase(patientProtocolId: string, patientId: stri
   revalidatePath(`/pacjenci/${patientId}`)
 }
 
+export async function updatePatientProtocol(
+  patientProtocolId: string,
+  patientId: string,
+  data: { customName?: string | null; startDate?: string }
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Brak autoryzacji")
+
+  const updateData: Record<string, unknown> = {}
+  if (data.customName !== undefined) updateData.custom_name = data.customName?.trim() || null
+  if (data.startDate) updateData.start_date = data.startDate
+
+  if (!Object.keys(updateData).length) return
+
+  const { error } = await supabase
+    .from("patient_protocols")
+    .update(updateData)
+    .eq("id", patientProtocolId)
+    .eq("practitioner_id", user.id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath(`/pacjenci/${patientId}`)
+}
+
 export async function removePatientProtocol(patientProtocolId: string, patientId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

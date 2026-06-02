@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Activity, Search } from "lucide-react"
+import { Activity, Search, Layers, Clock } from "lucide-react"
 import { assignProtocolToPatient } from "@/lib/actions/protocols"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -104,8 +104,19 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
   const weekNum = startWeek ? Number(startWeek) : null
   const detectedPhase = weekNum && weekNum > 0 ? getPhaseForWeek(weekNum) : null
 
+  const hasData = !!selectedProtocol || !!customName.trim() || !!startWeek
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v && hasData) {
+          toast.warning("Wybierz protokół lub wyczyść formularz przed zamknięciem")
+          return
+        }
+        setOpen(v)
+      }}
+    >
       <DialogTrigger className="inline-flex items-center gap-2 h-8 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
         <Activity size={13} />
         Przypisz protokół
@@ -243,6 +254,31 @@ export function AssignProtocolModal({ patientId, protocols }: Props) {
               <p className="text-xs text-navy-600 bg-navy-50 px-3 py-2 rounded-lg">
                 Tydzień {weekNum} → start od fazy <strong>{detectedPhase.order}. {detectedPhase.name}</strong>
               </p>
+            )}
+
+            {/* Summary */}
+            {selectedProto && (
+              <div className="bg-navy-50 rounded-xl px-4 py-3 space-y-1">
+                <p className="text-xs font-semibold text-navy-700">{selectedProto.name}</p>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-navy-600">
+                  {selectedProto.body_part && <span>{selectedProto.body_part}</span>}
+                  <span className="flex items-center gap-1">
+                    <Layers size={11} />
+                    {sortedPhases.length} {sortedPhases.length === 1 ? "faza" : sortedPhases.length < 5 ? "fazy" : "faz"}
+                  </span>
+                  {selectedProto.total_weeks && (
+                    <span className="flex items-center gap-1">
+                      <Clock size={11} />
+                      {selectedProto.total_weeks} tyg.
+                    </span>
+                  )}
+                  {detectedPhase ? (
+                    <span className="font-medium">Start: Faza {detectedPhase.order} — {detectedPhase.name}</span>
+                  ) : sortedPhases[0] ? (
+                    <span>Start: Faza 1 — {sortedPhases[0].name}</span>
+                  ) : null}
+                </div>
+              </div>
             )}
 
             <div className="flex justify-end gap-3 pt-2">

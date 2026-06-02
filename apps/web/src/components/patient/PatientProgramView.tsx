@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw, ChevronDown, ChevronUp, Info, Wind } from "lucide-react"
+import { ArrowLeft, Dumbbell, CheckCircle2, Play, ChevronRight, FileText, ExternalLink, Target, BookOpen, ShieldCheck, Clock, RotateCcw, ChevronDown, ChevronUp, Info, Wind, ListChecks } from "lucide-react"
 import { logExercise } from "@/lib/actions/patient-portal"
 import { toast } from "sonner"
 import { useVimeoThumbnail } from "@/lib/hooks/useVimeoThumbnail"
@@ -95,6 +95,72 @@ function ExerciseThumb({ ex, className }: { ex: ExerciseData | null; className?:
   if (ex?.thumbnail_url) return <img src={ex.thumbnail_url} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-cover"} />
   if (isDirectMp4) return <video src={ex!.video_url!} className={className ?? "w-full h-full object-contain"} muted playsInline preload="metadata" />
   return <div className="w-full h-full flex items-center justify-center"><Dumbbell size={20} className="text-gray-300" /></div>
+}
+
+// ── Description formatter ─────────────────────────────────────────────────────
+function isHeaderLine(line: string): boolean {
+  const t = line.trim()
+  if (!t || t.length < 5) return false
+  if (/^(ĆWICZENIE|PROGRAM|JAK |PRZY |ZASADA|KROK\s)/i.test(t) && t.length > 6) return true
+  const letters = t.replace(/[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, "")
+  const upper  = t.replace(/[^ĄĆĘŁŃÓŚŹŻABCDEFGHIJKLMNOPQRSTUVWXYZ]/g, "")
+  return letters.length > 4 && upper.length / letters.length > 0.62
+}
+
+function DescriptionFormatter({ text }: { text: string }) {
+  const lines = text.split("\n")
+  const nodes: React.ReactNode[] = []
+  let k = 0
+
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line) continue
+
+    if (isHeaderLine(line)) {
+      nodes.push(
+        <div key={k++} className="mt-4 first:mt-0 flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl border-l-[3px] border-green-500">
+          <p className="text-xs font-bold text-green-800 uppercase tracking-wide">{line.replace(/:$/, "")}</p>
+        </div>
+      )
+      continue
+    }
+
+    if (line.startsWith("•")) {
+      nodes.push(
+        <div key={k++} className="flex items-start gap-2 pl-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2 shrink-0" />
+          <p className="text-sm text-gray-700 leading-relaxed">{line.slice(1).trim()}</p>
+        </div>
+      )
+      continue
+    }
+
+    const num = line.match(/^(\d+)[.)]\s+(.+)/)
+    if (num) {
+      nodes.push(
+        <div key={k++} className="flex items-start gap-2.5 pl-1">
+          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+            <span className="text-[10px] font-bold text-green-700">{num[1]}</span>
+          </div>
+          <p className="text-sm text-gray-800 leading-relaxed flex-1">{num[2]}</p>
+        </div>
+      )
+      continue
+    }
+
+    if (/^(Wskazówka|Zasada|WAŻNE|Uwaga)[:\s]/.test(line)) {
+      nodes.push(
+        <div key={k++} className="bg-amber-50 rounded-xl px-3 py-2 border-l-[3px] border-amber-400">
+          <p className="text-xs text-amber-900 leading-relaxed">{line}</p>
+        </div>
+      )
+      continue
+    }
+
+    nodes.push(<p key={k++} className="text-sm text-gray-600 leading-relaxed">{line}</p>)
+  }
+
+  return <div className="space-y-2">{nodes}</div>
 }
 
 export function PatientProgramView({ program, patientId, patientName, kod, doneTodayIds, phaseInfo }: Props) {
@@ -264,6 +330,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
               const isRunning = ex?.exercise_type === "running_intervals"
               const isAerobic = ex?.exercise_type === "aerobic_session"
               const isSpecial = isBreathing || isRunning || isAerobic
+              const isDescriptive = !isSpecial && !ex?.thumbnail_url && !ex?.video_url && !ex?.animated_gif_url
               const breathingColor = ex?.breathing_config?.color ?? "emerald"
 
               const breathingBg: Record<string, string> = {
@@ -291,7 +358,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
                     isDone ? "border-green-400" : "border-transparent hover:border-navy-200"
                   }`}
                 >
-                  <div className={`w-full aspect-[4/3] relative ${isBreathing ? (breathingBg[breathingColor] ?? breathingBg.emerald) : (isRunning || isAerobic) ? runningBg : "bg-gray-100"}`}>
+                  <div className={`w-full aspect-[4/3] relative ${isBreathing ? (breathingBg[breathingColor] ?? breathingBg.emerald) : (isRunning || isAerobic) ? runningBg : isDescriptive ? "bg-gradient-to-br from-slate-700 to-gray-900" : "bg-gray-100"}`}>
                     {isBreathing ? (
                       <>
                         {/* Breathing card — glowing circle icon */}
@@ -318,6 +385,17 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
                         >
                           {isRunning ? "🏃" : "⚡"}
                         </div>
+                      </div>
+                    ) : isDescriptive ? (
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center gap-2.5">
+                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                          <ListChecks size={18} className="text-white/70" />
+                        </div>
+                        {ex?.description && (
+                          <p className="text-[11px] text-white/60 leading-snug line-clamp-3">
+                            {ex.description.split("\n").find((l) => l.trim()) ?? ""}
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <ExerciseThumb ex={ex} />
@@ -587,191 +665,223 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   const isDirectMp4 = !!ex?.video_url && !embedUrl &&
     (ex.video_url.endsWith(".mp4") || ex.video_url.includes(".mp4"))
   const isVideoFile = ex?.animated_gif_url && /\.(mp4|webm)(\?|$)/i.test(ex.animated_gif_url)
+  const hasMedia = !!embedUrl || isDirectMp4 || !!isVideoFile || !!ex?.animated_gif_url || !!ex?.thumbnail_url
+
+  // ── Shared info panel content ─────────────────────────────────────────────
+  const paramsBlock = (
+    <div className="flex gap-2">
+      {item.sets && (
+        <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
+          <p className="text-2xl font-bold text-navy-700">{item.sets}</p>
+          <p className="text-xs text-navy-400 mt-0.5">serie</p>
+        </div>
+      )}
+      {item.reps && (
+        <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
+          <p className="text-2xl font-bold text-navy-700">{item.reps}</p>
+          <p className="text-xs text-navy-400 mt-0.5">powtórzeń</p>
+        </div>
+      )}
+      {item.duration_seconds && (
+        <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
+          <p className="text-2xl font-bold text-navy-700">
+            {timerActive
+              ? `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, "0")}`
+              : timerDone ? "✓" : item.duration_seconds >= 60
+                ? `${Math.floor(item.duration_seconds / 60)}:${String(item.duration_seconds % 60).padStart(2, "0")}`
+                : item.duration_seconds}
+          </p>
+          <p className="text-xs text-navy-400 mt-0.5">
+            {item.duration_seconds >= 60 ? "min" : "sekund"}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+
+  const timerBlock = item.duration_seconds && !timerActive && !isDone ? (
+    <button
+      onClick={startTimer}
+      className="w-full h-11 rounded-xl border border-navy-200 text-navy-600 font-medium text-sm flex items-center justify-center gap-2 hover:bg-navy-50 transition-colors"
+    >
+      {timerDone ? <><RotateCcw size={15} /> Ponów timer</> : <><Clock size={15} /> Uruchom timer</>}
+    </button>
+  ) : null
+
+  const actionsBlock = (
+    <div className="flex flex-col gap-2">
+      {!isDone && (
+        <button
+          onClick={() => showVasOnComplete ? setShowVas(true) : onMark(null)}
+          className="w-full h-12 rounded-xl bg-navy-500 hover:bg-navy-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+        >
+          <CheckCircle2 size={18} />
+          Zrobione!
+        </button>
+      )}
+      {isDone && hasNext && (
+        <button
+          onClick={onNext}
+          className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+        >
+          Następne ćwiczenie <ChevronRight size={18} />
+        </button>
+      )}
+      {isDone && !hasNext && (
+        <button
+          onClick={onClose}
+          className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+        >
+          <CheckCircle2 size={18} /> Koniec programu!
+        </button>
+      )}
+      {isDone && (
+        <button
+          onClick={onClose}
+          className="w-full h-10 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors"
+        >
+          Wróć do listy
+        </button>
+      )}
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {showVas && (
-        <VasPainModal onSubmit={(pain) => { setShowVas(false); onMark(pain) }} />
-      )}
+      {showVas && <VasPainModal onSubmit={(pain) => { setShowVas(false); onMark(pain) }} />}
 
-      {/* Back button */}
       <button onClick={onClose} className="inline-flex items-center gap-1.5 text-sm text-gray-500 px-4 pt-5 pb-3">
         <ArrowLeft size={14} />
         Wróć do listy
       </button>
 
-      <div className="lg:grid lg:grid-cols-[1fr_380px] lg:gap-0 lg:items-start max-w-5xl mx-auto">
-        {/* ── Video panel ── */}
-        <div className="lg:sticky lg:top-0">
-          <div className="w-full aspect-video bg-black">
-            {embedUrl ? (
-              <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
-            ) : isDirectMp4 ? (
-              <video src={ex!.video_url!} className="w-full h-full object-contain" controls playsInline autoPlay loop />
-            ) : isVideoFile ? (
-              <video src={ex!.animated_gif_url!} className="w-full h-full object-contain" controls playsInline autoPlay />
-            ) : ex?.animated_gif_url ? (
-              <img src={ex.animated_gif_url} alt={ex.name ?? ""} className="w-full h-full object-contain" />
-            ) : ex?.thumbnail_url ? (
-              <img src={ex.thumbnail_url} alt={ex.name ?? ""} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-900">
-                <Dumbbell size={48} className="text-gray-600" />
-              </div>
-            )}
-          </div>
-
-          {/* Phase info panel — visible only on desktop, below video */}
-          {phaseInfo && (phaseInfo.goals || phaseInfo.rules) && (
-            <div className="hidden lg:block bg-white border-t border-gray-100 px-5 py-4 space-y-3">
-              {phaseInfo.goals && (
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Target size={12} className="text-navy-500" />
-                    <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
-                  </div>
-                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
-                </div>
-              )}
-              {phaseInfo.rules && (
-                <div className="bg-amber-50 rounded-xl p-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <ShieldCheck size={12} className="text-amber-600" />
-                    <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
-                  </div>
-                  <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ── Info panel ── */}
-        <div className="bg-white lg:min-h-screen lg:border-l border-gray-100 px-5 pt-5 pb-10 space-y-5">
-          {/* Name */}
+      {/* ══ NO MEDIA — single column with formatted description ══ */}
+      {!hasMedia ? (
+        <div className="max-w-2xl mx-auto px-4 pb-10 space-y-5">
           <div>
             <h1 className="text-lg font-bold text-gray-900 leading-tight">{ex?.name}</h1>
             {ex?.body_part && <p className="text-sm text-gray-400 mt-0.5">{ex.body_part}</p>}
           </div>
 
-          {/* Params chips */}
-          <div className="flex gap-2">
-            {item.sets && (
-              <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
-                <p className="text-2xl font-bold text-navy-700">{item.sets}</p>
-                <p className="text-xs text-navy-400 mt-0.5">serie</p>
-              </div>
-            )}
-            {item.reps && (
-              <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
-                <p className="text-2xl font-bold text-navy-700">{item.reps}</p>
-                <p className="text-xs text-navy-400 mt-0.5">powtórzeń</p>
-              </div>
-            )}
-            {item.duration_seconds && (
-              <div className="flex-1 bg-navy-50 rounded-xl p-3 text-center">
-                <p className="text-2xl font-bold text-navy-700">
-                  {timerActive
-                    ? `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, "0")}`
-                    : timerDone ? "✓" : item.duration_seconds}
-                </p>
-                <p className="text-xs text-navy-400 mt-0.5">sekund</p>
-              </div>
-            )}
-          </div>
+          {paramsBlock}
 
-          {/* Description + Notes — unified info block */}
-          {(ex?.description || item.notes) && (
-            <div className="rounded-xl overflow-hidden border border-gray-100">
-              {ex?.description && (
-                <div className="bg-gray-50 px-4 py-3">
-                  <p className="text-sm text-gray-600 leading-relaxed">{ex.description}</p>
-                </div>
-              )}
-              {item.notes && (
-                <div className={`bg-amber-50 px-4 py-3${ex?.description ? " border-t border-amber-100" : ""}`}>
-                  <p className="text-xs font-semibold text-amber-700 mb-1">Wskazówka od fizjoterapeuty</p>
-                  <p className="text-sm text-amber-800 leading-relaxed">{item.notes}</p>
-                </div>
-              )}
+          {ex?.description && (
+            <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 space-y-1">
+              <div className="flex items-center gap-2 mb-3">
+                <ListChecks size={14} className="text-gray-400" />
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Instrukcja</p>
+              </div>
+              <DescriptionFormatter text={ex.description} />
             </div>
           )}
 
-          {/* Timer */}
-          {item.duration_seconds && !timerActive && !isDone && (
-            <button
-              onClick={startTimer}
-              className="w-full h-11 rounded-xl border border-navy-200 text-navy-600 font-medium text-sm flex items-center justify-center gap-2 hover:bg-navy-50 transition-colors"
-            >
-              {timerDone ? <><RotateCcw size={15} /> Ponów timer</> : <><Clock size={15} /> Uruchom timer</>}
-            </button>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-col gap-2">
-            {!isDone && (
-              <button
-                onClick={() => showVasOnComplete ? setShowVas(true) : onMark(null)}
-                className="w-full h-12 rounded-xl bg-navy-500 hover:bg-navy-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 size={18} />
-                Zrobione!
-              </button>
-            )}
-            {isDone && hasNext && (
-              <button
-                onClick={onNext}
-                className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-              >
-                Następne ćwiczenie
-                <ChevronRight size={18} />
-              </button>
-            )}
-            {isDone && !hasNext && (
-              <button
-                onClick={onClose}
-                className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 size={18} />
-                Koniec programu!
-              </button>
-            )}
-            {isDone && (
-              <button
-                onClick={onClose}
-                className="w-full h-10 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors"
-              >
-                Wróć do listy
-              </button>
-            )}
-          </div>
-
-          {/* Mobile phase info */}
-          {phaseInfo && (phaseInfo.goals || phaseInfo.patient_intro || phaseInfo.rules) && (
-            <div className="lg:hidden space-y-3 pt-2 border-t border-gray-100">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Info o fazie</p>
-              {phaseInfo.goals && (
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Target size={12} className="text-navy-500" />
-                    <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele</p>
-                  </div>
-                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
-                </div>
-              )}
-              {phaseInfo.rules && (
-                <div className="bg-amber-50 rounded-xl p-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <ShieldCheck size={12} className="text-amber-600" />
-                    <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
-                  </div>
-                  <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
-                </div>
-              )}
+          {item.notes && (
+            <div className="bg-amber-50 rounded-2xl px-5 py-4">
+              <p className="text-xs font-semibold text-amber-700 mb-1.5">Wskazówka od fizjoterapeuty</p>
+              <p className="text-sm text-amber-800 leading-relaxed">{item.notes}</p>
             </div>
           )}
+
+          {timerBlock}
+          {actionsBlock}
         </div>
-      </div>
+      ) : (
+        /* ══ HAS MEDIA — original 2-column layout ══ */
+        <div className="lg:grid lg:grid-cols-[1fr_380px] lg:gap-0 lg:items-start max-w-5xl mx-auto">
+          {/* Video panel */}
+          <div className="lg:sticky lg:top-0">
+            <div className="w-full aspect-video bg-black">
+              {embedUrl ? (
+                <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
+              ) : isDirectMp4 ? (
+                <video src={ex!.video_url!} className="w-full h-full object-contain" controls playsInline autoPlay loop />
+              ) : isVideoFile ? (
+                <video src={ex!.animated_gif_url!} className="w-full h-full object-contain" controls playsInline autoPlay />
+              ) : ex?.animated_gif_url ? (
+                <img src={ex.animated_gif_url} alt={ex.name ?? ""} className="w-full h-full object-contain" />
+              ) : (
+                <img src={ex!.thumbnail_url!} alt={ex?.name ?? ""} className="w-full h-full object-cover" />
+              )}
+            </div>
+
+            {phaseInfo && (phaseInfo.goals || phaseInfo.rules) && (
+              <div className="hidden lg:block bg-white border-t border-gray-100 px-5 py-4 space-y-3">
+                {phaseInfo.goals && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Target size={12} className="text-navy-500" />
+                      <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele fazy</p>
+                    </div>
+                    <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
+                  </div>
+                )}
+                {phaseInfo.rules && (
+                  <div className="bg-amber-50 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <ShieldCheck size={12} className="text-amber-600" />
+                      <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
+                    </div>
+                    <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Info panel */}
+          <div className="bg-white lg:min-h-screen lg:border-l border-gray-100 px-5 pt-5 pb-10 space-y-5">
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 leading-tight">{ex?.name}</h1>
+              {ex?.body_part && <p className="text-sm text-gray-400 mt-0.5">{ex.body_part}</p>}
+            </div>
+
+            {paramsBlock}
+
+            {(ex?.description || item.notes) && (
+              <div className="rounded-xl overflow-hidden border border-gray-100">
+                {ex?.description && (
+                  <div className="bg-gray-50 px-4 py-3">
+                    <p className="text-sm text-gray-600 leading-relaxed">{ex.description}</p>
+                  </div>
+                )}
+                {item.notes && (
+                  <div className={`bg-amber-50 px-4 py-3${ex?.description ? " border-t border-amber-100" : ""}`}>
+                    <p className="text-xs font-semibold text-amber-700 mb-1">Wskazówka od fizjoterapeuty</p>
+                    <p className="text-sm text-amber-800 leading-relaxed">{item.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {timerBlock}
+            {actionsBlock}
+
+            {phaseInfo && (phaseInfo.goals || phaseInfo.patient_intro || phaseInfo.rules) && (
+              <div className="lg:hidden space-y-3 pt-2 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Info o fazie</p>
+                {phaseInfo.goals && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Target size={12} className="text-navy-500" />
+                      <p className="text-[10px] font-semibold text-navy-600 uppercase tracking-wide">Cele</p>
+                    </div>
+                    <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">{phaseInfo.goals}</p>
+                  </div>
+                )}
+                {phaseInfo.rules && (
+                  <div className="bg-amber-50 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <ShieldCheck size={12} className="text-amber-600" />
+                      <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Zasady</p>
+                    </div>
+                    <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-line">{phaseInfo.rules}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
