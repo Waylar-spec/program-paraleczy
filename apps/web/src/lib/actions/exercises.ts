@@ -126,7 +126,14 @@ export async function updateExercise(id: string, formData: {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Brak autoryzacji")
 
-  const { error } = await supabase
+  const sb = createServiceClient()
+
+  // Allow editing own exercises AND public library exercises (practitioner_id IS NULL)
+  const { data: ex } = await sb.from("exercises").select("practitioner_id").eq("id", id).single()
+  if (!ex) throw new Error("Ćwiczenie nie istnieje")
+  if (ex.practitioner_id !== null && ex.practitioner_id !== user.id) throw new Error("Brak uprawnień")
+
+  const { error } = await sb
     .from("exercises")
     .update({
       name: formData.name,
@@ -144,7 +151,6 @@ export async function updateExercise(id: string, formData: {
       step_images: formData.stepImages ?? [],
     })
     .eq("id", id)
-    .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
   revalidateTag("exercises", "max")

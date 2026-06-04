@@ -202,11 +202,9 @@ function ViewMode({ exercise, favorite, onFavorite, onEdit, onClose, onAddRemove
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            {isOwn && (
-              <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Edytuj">
-                <Pencil size={15} className="text-gray-400" />
-              </button>
-            )}
+            <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Edytuj ćwiczenie">
+              <Pencil size={15} className="text-gray-400" />
+            </button>
             <button
               onClick={handleToggleUsage}
               title="Pokaż szablony używające tego ćwiczenia"
