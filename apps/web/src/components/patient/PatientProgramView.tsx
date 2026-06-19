@@ -663,7 +663,8 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   const isDirectMp4 = !!ex?.video_url && !embedUrl &&
     (ex.video_url.endsWith(".mp4") || ex.video_url.includes(".mp4"))
   const isVideoFile = ex?.animated_gif_url && /\.(mp4|webm)(\?|$)/i.test(ex.animated_gif_url)
-  const hasMedia = !mediaError && (!!embedUrl || isDirectMp4 || !!isVideoFile || !!ex?.animated_gif_url || !!ex?.thumbnail_url)
+  // Only real video/gif counts as "media" — thumbnail alone → description layout
+  const hasMedia = !mediaError && (!!embedUrl || isDirectMp4 || !!ex?.animated_gif_url)
 
   // ── Shared info panel content ─────────────────────────────────────────────
   const paramsBlock = (
@@ -756,6 +757,11 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
       {/* ══ NO MEDIA — single column with formatted description ══ */}
       {!hasMedia ? (
         <div className="max-w-2xl mx-auto px-4 pb-10 space-y-5">
+          {ex?.thumbnail_url && (
+            <div className="w-full rounded-2xl overflow-hidden bg-gray-100" style={{ maxHeight: 240 }}>
+              <img src={ex.thumbnail_url} alt={ex.name ?? ""} className="w-full h-full object-cover" style={{ maxHeight: 240 }} />
+            </div>
+          )}
           <div>
             <h1 className="text-lg font-bold text-gray-900 leading-tight">{ex?.name}</h1>
             {ex?.body_part && <p className="text-sm text-gray-400 mt-0.5">{ex.body_part}</p>}
