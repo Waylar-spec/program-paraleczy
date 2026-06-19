@@ -571,6 +571,7 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   const [timeLeft, setTimeLeft] = useState(item.duration_seconds ?? 0)
   const [timerDone, setTimerDone] = useState(false)
   const [showVas, setShowVas] = useState(false)
+  const [mediaError, setMediaError] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const ex = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises
 
@@ -662,7 +663,7 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
   const isDirectMp4 = !!ex?.video_url && !embedUrl &&
     (ex.video_url.endsWith(".mp4") || ex.video_url.includes(".mp4"))
   const isVideoFile = ex?.animated_gif_url && /\.(mp4|webm)(\?|$)/i.test(ex.animated_gif_url)
-  const hasMedia = !!embedUrl || isDirectMp4 || !!isVideoFile || !!ex?.animated_gif_url || !!ex?.thumbnail_url
+  const hasMedia = !mediaError && (!!embedUrl || isDirectMp4 || !!isVideoFile || !!ex?.animated_gif_url || !!ex?.thumbnail_url)
 
   // ── Shared info panel content ─────────────────────────────────────────────
   const paramsBlock = (
@@ -791,13 +792,13 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
               {embedUrl ? (
                 <iframe src={embedUrl} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
               ) : isDirectMp4 ? (
-                <video src={ex!.video_url!} className="w-full h-full object-contain" controls playsInline autoPlay loop />
+                <video src={ex!.video_url!} className="w-full h-full object-contain" controls playsInline autoPlay loop onError={() => setMediaError(true)} />
               ) : isVideoFile ? (
-                <video src={ex!.animated_gif_url!} className="w-full h-full object-contain" controls playsInline autoPlay />
+                <video src={ex!.animated_gif_url!} className="w-full h-full object-contain" controls playsInline autoPlay onError={() => setMediaError(true)} />
               ) : ex?.animated_gif_url ? (
-                <img src={ex.animated_gif_url} alt={ex.name ?? ""} className="w-full h-full object-contain" />
+                <img src={ex.animated_gif_url} alt={ex.name ?? ""} className="w-full h-full object-contain" onError={() => setMediaError(true)} />
               ) : (
-                <img src={ex!.thumbnail_url!} alt={ex?.name ?? ""} className="w-full h-full object-cover" />
+                <img src={ex!.thumbnail_url!} alt={ex?.name ?? ""} className="w-full h-full object-cover" onError={() => setMediaError(true)} />
               )}
             </div>
 
