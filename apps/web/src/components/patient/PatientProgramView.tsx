@@ -79,6 +79,8 @@ interface Props {
 // Small component so each card can independently fetch its Vimeo thumb.
 // Priority: vimeo thumb > static thumbnail > animated gif > mp4 > placeholder
 function ExerciseThumb({ ex, className }: { ex: ExerciseData | null; className?: string }) {
+  const [failedSrcs, setFailedSrcs] = useState<Set<string>>(new Set())
+  const markFailed = (src: string) => setFailedSrcs(prev => new Set([...prev, src]))
   const isVimeo = !!ex?.video_url && ex.video_url.includes("vimeo")
   const vimeoThumb = useVimeoThumbnail(isVimeo ? ex!.video_url : null)
   const gifUrl = ex?.animated_gif_url ?? null
@@ -87,8 +89,8 @@ function ExerciseThumb({ ex, className }: { ex: ExerciseData | null; className?:
     (ex.video_url.endsWith(".mp4") || ex.video_url.includes(".mp4"))
 
   if (vimeoThumb) return <img src={vimeoThumb} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-cover"} />
-  if (ex?.thumbnail_url) return <img src={ex.thumbnail_url} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-cover"} />
-  if (gifUrl && !isGifMp4) return <img src={gifUrl} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-contain"} />
+  if (ex?.thumbnail_url && !failedSrcs.has(ex.thumbnail_url)) return <img src={ex.thumbnail_url} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-cover"} onError={() => markFailed(ex.thumbnail_url!)} />
+  if (gifUrl && !isGifMp4 && !failedSrcs.has(gifUrl)) return <img src={gifUrl} alt={ex?.name ?? ""} className={className ?? "w-full h-full object-contain"} onError={() => markFailed(gifUrl)} />
   if (gifUrl && isGifMp4) return <video src={gifUrl} className={className ?? "w-full h-full object-contain"} muted playsInline autoPlay loop />
   if (isDirectMp4) return <video src={ex!.video_url!} className={className ?? "w-full h-full object-contain"} muted playsInline preload="metadata" />
   return <div className="w-full h-full flex items-center justify-center"><Dumbbell size={20} className="text-gray-300" /></div>
@@ -745,6 +747,112 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
     </div>
   )
 
+  // ══ DESCRIPTIVE LAYOUT (no video/gif) — dark gradient like BreathingPlayer ══
+  if (!hasMedia) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}>
+        {showVas && <VasPainModal onSubmit={(pain) => { setShowVas(false); onMark(pain) }} />}
+
+        <button onClick={onClose} className="inline-flex items-center gap-1.5 text-sm text-white/50 px-4 pt-5 pb-2 hover:text-white/80 transition-colors">
+          <ArrowLeft size={14} />
+          Wróć do listy
+        </button>
+
+        {/* Hero */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+            style={{ background: "radial-gradient(circle, #3b82f644, #3b82f611)", boxShadow: "0 0 40px 10px #3b82f622" }}
+          >
+            <Dumbbell size={28} className="text-blue-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white leading-tight">{ex?.name}</h1>
+          {ex?.body_part && <p className="text-sm text-white/40 mt-1">{ex.body_part}</p>}
+
+          {(item.sets || item.reps || item.duration_seconds) && (
+            <div className="flex items-center gap-6 mt-8">
+              {item.sets && (
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-white">{item.sets}</p>
+                  <p className="text-xs text-white/40 mt-1">serie</p>
+                </div>
+              )}
+              {item.sets && (item.reps || item.duration_seconds) && <div className="w-px h-8 bg-white/10" />}
+              {item.reps && (
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-white">{item.reps}</p>
+                  <p className="text-xs text-white/40 mt-1">powtórzeń</p>
+                </div>
+              )}
+              {item.reps && item.duration_seconds && <div className="w-px h-8 bg-white/10" />}
+              {item.duration_seconds && (
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-white">
+                    {timerActive
+                      ? `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, "0")}`
+                      : timerDone ? "✓" : item.duration_seconds >= 60
+                        ? `${Math.floor(item.duration_seconds / 60)}:${String(item.duration_seconds % 60).padStart(2, "0")}`
+                        : `${item.duration_seconds}s`}
+                  </p>
+                  <p className="text-xs text-white/40 mt-1">{item.duration_seconds >= 60 ? "min" : "sekund"}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom white panel */}
+        <div className="bg-white rounded-t-3xl px-5 pt-5 pb-8 space-y-4 max-h-[60vh] overflow-y-auto">
+          {ex?.description && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 mb-3">
+                <ListChecks size={13} className="text-gray-400" />
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Instrukcja</p>
+              </div>
+              <DescriptionFormatter text={ex.description} />
+            </div>
+          )}
+          {item.notes && (
+            <div className="bg-amber-50 rounded-2xl px-4 py-3">
+              <p className="text-xs font-semibold text-amber-700 mb-1">Wskazówka od fizjoterapeuty</p>
+              <p className="text-sm text-amber-800 leading-relaxed">{item.notes}</p>
+            </div>
+          )}
+          {item.duration_seconds && !timerActive && !isDone && (
+            <button onClick={startTimer} className="w-full h-11 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+              {timerDone ? <><RotateCcw size={15} /> Ponów timer</> : <><Clock size={15} /> Uruchom timer</>}
+            </button>
+          )}
+          <div className="flex flex-col gap-2">
+            {!isDone && (
+              <button
+                onClick={() => showVasOnComplete ? setShowVas(true) : onMark(null)}
+                className="w-full h-12 rounded-xl bg-navy-500 hover:bg-navy-600 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 size={18} /> Zrobione!
+              </button>
+            )}
+            {isDone && hasNext && (
+              <button onClick={onNext} className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2">
+                Następne ćwiczenie <ChevronRight size={18} />
+              </button>
+            )}
+            {isDone && !hasNext && (
+              <button onClick={onClose} className="w-full h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors flex items-center justify-center gap-2">
+                <CheckCircle2 size={18} /> Koniec programu!
+              </button>
+            )}
+            {isDone && (
+              <button onClick={onClose} className="w-full h-10 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors">
+                Wróć do listy
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {showVas && <VasPainModal onSubmit={(pain) => { setShowVas(false); onMark(pain) }} />}
@@ -754,44 +862,8 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
         Wróć do listy
       </button>
 
-      {/* ══ NO MEDIA — single column with formatted description ══ */}
-      {!hasMedia ? (
-        <div className="max-w-2xl mx-auto px-4 pb-10 space-y-5">
-          {ex?.thumbnail_url && (
-            <div className="w-full rounded-2xl overflow-hidden bg-gray-100" style={{ maxHeight: 240 }}>
-              <img src={ex.thumbnail_url} alt={ex.name ?? ""} className="w-full h-full object-cover" style={{ maxHeight: 240 }} />
-            </div>
-          )}
-          <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-tight">{ex?.name}</h1>
-            {ex?.body_part && <p className="text-sm text-gray-400 mt-0.5">{ex.body_part}</p>}
-          </div>
-
-          {paramsBlock}
-
-          {ex?.description && (
-            <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 space-y-1">
-              <div className="flex items-center gap-2 mb-3">
-                <ListChecks size={14} className="text-gray-400" />
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Instrukcja</p>
-              </div>
-              <DescriptionFormatter text={ex.description} />
-            </div>
-          )}
-
-          {item.notes && (
-            <div className="bg-amber-50 rounded-2xl px-5 py-4">
-              <p className="text-xs font-semibold text-amber-700 mb-1.5">Wskazówka od fizjoterapeuty</p>
-              <p className="text-sm text-amber-800 leading-relaxed">{item.notes}</p>
-            </div>
-          )}
-
-          {timerBlock}
-          {actionsBlock}
-        </div>
-      ) : (
-        /* ══ HAS MEDIA — original 2-column layout ══ */
-        <div className="lg:grid lg:grid-cols-[1fr_380px] lg:gap-0 lg:items-start max-w-5xl mx-auto">
+      {/* ══ HAS MEDIA — 2-column layout ══ */}
+      <div className="lg:grid lg:grid-cols-[1fr_380px] lg:gap-0 lg:items-start max-w-5xl mx-auto">
           {/* Video panel */}
           <div className="lg:sticky lg:top-0">
             <div className="w-full aspect-video bg-black">
@@ -885,7 +957,6 @@ function ExerciseSession({ item, isDone, onMark, onClose, onNext, hasNext, showV
             )}
           </div>
         </div>
-      )}
     </div>
   )
 }
