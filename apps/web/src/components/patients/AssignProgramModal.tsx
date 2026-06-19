@@ -261,7 +261,7 @@ export function AssignProgramModal({ patientId, templates }: Props) {
                             {items.map((item, i) => {
                               const ex = getExercise(item)
                               if (!ex) return null
-                              const src = ex.animated_gif_url ?? ex.thumbnail_url
+                              const src = ex.thumbnail_url ?? ex.animated_gif_url
                               const params = [
                                 item.sets && `${item.sets}×`,
                                 item.reps && `${item.reps} powt.`,
