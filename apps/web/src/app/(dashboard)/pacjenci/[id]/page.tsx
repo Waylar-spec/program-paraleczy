@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, MessageCircle } from "lucide-react"
 import { getPatient } from "@/lib/actions/patients"
 import { getTemplates } from "@/lib/actions/templates"
 import { getProtocols, getPatientProtocols } from "@/lib/actions/protocols"
@@ -72,6 +72,14 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <Link
+            href={`/komunikacja/${id}`}
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-navy-600 transition-colors text-sm"
+            title="Wyślij wiadomość"
+          >
+            <MessageCircle size={16} />
+            <span className="hidden sm:inline">Wiadomość</span>
+          </Link>
           <AssignProgramModal patientId={id} templates={templates} />
           <EditPatientModal patient={patient} />
           <PatientArchiveButton patientId={id} />
