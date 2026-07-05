@@ -529,6 +529,23 @@ export async function setPatientPhase(patientProtocolId: string, patientId: stri
     .eq("practitioner_id", user.id)
 
   if (error) throw new Error(error.message)
+
+  // Auto-assign the target phase's exercise template, same as advancePhase does
+  const { data: targetPhase } = await supabase
+    .from("protocol_phases")
+    .select("template_id, duration_weeks")
+    .eq("id", phaseId)
+    .single()
+
+  if (targetPhase?.template_id) {
+    const setDate = new Date().toISOString().split("T")[0]
+    await _createPatientProgramFromPhase(
+      { template_id: targetPhase.template_id, duration_weeks: targetPhase.duration_weeks },
+      { patientId, practitionerId: user.id, startDate: setDate },
+      supabase
+    )
+  }
+
   revalidatePath(`/pacjenci/${patientId}`)
 }
 
