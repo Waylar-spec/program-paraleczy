@@ -85,9 +85,14 @@ export async function getPatients({
   query = archived ? query.not("archived_at", "is", null) : query.is("archived_at", null)
 
   if (search.trim()) {
-    query = query.or(
-      `first_name.ilike.%${search.trim()}%,last_name.ilike.%${search.trim()}%`
-    )
+    // Multi-word queries (e.g. "kamil ro") should match across first_name + last_name,
+    // so each word must match at least one of the two columns (AND across words, OR across columns).
+    const words = search.trim().split(/\s+/).filter(Boolean)
+    for (const word of words) {
+      const safe = word.replace(/[,()%]/g, "")
+      if (!safe) continue
+      query = query.or(`first_name.ilike.%${safe}%,last_name.ilike.%${safe}%`)
+    }
   }
 
   const { data, error, count } = await query
