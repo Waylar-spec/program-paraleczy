@@ -1,8 +1,6 @@
 import Link from "next/link"
 import { Users } from "lucide-react"
 import { getPatients } from "@/lib/actions/patients"
-
-const PATIENTS_PAGE_SIZE = 25
 import { NewPatientModal } from "@/components/patients/NewPatientModal"
 import { PatientsList } from "@/components/patients/PatientsList"
 
@@ -17,7 +15,6 @@ export default async function PacjenciPage({
   const search = q ?? ""
 
   const { data: patients, count } = await getPatients({ archived, page, search })
-  const totalPages = Math.ceil(count / PATIENTS_PAGE_SIZE)
 
   return (
     <div className="space-y-6">
@@ -61,11 +58,11 @@ export default async function PacjenciPage({
       {/* List or empty state */}
       {patients.length > 0 || search ? (
         <PatientsList
+          key={archived ? "archived" : "active"}
           patients={patients}
           isArchived={archived}
           search={search}
           page={page}
-          totalPages={totalPages}
           count={count}
         />
       ) : (

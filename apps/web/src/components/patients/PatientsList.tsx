@@ -1,13 +1,15 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { formatDistanceToNow } from "date-fns"
 import { pl } from "date-fns/locale"
 import { User, Search, X, Trash2, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react"
-import { deletePatient, unarchivePatient } from "@/lib/actions/patients"
+import { deletePatient, unarchivePatient, getPatients } from "@/lib/actions/patients"
 import { toast } from "sonner"
+
+const PATIENTS_PAGE_SIZE = 25
 
 type Program = {
   id: string
@@ -34,7 +36,6 @@ interface PatientsListProps {
   isArchived?: boolean
   search: string
   page: number
-  totalPages: number
   count: number
 }
 
@@ -47,45 +48,67 @@ export function PatientsList({
   isArchived = false,
   search,
   page,
-  totalPages,
   count,
 }: PatientsListProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [localSearch, setLocalSearch] = useState(search)
+  const [list, setList] = useState(patients)
+  const [listCount, setListCount] = useState(count)
+  const [listPage, setListPage] = useState(page)
+  const [isPending, setIsPending] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Monotonic sequence number — only the most recently dispatched fetch is allowed
+  // to apply its results, so a slower older request can never clobber a newer one.
+  const requestSeq = useRef(0)
 
-  // Keep local input in sync when URL-driven search changes
-  useEffect(() => {
-    setLocalSearch(search)
-  }, [search])
+  const listTotalPages = Math.max(1, Math.ceil(listCount / PATIENTS_PAGE_SIZE))
 
-  /** Build a URL for this page preserving the archiwum flag */
+  /** Build a URL for this page preserving the archiwum flag (for shareable/bookmarkable links only) */
   function buildUrl({ q, strona }: { q?: string; strona?: number }) {
     const params = new URLSearchParams()
     if (isArchived) params.set("archiwum", "1")
-    const finalQ = q !== undefined ? q : search
+    const finalQ = q !== undefined ? q : localSearch
     if (finalQ.trim()) params.set("q", finalQ.trim())
-    const finalPage = strona !== undefined ? strona : page
+    const finalPage = strona !== undefined ? strona : listPage
     if (finalPage > 0) params.set("strona", String(finalPage))
     const qs = params.toString()
     return qs ? `${pathname}?${qs}` : pathname
+  }
+
+  async function runSearch(q: string, pg: number) {
+    const seq = ++requestSeq.current
+    setIsPending(true)
+    try {
+      const result = await getPatients({ archived: isArchived, page: pg, search: q })
+      if (seq !== requestSeq.current) return // a newer request already superseded this one
+      setList(result.data)
+      setListCount(result.count)
+      setListPage(pg)
+      router.replace(buildUrl({ q, strona: pg }), { scroll: false })
+    } finally {
+      if (seq === requestSeq.current) setIsPending(false)
+    }
   }
 
   function handleSearchChange(value: string) {
     setLocalSearch(value)
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      router.replace(buildUrl({ q: value, strona: 0 }))
-    }, 350)
+      runSearch(value, 0)
+    }, 220)
   }
 
   function clearSearch() {
     setLocalSearch("")
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    router.replace(buildUrl({ q: "", strona: 0 }))
+    runSearch("", 0)
+  }
+
+  function goToPage(pg: number) {
+    runSearch(localSearch, pg)
   }
 
   async function handleDelete(id: string) {
@@ -136,7 +159,11 @@ export function PatientsList({
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div
+        className={`bg-white rounded-xl border border-gray-200 overflow-hidden transition-opacity duration-150 ${
+          isPending ? "opacity-60" : "opacity-100"
+        }`}
+      >
         {/* Table header */}
         <div
           className={`grid gap-4 px-5 py-3 border-b border-gray-100 text-xs font-medium text-gray-500 uppercase tracking-wide ${
@@ -150,12 +177,12 @@ export function PatientsList({
         </div>
 
         {/* Rows */}
-        {patients.length === 0 ? (
+        {list.length === 0 ? (
           <div className="py-10 text-center text-sm text-gray-400">
             {localSearch ? `Brak wyników dla "${localSearch}"` : "Brak pacjentów"}
           </div>
         ) : (
-          patients.map((patient) => {
+          list.map((patient) => {
             const activeProgram = getActiveProgram(patient.patient_programs)
             const endDate = activeProgram?.end_date ? new Date(activeProgram.end_date) : null
             const isConfirming = confirmDeleteId === patient.id
@@ -274,31 +301,33 @@ export function PatientsList({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {listTotalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            Strona {page + 1} z {totalPages} · {count} pacjentów łącznie
+            Strona {listPage + 1} z {listTotalPages} · {listCount} pacjentów łącznie
           </p>
           <div className="flex items-center gap-1.5">
-            {page > 0 ? (
-              <Link
-                href={buildUrl({ strona: page - 1 })}
-                className="h-8 w-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+            {listPage > 0 ? (
+              <button
+                onClick={() => goToPage(listPage - 1)}
+                disabled={isPending}
+                className="h-8 w-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 <ChevronLeft size={15} />
-              </Link>
+              </button>
             ) : (
               <span className="h-8 w-8 rounded-lg border border-gray-100 flex items-center justify-center text-gray-300 cursor-not-allowed">
                 <ChevronLeft size={15} />
               </span>
             )}
-            {page + 1 < totalPages ? (
-              <Link
-                href={buildUrl({ strona: page + 1 })}
-                className="h-8 w-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+            {listPage + 1 < listTotalPages ? (
+              <button
+                onClick={() => goToPage(listPage + 1)}
+                disabled={isPending}
+                className="h-8 w-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 <ChevronRight size={15} />
-              </Link>
+              </button>
             ) : (
               <span className="h-8 w-8 rounded-lg border border-gray-100 flex items-center justify-center text-gray-300 cursor-not-allowed">
                 <ChevronRight size={15} />
