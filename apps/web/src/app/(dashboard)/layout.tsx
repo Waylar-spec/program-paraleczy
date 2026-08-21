@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Topbar } from "@/components/layout/Topbar"
+import { NotesWidget } from "@/components/layout/NotesWidget"
 import { Toaster } from "@/components/ui/sonner"
 
 export default async function DashboardLayout({
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
         {children}
       </main>
       <Toaster richColors position="top-right" />
+      <NotesWidget />
     </div>
   )
 }
