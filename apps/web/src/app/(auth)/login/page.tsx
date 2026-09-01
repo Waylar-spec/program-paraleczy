@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -73,6 +74,11 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <div className="flex justify-end">
+                  <Link href="/zapomniane-haslo" className="text-sm text-navy-600 hover:underline">
+                    Zapomniałeś hasła?
+                  </Link>
+                </div>
               </div>
               {error && (
                 <p className="text-sm text-red-600">{error}</p>
