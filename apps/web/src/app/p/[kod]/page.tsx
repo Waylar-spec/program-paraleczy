@@ -122,7 +122,7 @@ async function ProgramCard({ program, patientId, kod }: { program: Program; pati
   const doneCount = items.filter((item) => doneTodayIds.includes(item.id)).length
 
   return (
-    <Link href={`/p/${kod}/program/${program.id}`} className="block">
+    <Link href={`/p/${kod}/program/${program.id}`} prefetch={false} className="block">
       <div className="bg-white rounded-2xl border border-gray-200 p-4 hover:border-navy-300 hover:shadow-sm transition-all">
         <div className="flex items-start justify-between mb-3">
           <div>

@@ -35,6 +35,7 @@ export default async function PacjenciPage({
       <div className="flex gap-1 border-b border-gray-200">
         <Link
           href="/pacjenci"
+          prefetch={false}
           className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
             !archived
               ? "border-navy-500 text-navy-600"
@@ -45,6 +46,7 @@ export default async function PacjenciPage({
         </Link>
         <Link
           href="/pacjenci?archiwum=1"
+          prefetch={false}
           className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
             archived
               ? "border-navy-500 text-navy-600"

@@ -22,6 +22,7 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
     <div className="space-y-6">
       <Link
         href="/biblioteka/protokoly"
+        prefetch={false}
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
       >
         <ArrowLeft size={14} />

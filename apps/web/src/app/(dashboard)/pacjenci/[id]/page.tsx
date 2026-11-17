@@ -46,6 +46,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
       {/* Back */}
       <Link
         href="/pacjenci"
+        prefetch={false}
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
       >
         <ArrowLeft size={14} />
@@ -74,6 +75,7 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
         <div className="flex items-center gap-2">
           <Link
             href={`/komunikacja/${id}`}
+            prefetch={false}
             className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-navy-600 transition-colors text-sm"
             title="Wyślij wiadomość"
           >

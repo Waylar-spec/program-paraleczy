@@ -283,6 +283,7 @@ export function TemplateSelector({ templates: initialTemplates }: { templates: T
                     </button>
                     <Link
                       href={`/biblioteka/szablony/${template.id}`}
+                      prefetch={false}
                       onClick={e => e.stopPropagation()}
                       className="p-1.5 rounded-lg bg-white/80 hover:bg-white border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
                       title="Otwórz pełny edytor"

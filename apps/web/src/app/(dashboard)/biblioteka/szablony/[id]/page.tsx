@@ -33,6 +33,7 @@ export default async function SzablonPage({ params }: { params: Promise<{ id: st
       <div className="flex items-center justify-between">
         <Link
           href="/biblioteka/szablony"
+          prefetch={false}
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
         >
           <ArrowLeft size={14} />
@@ -40,6 +41,7 @@ export default async function SzablonPage({ params }: { params: Promise<{ id: st
         </Link>
         <Link
           href={`/drukuj/szablon/${id}`}
+          prefetch={false}
           target="_blank"
           className="inline-flex items-center gap-2 h-8 px-3 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
         >

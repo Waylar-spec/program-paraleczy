@@ -45,7 +45,7 @@ export function Topbar({ userName }: TopbarProps) {
   return (
     <header className="h-14 border-b border-gray-200 bg-white flex items-center px-6 gap-8 sticky top-0 z-50">
       {/* Logo */}
-      <Link href="/pacjenci" className="flex items-center gap-2 shrink-0">
+      <Link href="/pacjenci" prefetch={false} className="flex items-center gap-2 shrink-0">
         <Image src="/logo.png" alt="Para Leczy" width={28} height={28} className="rounded-md" />
         <span className="font-semibold text-gray-900 text-sm">Para Leczy</span>
       </Link>
@@ -58,6 +58,7 @@ export function Topbar({ userName }: TopbarProps) {
             <Link
               key={href}
               href={href}
+              prefetch={false}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 active

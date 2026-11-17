@@ -24,6 +24,7 @@ export function LibraryTabs() {
             <Link
               key={tab.href}
               href={tab.href}
+              prefetch={false}
               className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 isActive
                   ? "border-navy-600 text-navy-600"

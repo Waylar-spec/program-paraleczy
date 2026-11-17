@@ -55,6 +55,7 @@ export default async function PatientSurveysPage({
               <Link
                 key={assignment.id}
                 href={`/p/${kod}/kwestionariusze/${assignment.id}`}
+                prefetch={false}
                 className="block bg-white rounded-2xl border border-gray-200 p-4 hover:border-navy-300 hover:shadow-sm transition-all"
               >
                 <div className="flex items-center gap-3">

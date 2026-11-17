@@ -217,7 +217,7 @@ export function PatientProgramView({ program, patientId, patientName, kod, doneT
   return (
     <div className="max-w-5xl mx-auto px-4 pt-5 pb-10">
       {/* Back */}
-      <Link href={`/p/${kod}`} className="inline-flex items-center gap-1.5 text-sm text-gray-500 mb-4">
+      <Link href={`/p/${kod}`} prefetch={false} className="inline-flex items-center gap-1.5 text-sm text-gray-500 mb-4">
         <ArrowLeft size={14} />
         {patientName}
       </Link>

@@ -269,6 +269,7 @@ export function PatientsList({
               <Link
                 key={patient.id}
                 href={`/pacjenci/${patient.id}`}
+                prefetch={false}
                 className="grid grid-cols-[40px_1fr_120px_1fr] gap-4 px-5 py-3.5 border-b border-gray-50 hover:bg-gray-50 transition-colors items-center last:border-0"
               >
                 {rowContent}

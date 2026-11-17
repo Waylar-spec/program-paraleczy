@@ -184,6 +184,7 @@ export function ProtocolLibraryClient({ protocols }: Props) {
                   <AssignProtocolFromLibraryButton protocol={protocol} />
                   <Link
                     href={`/biblioteka/protokoly/${protocol.id}`}
+                    prefetch={false}
                     className="flex-1 h-8 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors flex items-center justify-center gap-1"
                   >
                     Edytuj fazy <ChevronRight size={11} />
@@ -241,6 +242,7 @@ export function ProtocolLibraryClient({ protocols }: Props) {
                   <AssignProtocolFromLibraryButton protocol={protocol} />
                   <Link
                     href={`/biblioteka/protokoly/${protocol.id}`}
+                    prefetch={false}
                     className="h-8 px-3 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors flex items-center gap-1 whitespace-nowrap"
                   >
                     Edytuj <ChevronRight size={11} />

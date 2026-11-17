@@ -119,6 +119,7 @@ export function ConversationList({ active, archived }: Props) {
                 {/* Clickable area */}
                 <Link
                   href={`/komunikacja/${patient.id}`}
+                  prefetch={false}
                   className="absolute inset-0 rounded-xl"
                   aria-label={`Otwórz rozmowę z ${name}`}
                 />

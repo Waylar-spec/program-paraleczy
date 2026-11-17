@@ -204,7 +204,7 @@ function PhaseRow({
   )
 
   if (isCurrent && linkedProgram) {
-    return <Link href={`/p/${kod}/program/${linkedProgram.id}`}>{inner}</Link>
+    return <Link href={`/p/${kod}/program/${linkedProgram.id}`} prefetch={false}>{inner}</Link>
   }
   return inner
 }

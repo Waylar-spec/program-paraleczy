@@ -87,7 +87,7 @@ export function PatientChatWindow({ patientId, patientName, kod, initialMessages
     <div className="flex flex-col h-[calc(100vh-3.5rem)] max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 bg-white border-b border-gray-200 shrink-0">
-        <Link href={`/p/${kod}`} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
+        <Link href={`/p/${kod}`} prefetch={false} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
           <ArrowLeft size={16} />
         </Link>
         <div className="w-9 h-9 rounded-full bg-navy-100 flex items-center justify-center shrink-0">

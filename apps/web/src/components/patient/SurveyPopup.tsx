@@ -81,6 +81,7 @@ export function SurveyPopup({ pending, kod }: Props) {
           </button>
           <Link
             href={`/p/${kod}/kwestionariusze/${current.id}`}
+            prefetch={false}
             className="flex-1 h-11 rounded-xl bg-navy-500 hover:bg-navy-600 text-white text-sm font-semibold flex items-center justify-center transition-colors"
           >
             Wypełnij teraz

@@ -14,6 +14,7 @@ export function BookingNavItem() {
   return (
     <Link
       href={href}
+      prefetch={false}
       className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${
         isActive ? "text-[#e05c2a]" : "text-[#e05c2a] hover:bg-orange-50"
       }`}
